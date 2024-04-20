@@ -25,6 +25,10 @@ export class CarouselComponent {
   paused = false;
   pauseOnIndicator = false;
 
+  @Input() interval: number = 5000;
+  @Input() pauseOnHover: boolean = true;
+  @Input() pauseOnFocus: boolean = true;
+
   @ViewChild('carousel', { static: true })
   carousel!: NgbCarousel;
 
