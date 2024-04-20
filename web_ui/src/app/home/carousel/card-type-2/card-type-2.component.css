@@ -1,0 +1,104 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+ul,
+li {
+  list-style-type: none;
+}
+
+.card-container {
+  position: relative;
+  background-color: #e6e6e6;
+  border-radius: 30px;
+  min-height: 490px;
+}
+
+.card-container > div {
+  position: inherit;
+  padding: 32px;
+  display: grid;
+  grid-template-columns: repeat(7, auto);
+  grid-template-rows: repeat(3, auto);
+  column-gap: 16px;
+  row-gap: 32px;
+  height: 100%;
+  z-index: 1;
+}
+
+.card-container img {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.card-container p {
+  font-size: 24px;
+  font-weight: 800;
+  grid-column: span 3;
+}
+
+.card-container a[type="button"] {
+  background-color: black;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 17px 24px;
+  border-style: none;
+  border-radius: 25px;
+  width: 268px;
+  height: 76px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ranking */
+.ranking-container {
+  background-color: white;
+  border-radius: 20px;
+  padding: 24px;
+  grid-column: span 4;
+  grid-row: span 3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-table {
+  width: 100%;
+}
+
+.ranking-table th:first-child {
+  text-align: center;
+}
+
+th:last-child,
+td:last-child {
+  text-align: end;
+}
+
+.ranking-table td {
+  vertical-align: middle;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+td,
+th {
+  padding: 8px; /* Aggiunge uno spazio di 8px sopra e sotto a ciascuna cella */
+}
+
+.circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: lightblue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: white;
+  font-weight: 900;
+}
