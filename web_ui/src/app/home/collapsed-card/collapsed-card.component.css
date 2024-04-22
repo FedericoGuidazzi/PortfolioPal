@@ -1,20 +1,18 @@
 * {
   box-sizing: border-box;
   margin: 0;
+  border: 0;
 }
 
-.card-container {
+.box-shadow {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.collapsed-content {
-  margin-top: 8px;
 }
 
 .card-container > div {
   border: 1px solid #d9d9d9;
   background-color: white;
   border-radius: 8px;
+  margin-bottom: 8px;
 }
 
 .card-header {
