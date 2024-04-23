@@ -10,7 +10,7 @@ nav {
 
 .dropdown-menu {
   width: 250px;
-  border-radius: 16px 16px 16px 16px !important;
+  border-radius: 16px;
 }
 
 .option {
@@ -22,5 +22,5 @@ nav {
   color: white;
   font-weight: 700;
   font-size: 20px;
-  border-radius: 0 0 16px 16px;
+  border-radius: 1rem;
 }

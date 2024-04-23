@@ -38,7 +38,7 @@
           />
         </a>
         <ul
-          class="dropdown-menu mx-0 mt-2 pb-0 shadow dropdown-menu-end"
+          class="dropdown-menu mx-0 mt-2 shadow dropdown-menu-end"
           data-bs-theme="light"
         >
           @for (s of settings; track $index) {
@@ -48,7 +48,10 @@
               {{ s.name }}
               <div class="option">
                 @switch (s.type) { @case ('toggle') {
-                <mat-slide-toggle [checked]="s.value" (change)="onToggle($index)"></mat-slide-toggle>
+                <mat-slide-toggle
+                  [checked]="s.value"
+                  (change)="onToggle($index)"
+                ></mat-slide-toggle>
                 } @case ('select') {
                 <select
                   class="form-select form-select-sm"
@@ -72,7 +75,7 @@
           </li>
           }
           <li><hr class="dropdown-divider mb-2" /></li>
-          <li>
+          <li class="px-2">
             <div
               class="dropdown-item logout py-3 d-flex gap-3 align-items-center"
             >
