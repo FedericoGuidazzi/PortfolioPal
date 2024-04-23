@@ -1,0 +1,26 @@
+* {
+  box-sizing: border-box;
+}
+
+app-carousel {
+  max-width: 1010px;
+  display: flex;
+  margin: 95px auto 64px;
+  padding: 0 16px;
+}
+
+/* faq list style */
+ul,
+li {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.faq-list {
+  max-width: 1062px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 0 auto 32px;
+}
