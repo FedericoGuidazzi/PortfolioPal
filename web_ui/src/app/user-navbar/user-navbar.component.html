@@ -27,6 +27,7 @@
           class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
           data-bs-toggle="dropdown"
           aria-expanded="false"
+          data-bs-auto-close="outside"
         >
           <img
             src="https://github.com/mdo.png"
@@ -37,57 +38,47 @@
           />
         </a>
         <ul
-          class="dropdown-menu mx-0 mt-2 shadow w-220px dropdown-menu-end"
+          class="dropdown-menu mx-0 mt-2 pb-0 shadow dropdown-menu-end"
           data-bs-theme="light"
         >
-          <li>
-            <a class="dropdown-item d-flex gap-2 align-items-center" href="#">
-              <svg class="bi" width="16" height="16">
-                <use xlink:href="#files"></use>
-              </svg>
-              Documents
-            </a>
+          @for (s of settings; track $index) {
+          <li class="mb-3">
+            <div class="dropdown-item d-flex gap-3 align-items-center">
+              <img src="{{ s.icon_loc }}" alt="" />
+              {{ s.name }}
+              <div class="option">
+                @switch (s.type) { @case ('toggle') {
+                <mat-slide-toggle [checked]="s.value" (change)="onToggle($index)"></mat-slide-toggle>
+                } @case ('select') {
+                <select
+                  class="form-select form-select-sm"
+                  aria-label="Small select example"
+                  #language
+                  (change)="onSelected()"
+                >
+                  @for (language of supportedLanguages; track $index) {
+                  <option
+                    selected
+                    value="{{ language }}"
+                    [selected]="language == s.value"
+                  >
+                    {{ language }}
+                  </option>
+                  }
+                </select>
+                } }
+              </div>
+            </div>
           </li>
+          }
+          <li><hr class="dropdown-divider mb-2" /></li>
           <li>
-            <a class="dropdown-item d-flex gap-2 align-items-center" href="#">
-              <svg class="bi" width="16" height="16">
-                <use xlink:href="#image-fill"></use>
-              </svg>
-              Photos
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item d-flex gap-2 align-items-center" href="#">
-              <svg class="bi" width="16" height="16">
-                <use xlink:href="#film"></use>
-              </svg>
-              Movies
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item d-flex gap-2 align-items-center" href="#">
-              <svg class="bi" width="16" height="16">
-                <use xlink:href="#music-note-beamed"></use>
-              </svg>
-              Music
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item d-flex gap-2 align-items-center" href="#">
-              <svg class="bi" width="16" height="16">
-                <use xlink:href="#joystick"></use>
-              </svg>
-              Games
-            </a>
-          </li>
-          <li><hr class="dropdown-divider" /></li>
-          <li>
-            <a class="dropdown-item d-flex gap-2 align-items-center" href="#">
-              <svg class="bi" width="16" height="16">
-                <use xlink:href="#joystick"></use>
-              </svg>
+            <div
+              class="dropdown-item logout py-3 d-flex gap-3 align-items-center"
+            >
+              <img src="assets/icons/ic-logout.svg" alt="" />
               Sign out
-            </a>
+            </div>
           </li>
         </ul>
       </div>

@@ -7,3 +7,20 @@ nav {
   border: 1px solid #e0e0e0;
   background-color: white;
 }
+
+.dropdown-menu {
+  width: 250px;
+  border-radius: 16px 16px 16px 16px !important;
+}
+
+.option {
+  margin-left: auto;
+}
+
+.logout {
+  background-color: red;
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+  border-radius: 0 0 16px 16px;
+}
