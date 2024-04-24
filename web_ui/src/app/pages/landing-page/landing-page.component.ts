@@ -9,7 +9,7 @@ import { CardType1Component } from '../../components/card-type-1/card-type-1.com
 import { CardType2Component } from '../../components/card-type-2/card-type-2.component';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-landing-page',
   standalone: true,
   imports: [
     NgbCarouselModule,
@@ -17,10 +17,10 @@ import { CardType2Component } from '../../components/card-type-2/card-type-2.com
     CardType1Component,
     CardType2Component,
   ],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  templateUrl: './landing-page.component.html',
+  styleUrl: './landing-page.component.css',
 })
-export class HomeComponent {
+export class LandingPageComponent {
   loggedIn: boolean = false;
   numberOfFaqs: number = 3;
 
