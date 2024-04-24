@@ -1,33 +1,39 @@
 import { Component, Input, ViewChild } from '@angular/core';
+import { CollapsedCardComponent } from '../../components/collapsed-card/collapsed-card.component';
 import {
   NgbCarousel,
   NgbCarouselModule,
   NgbSlideEvent,
-  NgbSlideEventSource,
 } from '@ng-bootstrap/ng-bootstrap';
-import { FormsModule } from '@angular/forms';
-import { CardType1Component } from './card-type-1/card-type-1.component';
-import { CardType2Component } from './card-type-2/card-type-2.component';
+import { CardType1Component } from '../../components/card-type-1/card-type-1.component';
+import { CardType2Component } from '../../components/card-type-2/card-type-2.component';
 
 @Component({
-  selector: 'app-carousel',
+  selector: 'app-home',
   standalone: true,
   imports: [
     NgbCarouselModule,
-    FormsModule,
+    CollapsedCardComponent,
     CardType1Component,
     CardType2Component,
   ],
-  templateUrl: './carousel.component.html',
-  styleUrl: './carousel.component.css',
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css',
 })
-export class CarouselComponent {
+export class HomeComponent {
+  loggedIn: boolean = false;
+  numberOfFaqs: number = 3;
+
+  counter(i: number) {
+    return new Array(i);
+  }
+
   paused = false;
   pauseOnIndicator = false;
 
-  @Input() interval: number = 5000;
-  @Input() pauseOnHover: boolean = true;
-  @Input() pauseOnFocus: boolean = true;
+  protected interval: number = 10000;
+  protected pauseOnHover: boolean = true;
+  protected pauseOnFocus: boolean = true;
 
   @ViewChild('carousel', { static: true })
   carousel!: NgbCarousel;

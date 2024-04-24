@@ -9,6 +9,10 @@ li {
   list-style-type: none;
 }
 
+p {
+  line-height: 125%;
+}
+
 .card-container {
   position: relative;
   background-color: #e6e6e6;
@@ -89,11 +93,13 @@ th {
   padding: 8px;
 }
 
-td:first-child, th:first-child {
+td:first-child,
+th:first-child {
   padding-left: 0;
 }
 
-td:last-child, th:last-child {
+td:last-child,
+th:last-child {
   padding-right: 0;
 }
 

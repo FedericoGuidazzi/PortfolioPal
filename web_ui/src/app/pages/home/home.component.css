@@ -2,7 +2,7 @@
   box-sizing: border-box;
 }
 
-app-carousel {
+ngb-carousel {
   max-width: 1010px;
   display: flex;
   margin: 95px auto 64px;

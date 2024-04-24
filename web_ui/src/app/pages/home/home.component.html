@@ -1,4 +1,15 @@
-<app-carousel [interval]="10000"></app-carousel>
+<!-- carousel -->
+<ngb-carousel
+  #carousel
+  [interval]="interval"
+  [pauseOnHover]="pauseOnHover"
+  [pauseOnFocus]="pauseOnFocus"
+  [showNavigationArrows]="false"
+  (slide)="onSlide($event)"
+>
+  <ng-template ngbSlide><app-card-type-1></app-card-type-1></ng-template>
+  <ng-template ngbSlide><app-card-type-2></app-card-type-2></ng-template>
+</ngb-carousel>
 
 <ul class="faq-list px-3">
   @for (faq of counter(numberOfFaqs); track $index){

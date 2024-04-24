@@ -1,10 +1,12 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-user-navbar',
   standalone: true,
-  imports: [MatSlideToggleModule],
+  imports: [MatSlideToggleModule, RouterLink],
   templateUrl: './user-navbar.component.html',
   styleUrl: './user-navbar.component.css',
 })
@@ -38,10 +40,9 @@ export class UserNavbarComponent {
 
   supportedLanguages: string[] = ['Italiano', 'English', 'Spanish', 'French'];
 
-  selected_options = [];
+  constructor(public location: Location) {}
 
   @ViewChild('language') language!: ElementRef;
-
   onSelected(): void {
     this.settings[0].value = this.language.nativeElement.value;
   }
