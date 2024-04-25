@@ -33,6 +33,7 @@ li {
   font-size: 48px;
   margin-bottom: 15px;
   font-weight: bold;
+  line-height: 100%;
 }
 
 .card-container p {
