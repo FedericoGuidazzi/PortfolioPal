@@ -40,9 +40,8 @@ p {
 }
 
 .card-container p {
-  font-size: 24px;
   font-weight: 800;
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 .card-container a[type="button"] {
@@ -53,7 +52,6 @@ p {
   padding: 17px 24px;
   border-style: none;
   border-radius: 25px;
-  width: 268px;
   height: 76px;
   display: flex;
   justify-content: center;
@@ -61,58 +59,7 @@ p {
 }
 
 /* ranking */
-.ranking-container {
-  background-color: white;
-  border-radius: 20px;
-  padding: 24px;
-  grid-column: span 4;
+app-ranking-table {
+  grid-column: span 5;
   grid-row: span 3;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.ranking-table {
-  width: 100%;
-}
-
-.ranking-table th:first-child {
-  text-align: center;
-}
-
-th:last-child,
-td:last-child {
-  text-align: end;
-}
-
-.ranking-table td {
-  vertical-align: middle;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-td,
-th {
-  padding: 8px;
-}
-
-td:first-child,
-th:first-child {
-  padding-left: 0;
-}
-
-td:last-child,
-th:last-child {
-  padding-right: 0;
-}
-
-.circle {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: lightblue;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: white;
-  font-weight: 900;
 }

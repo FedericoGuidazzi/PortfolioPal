@@ -7,7 +7,6 @@
 form {
   max-width: 400px;
   height: 100vh;
-  margin-top: 54px !important;
 }
 
 form > * {
@@ -25,18 +24,18 @@ form > * {
 .delimited-text::after {
   content: "";
   position: absolute;
-  width: 30%; /* Larghezza delle linee orizzontali */
-  height: 1px; /* Altezza delle linee orizzontali */
-  background-color: #e6e6e6; /* Colore delle linee orizzontali */
-  top: 50%; /* Posiziona le linee a metà altezza del testo */
+  width: 30%;
+  height: 1px;
+  background-color: #e6e6e6;
+  top: 50%;
 }
 
 .delimited-text::before {
-  left: 0; /* Posiziona la prima linea alla sinistra del testo */
+  left: 0;
 }
 
 .delimited-text::after {
-  right: 0; /* Posiziona la seconda linea alla destra del testo */
+  right: 0;
 }
 
 .btn {
