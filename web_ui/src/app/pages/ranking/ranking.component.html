@@ -1,0 +1,17 @@
+<div class="d-flex mx-4 mt-5 flex-column flex-md-row gap-4">
+  <div class="d-flex flex-column gap-4 col-md-4 col-12">
+    <div class="card p-3 gap-3">
+      <p class="fw-400">Valutazione portfolio</p>
+      <p class="h-auto mb-0">
+        <span class="fw-bold fs-1 me-2">$400,000.99</span>
+        <span class="text-secondary">+20%</span>
+      </p>
+    </div>
+
+    <app-ranking-table
+      [ranking]="ranking"
+      [current_user]="current_user"
+    ></app-ranking-table>
+  </div>
+  <div class="flex-fill bg-black p-4"></div>
+</div>

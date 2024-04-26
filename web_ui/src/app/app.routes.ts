@@ -20,4 +20,11 @@ export const routes: Routes = [
         (c) => c.SignUpComponent
       ),
   },
+  {
+    path: 'ranking',
+    loadComponent: () =>
+      import('./pages/ranking/ranking.component').then(
+        (c) => c.RankingComponent
+      ),
+  },
 ];
