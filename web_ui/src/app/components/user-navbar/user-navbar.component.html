@@ -1,0 +1,94 @@
+<nav class="navbar navbar-expand-md navbar-light sticky-top">
+  <div class="container-fluid">
+    <div class="navbar-brand me-3">Fixed navbar</div>
+    <button
+      class="navbar-toggler collapsed"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarCollapse"
+      aria-controls="navbarCollapse"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="navbar-collapse collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [routerLink]=""
+            [class.active]="this.location.path() == ''"
+            >Home</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" aria-disabled="true">Ranking</a>
+        </li>
+      </ul>
+      <div class="dropdown text-end">
+        <div
+          class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          data-bs-auto-close="outside"
+        >
+          <img
+            src="https://github.com/mdo.png"
+            alt="mdo"
+            width="32"
+            height="32"
+            class="rounded-circle"
+          />
+        </div>
+        <ul
+          class="dropdown-menu mx-0 mt-2 shadow dropdown-menu-end"
+          data-bs-theme="light"
+        >
+          @for (s of settings; track $index) {
+          <li class="mb-3">
+            <div class="dropdown-item d-flex gap-3 align-items-center">
+              <img src="{{ s.icon_loc }}" alt="" />
+              {{ s.name }}
+              <div class="option">
+                @switch (s.type) { @case ('toggle') {
+                <mat-slide-toggle
+                  [checked]="s.value"
+                  (change)="onToggle($index)"
+                ></mat-slide-toggle>
+                } @case ('select') {
+                <select
+                  class="form-select form-select-sm"
+                  aria-label="Small select example"
+                  #language
+                  (change)="onSelected()"
+                >
+                  @for (language of supportedLanguages; track $index) {
+                  <option
+                    selected
+                    value="{{ language }}"
+                    [selected]="language == s.value"
+                  >
+                    {{ language }}
+                  </option>
+                  }
+                </select>
+                } }
+              </div>
+            </div>
+          </li>
+          }
+          <li><hr class="dropdown-divider mb-2" /></li>
+          <li class="px-2">
+            <div
+              class="dropdown-item logout py-3 d-flex gap-3 align-items-center"
+            >
+              <img src="assets/icons/ic-logout.svg" alt="" />
+              Sign out
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>

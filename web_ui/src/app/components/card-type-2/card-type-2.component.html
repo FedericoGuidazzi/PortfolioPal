@@ -1,0 +1,21 @@
+<div class="card-container">
+  <img
+    class="container-bg-img d-none d-md-block"
+    src="/assets/img/image 2.png"
+    alt=""
+  />
+  <div class="d-flex flex-column d-md-grid">
+    <p class="text-md-start text-center fs-2 mb-0">
+      Affronta la sfida e dimostra la tua abilità nel gestire il portafoglio: la
+      vetta della classifica ti attende!
+    </p>
+    <!-- classifica -->
+    <app-ranking-table
+      [ranking]="ranking"
+      [hover_disabled]="true"
+    ></app-ranking-table>
+    <a [routerLink]="'signup'" type="button" class="btn col-12 mb-4 mb-md-0"
+      >JOIN NOW</a
+    >
+  </div>
+</div>

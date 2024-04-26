@@ -1,0 +1,81 @@
+<div class="table-container">
+  <table
+    mat-table
+    [dataSource]="ranking"
+    class="mat-elevation-z8"
+    [ngClass]="{ 'hover-disabled': hover_disabled }"
+  >
+    <!-- Position Column -->
+    <ng-container matColumnDef="pos">
+      <th mat-header-cell class="text-center pt-3" *matHeaderCellDef>No.</th>
+      <td
+        mat-cell
+        class="text-center"
+        *matCellDef="let user"
+        [ngClass]="{ 'fw-bold': user.pos == current_user?.pos }"
+      >
+        <div class="circle d-flex justify-content-center align-items-center">
+          {{ user.pos }}
+        </div>
+      </td>
+      <td mat-footer-cell *matFooterCellDef class="fw-bold text-center pb-3">
+        {{ current_user?.pos }}
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell class="pt-3" *matHeaderCellDef>Name</th>
+      <td
+        mat-cell
+        *matCellDef="let user"
+        [ngClass]="{ 'fw-bold': user.pos == current_user?.pos }"
+      >
+        {{ user.name }}
+      </td>
+      <td mat-footer-cell *matFooterCellDef class="fw-bold pb-3">
+        {{ current_user?.name }}
+      </td>
+    </ng-container>
+
+    <!-- Score Column -->
+    <ng-container matColumnDef="score">
+      <th mat-header-cell class="text-end pt-3" *matHeaderCellDef>Score</th>
+      <td
+        mat-cell
+        class="text-end"
+        *matCellDef="let user"
+        [ngClass]="{ 'fw-bold': user.pos == current_user?.pos }"
+      >
+        {{ user?.score }}
+      </td>
+      <td mat-footer-cell class="fw-bold text-end pb-3" *matFooterCellDef>
+        {{ current_user?.score }}
+      </td>
+    </ng-container>
+
+    <!-- Spacer column -->
+    <ng-container matColumnDef="spacer">
+      <td mat-footer-cell class="text-center" *matFooterCellDef>•••</td>
+    </ng-container>
+
+    <!-- The table will render two header rows, one data row per data object, and two footer rows. -->
+    <tr
+      mat-header-row
+      *matHeaderRowDef="displayedColumns"
+      class="example-first-header-row"
+    ></tr>
+
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      [ngClass]="{ disabled: row.pos == current_user?.pos }"
+    ></tr>
+
+    @if (current_user && current_user.pos > 6) {
+    <tr mat-footer-row *matFooterRowDef="['spacer']"></tr>
+    } @if (current_user && current_user.pos >= 6) {
+    <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+    }
+  </table>
+</div>
