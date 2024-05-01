@@ -27,4 +27,11 @@ export const routes: Routes = [
         (c) => c.RankingComponent
       ),
   },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./pages/dashboard/dashboard.component').then(
+        (c) => c.DashboardComponent
+      ),
+  },
 ];

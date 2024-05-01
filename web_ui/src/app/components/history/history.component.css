@@ -1,0 +1,30 @@
+/* dashboard.component.css */
+.history {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .portfolio-chart {
+    flex: 1;
+    margin-right: 20px;
+  }
+  
+  .transaction-history {
+    flex: 1;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+  
