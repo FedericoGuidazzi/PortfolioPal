@@ -1,5 +1,12 @@
 <!-- dashboard.component.html -->
 <div style="width: 80%;">
     <canvas id="lineChart"></canvas>
-  </div>
+</div>
+<div class="container-duration">
+    @for (item of duration; track $index) {
+        <div (click)="updateData(item)">{{ item }}</div>
+    }
+</div>
+
+
   
