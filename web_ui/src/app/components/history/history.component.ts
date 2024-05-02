@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import {MatInputModule} from '@angular/material/input';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { PortfolioAssets } from '../../pages/dashboard/dashboard.component';
 
 
 export interface TransactionData {
@@ -24,14 +25,21 @@ export interface TransactionData {
 })
 export class HistoryComponent implements OnInit{
 
-  @Input() transactions: any[] = []; // Assuming transaction data structure
+  @Input() transactions: TransactionData[] = []; // Assuming transaction data structure
   displayedColumns: string[] = ['date', 'type', 'symbol', 'quantity', 'price'];
+  dataSource = new MatTableDataSource<TransactionData>(this.transactions);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+  }
 
   constructor() {
   }
 
   ngOnInit(): void {
-
+    this.dataSource.data = this.transactions;
   }
 
   uploadData() {
