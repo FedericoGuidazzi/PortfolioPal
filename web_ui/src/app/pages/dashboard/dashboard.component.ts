@@ -37,7 +37,7 @@ export class DashboardComponent {
     ];
 
     this.data = {
-      currency :"",
+      currency :"EUR",
       amount: 3,
       percentage: 45
     }
@@ -46,7 +46,14 @@ export class DashboardComponent {
       {symbol: 'AAPL', percentage: 3},
       {symbol: 'GOOGL', percentage: 5}
     ]
+  }
 
+  ngOnInit(): void {
+    this.createDoughnutChart();
+  }
+
+  createDoughnutChart(): void {
+    //call API to get data
     const data = {
       labels: [
         'Red',
@@ -68,9 +75,22 @@ export class DashboardComponent {
     const config:any = {
       type: 'doughnut',
       data: data,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Chart.js Doughnut Chart'
+          }
+        },
+        maintainAspectRatio: false
+      }
     };
 
-    const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
+    const canvas = document.getElementById('doughnutChart') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (ctx){
       new Chart(ctx, config);

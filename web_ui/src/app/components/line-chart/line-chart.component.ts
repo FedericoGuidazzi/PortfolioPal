@@ -11,73 +11,99 @@ import Chart from 'chart.js/auto';
 export class LineChartComponent implements OnInit {
 
   data: any = {};
-  duration: string[]= ['1D', '1S', '1A', 'Max'];
+  duration: string[]= ['1S', '1A', '5A', 'Max'];
+  lineChart: any;
   constructor() { }
 
   ngOnInit(): void {
     this.createLineChart();
+    
+  }
+
+  ngAfterViewInit(){
+    let selector = document.getElementById("1S");
+    selector?.classList.add("selectorSelected");
+    selector?.classList.add("rounded");
   }
 
   createLineChart(): void {
-    const data = {
+    
+    let data = {
       labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: [{
-        label: 'My Portfolio',
-        data: [100, 120, 130, 110, 150, 160, 140],
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      }]
+      datasets: [
+        {
+          label: 'Valore Portfolio',
+          data: [100, 120, 130, 110, 150, 160, 140],
+        },
+        {
+          label: 'Liquidità Inserita',
+          data: [50, 50, 50, 50, 50, 50, 50],
+        }
+      ]
     };
 
     const config:any = {
       type: 'line',
       data: data,
       options: {
+        scales: {
+          x: {
+            grid: {
+              display: false
+            }
+          },
+          y: {
+            grid: {
+              display: false
+            }
+          }
+        },
         responsive: true,
         plugins: {
           legend: {
-            position: 'top',
+            display: false
           },
           title: {
-            display: true,
-            text: 'Chart.js Line Chart'
+            display: false
           }
-        }
+        },
+        maintainAspectRatio: false
       },
     };
 
     const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (ctx){
-      new Chart(ctx, config);
+      this.lineChart = new Chart(ctx, config);
     }
     
   }
 
   updateData(value: string) {
     //gestire cambio di dati richiamando API
-
+    const selectorSelected = document.querySelectorAll(".selectorSelected");
+    selectorSelected.forEach(function(selected) {
+      selected.classList.remove("selectorSelected");
+    });
+    
+    let selector = document.getElementById(value);
+    selector?.classList.add("selectorSelected");
+    selector?.classList.add("rounded");
+    
     switch(value){
-      case "1D":
-        break;
       case "1S":
+        //fare chiamata api per prendere i dati rispetto alla scadenza desiderata
+        this.lineChart.data.labels = ["asdfsdf", "afsfdsfds", "afsdfsdf", "afsfdsf", "asdfdsfd", "asfsdfsd", "asfsdfd"];
+        this.lineChart.data.datasets[0].data = [10, 12, 13, 11, 15, 16, 14];
+        this.lineChart.data.datasets[1].data = [5, 5, 10, 5, 5, 5, 5];
+        this.lineChart.update();
         break;
       case "1A":
+        break;
+      case "5A":
         break;
       case "Max":
         break;
     }
-    
-    this.data = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: [{
-        label: 'My Portfolio',
-        data: [100, 120, 130, 110, 150, 160, 140],
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      }]
-    };
   }
 }
