@@ -10,11 +10,15 @@ import {FormsModule} from '@angular/forms';
 import { UpdateTransactionDialog } from '../../components/update-transaction-dialog/update-transaction-dialog.component';
 import { UploadFileDialog } from '../upload-file-dialog/upload-file-dialog.component';
 
+export enum TransactionTypes {
+  COMPRA = 'Compra',
+  VENDITA = 'Vendita'
+}
 
 export interface TransactionData {
   id: number;
   date: string;
-  type: string;
+  type: 'Compra' | 'Vendita';
   symbol: string;
   quantity: number;
   price: number;
@@ -67,7 +71,7 @@ export class HistoryComponent{
   openDialogUpdate(id:number): void {
     const foundTransaction = this.transactions.find(transaction => transaction.id === id);
     const dialogRef = this.dialogUpdate.open(UpdateTransactionDialog, {
-      data: {id: 1,
+      data: {id: foundTransaction?.id,
         date: foundTransaction?.date,
         type: foundTransaction?.type,
         symbol: foundTransaction?.symbol,
@@ -79,7 +83,6 @@ export class HistoryComponent{
     dialogRef.afterClosed().subscribe(result => {
       if (result){
         //if something has changed update the row calling the API and refresh the page
-        console.log(result);
         this.refreshPage();
       }
       

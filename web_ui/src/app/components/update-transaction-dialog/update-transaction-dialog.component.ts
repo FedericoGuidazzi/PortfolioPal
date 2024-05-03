@@ -12,7 +12,9 @@ import {MatButtonModule} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import { TransactionData } from '../history/history.component';
+import { TransactionData, TransactionTypes } from '../history/history.component';
+import { MatOption } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
 
 
 @Component({
@@ -29,12 +31,15 @@ import { TransactionData } from '../history/history.component';
     MatDialogContent,
     MatDialogActions,
     MatDialogClose,
+    MatOption,
+    MatSelectModule
   ],
 })
 export class UpdateTransactionDialog {
+  tipologiaOptions: string[] = Object.values(TransactionTypes);
   constructor(
     public dialogRef: MatDialogRef<UpdateTransactionDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: TransactionData,
+    @Inject(MAT_DIALOG_DATA) public data: TransactionData
   ) {}
 
   onNoClick(): void {

@@ -1,45 +1,42 @@
-<!-- history.component.html -->
-
-
-<div class="mat-elevation-z8 col-11 mx-auto mt-5">
-  <div class="history-container">
-    <h2 style="font-weight: bold;" class="p-2 pb-0 mb-0">Storico</h2>
-    <button type="button" class="btn" (click)="uploadData()"><img src="/assets/icons/mdi_import.svg" alt=""></button>
+<div class="mat-elevation-z8 col-11 mx-auto mt-5 rounded-20">
+  <div class="history-container pt-3 px-3">
+    <h2 class="mb-0 fw-bold">Storico</h2>
+    <button type="button" class="btn p-0" (click)="uploadData()"><img src="/assets/icons/mdi_import.svg" alt=""></button>
   </div>
-    <table mat-table [dataSource]="dataSource" matSort>
+    <table mat-table [dataSource]="dataSource">
   
       <ng-container matColumnDef="date">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Data </th>
+        <th mat-header-cell *matHeaderCellDef> Data </th>
         <td mat-cell *matCellDef="let row"> {{row.date}} </td>
       </ng-container>
   
       <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Tipologia </th>
+        <th mat-header-cell *matHeaderCellDef> Tipologia </th>
         <td mat-cell *matCellDef="let row"> {{row.type}} </td>
       </ng-container>
   
       <ng-container matColumnDef="symbol">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Asset </th>
+        <th mat-header-cell *matHeaderCellDef> Asset </th>
         <td mat-cell *matCellDef="let row"> {{row.symbol}} </td>
       </ng-container>
   
       <ng-container matColumnDef="quantity">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Quantità </th>
+        <th mat-header-cell *matHeaderCellDef> Quantità </th>
         <td mat-cell *matCellDef="let row"> {{row.quantity}} </td>
       </ng-container>
 
       <ng-container matColumnDef="price">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Prezzo </th>
+        <th mat-header-cell *matHeaderCellDef> Prezzo </th>
         <td mat-cell *matCellDef="let row"> {{row.price}} </td>
       </ng-container>
 
       <ng-container matColumnDef="currency">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Valuta </th>
+        <th mat-header-cell *matHeaderCellDef> Valuta </th>
         <td mat-cell *matCellDef="let row"> {{row.currency}} </td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Azioni </th>
+        <th mat-header-cell *matHeaderCellDef> Azioni </th>
         <td mat-cell *matCellDef="let row"> 
           <div (click)="updateData(row.id)" class="clickable">Modifica</div>  
           <div (click)="deleteData(row.id)" class="clickable">Elimina</div>
@@ -55,6 +52,6 @@
       </tr>
     </table>
   
-    <mat-paginator [pageSizeOptions]="[5, 10, 25]" aria-label="Select page of transactions"></mat-paginator>
+    <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons aria-label="Select page of transactions"></mat-paginator>
 </div>
   

@@ -1,12 +1,19 @@
 <mat-dialog-content class="d-grid">
   <p>Modifica il record selezionato</p>
-  <mat-form-field>
-    <mat-label>Data</mat-label>
-    <input matInput [(ngModel)]="data.date">
+  <mat-form-field hidden>
+    <mat-label>Id</mat-label>
+    <input matInput [(ngModel)]="data.id">
   </mat-form-field>
   <mat-form-field>
-    <mat-label>Tipologia</mat-label>
-    <input matInput [(ngModel)]="data.type">
+    <mat-label>Data</mat-label>
+    <input type="date" matInput [(ngModel)]="data.date">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-select [(ngModel)]="data.type">
+      @for (option of tipologiaOptions; track $index) {
+        <mat-option [value]="option">{{ option }}</mat-option>
+      }
+    </mat-select>
   </mat-form-field>
   <mat-form-field>
     <mat-label>Asset</mat-label>
@@ -14,11 +21,11 @@
   </mat-form-field>
   <mat-form-field>
     <mat-label>Quantità</mat-label>
-    <input matInput [(ngModel)]="data.quantity">
+    <input type="number" matInput [(ngModel)]="data.quantity">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Prezzo</mat-label>
-    <input matInput [(ngModel)]="data.price">
+    <input type="number" matInput [(ngModel)]="data.price">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Valuta</mat-label>
@@ -27,5 +34,5 @@
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Annulla</button>
-  <button mat-button [mat-dialog-close]="[data.date, data.type, data.symbol, data.quantity, data.price, data.currency]" cdkFocusInitial>Okay</button>
+  <button mat-button [mat-dialog-close]="[data.id, data.date, data.type, data.symbol, data.quantity, data.price, data.currency]" cdkFocusInitial>Okay</button>
 </mat-dialog-actions>
