@@ -8,17 +8,18 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Chart } from 'chart.js';
-import { config } from 'rxjs';
+
 
 export interface PortfolioAssets{
   symbol: string,
+  percPortfolio: number,
   percentage: number
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [LineChartComponent, HistoryComponent, CardPortfolioValutationComponent, MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule],
+  imports: [LineChartComponent, HistoryComponent, CardPortfolioValutationComponent, MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, MatFormFieldModule, MatInputModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -27,7 +28,7 @@ export class DashboardComponent {
   transactions: TransactionData[] = [];
   data?: PortfolioAmount;
   assets: PortfolioAssets[] = [];
-  displayedColumns: string[] = ['symbol', 'percentage'];
+  displayedColumns: string[] = ['symbol', 'portfolioPercentage', 'percentage'];
   dataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -35,19 +36,18 @@ export class DashboardComponent {
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
   }
-  
 
   constructor() {
     //use API to get data regarding transactions
     this.transactions = [
-      { id: '', date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150 },
-      { id: '', date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250 },
-      { id: '', date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150 },
-      { id: '', date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250 },
-      { id: '', date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150 },
-      { id: '', date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250 },
-      { id: '', date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150 },
-      { id: '', date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250 },
+      { id: 1, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 2, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
+      { id: 3, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 4, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
+      { id: 5, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 6, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
+      { id: 7, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 8, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'}
     ];
 
     this.data = {
@@ -65,14 +65,14 @@ export class DashboardComponent {
   createPaginator() {
     //call API to get data
     this.dataSource.data = [
-      {symbol: 'AAPL', percentage: 3},
-      {symbol: 'GOOGL', percentage: 5},
-      {symbol: 'AAPL', percentage: 3},
-      {symbol: 'GOOGL', percentage: 5},
-      {symbol: 'AAPL', percentage: 3},
-      {symbol: 'GOOGL', percentage: 5},
-      {symbol: 'AAPL', percentage: 3},
-      {symbol: 'GOOGL', percentage: 5}
+      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
+      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5},
+      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
+      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5},
+      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
+      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5},
+      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
+      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5}
     ]
   }
 

@@ -11,6 +11,11 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Simbolo </th>
           <td mat-cell *matCellDef="let row"> {{row.symbol}} </td>
         </ng-container>
+
+        <ng-container matColumnDef="portfolioPercentage">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Perc. in Portfolio </th>
+          <td mat-cell *matCellDef="let row"> {{row.percPortfolio}}% </td>
+        </ng-container>
     
         <ng-container matColumnDef="percentage">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Andamento </th>
