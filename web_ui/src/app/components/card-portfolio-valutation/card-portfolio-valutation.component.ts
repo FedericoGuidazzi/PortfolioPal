@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 
 export interface PortfolioAmount{
+  assetName: any,
   currency: string,
   amount: number,
   percentage: number

@@ -9,6 +9,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import { UpdateTransactionDialog } from '../../components/update-transaction-dialog/update-transaction-dialog.component';
 import { UploadFileDialog } from '../upload-file-dialog/upload-file-dialog.component';
+import { RouterLink } from '@angular/router';
 
 export enum TransactionTypes {
   COMPRA = 'Compra',
@@ -30,7 +31,7 @@ export interface TransactionData {
     standalone: true,
     templateUrl: './history.component.html',
     styleUrl: './history.component.css',
-    imports: [MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, FormsModule, MatButtonModule]
+    imports: [MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, FormsModule, MatButtonModule, RouterLink]
 })
 export class HistoryComponent{
 

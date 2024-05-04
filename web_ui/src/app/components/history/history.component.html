@@ -17,7 +17,7 @@
   
       <ng-container matColumnDef="symbol">
         <th mat-header-cell *matHeaderCellDef> Asset </th>
-        <td mat-cell *matCellDef="let row"> {{row.symbol}} </td>
+        <td style="cursor: pointer;" [routerLink]="'/asset/'+row.symbol" mat-cell *matCellDef="let row"> {{row.symbol}} </td>
       </ng-container>
   
       <ng-container matColumnDef="quantity">

@@ -34,4 +34,11 @@ export const routes: Routes = [
         (c) => c.DashboardComponent
       ),
   },
+  {
+    path: 'asset/:assetName',
+    loadComponent: () =>
+      import('./pages/asset/asset.component').then(
+        (c) => c.AssetComponent
+      ),
+  },
 ];

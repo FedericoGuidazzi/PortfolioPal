@@ -8,6 +8,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { Chart } from 'chart.js';
+import { RouterLink } from '@angular/router';
 
 
 export interface PortfolioAssets{
@@ -19,12 +20,11 @@ export interface PortfolioAssets{
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [LineChartComponent, HistoryComponent, CardPortfolioValutationComponent, MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, MatFormFieldModule, MatInputModule],
+  imports: [LineChartComponent, HistoryComponent, CardPortfolioValutationComponent, MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, MatFormFieldModule, MatInputModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
-
   transactions: TransactionData[] = [];
   data?: PortfolioAmount;
   assets: PortfolioAssets[] = [];
@@ -51,6 +51,7 @@ export class DashboardComponent {
     ];
 
     this.data = {
+      assetName: null,
       currency :"EUR",
       amount: 3,
       percentage: 45
