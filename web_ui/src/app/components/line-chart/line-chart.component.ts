@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import Chart from 'chart.js/auto';
 
 @Component({
@@ -9,20 +9,23 @@ import Chart from 'chart.js/auto';
   styleUrl: './line-chart.component.css'
 })
 export class LineChartComponent implements OnInit {
-  @Input() asset?: any;
+  @Input() asset!: any;
   data: any = {};
   duration: string[]= ['1S', '1A', '5A', 'Max'];
   lineChart: any;
   constructor() { }
 
-  ngOnInit(): void {
-    this.createLineChart();
+  ngOnInit(): void {}
+
+  ngOnDestroy(){
+    this.lineChart.destroy();
   }
 
   ngAfterViewInit(){
     let selector = document.getElementById("1S");
     selector?.classList.add("selectorSelected");
     selector?.classList.add("rounded");
+    this.createLineChart();
   }
 
   createLineChart(): void {
@@ -86,7 +89,7 @@ export class LineChartComponent implements OnInit {
       },
     };
 
-    const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
+    const canvas = document.getElementById('lineChart')as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (ctx){
       this.lineChart = new Chart(ctx, config);

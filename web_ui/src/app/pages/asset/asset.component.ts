@@ -113,7 +113,7 @@ export class AssetComponent {
       }
     };
 
-    const canvas = document.getElementById('doughnutChart') as HTMLCanvasElement;
+    const canvas = document.getElementById('doughnutChartAsset') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (ctx){
       new Chart(ctx, config);
