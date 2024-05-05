@@ -3,11 +3,12 @@ import {
   RankingTableComponent,
   User,
 } from '../../components/ranking-table/ranking-table.component';
+import { DashboardComponent } from '../dashboard/dashboard.component';
 
 @Component({
   selector: 'app-ranking',
   standalone: true,
-  imports: [RankingTableComponent],
+  imports: [RankingTableComponent, DashboardComponent],
   templateUrl: './ranking.component.html',
   styleUrl: './ranking.component.css',
 })
@@ -19,5 +20,13 @@ export class RankingComponent {
     { pos: 4, name: 'Sunscreen', score: 4 },
     { pos: 5, name: 'Cooler', score: 25 },
   ];
-  current_user: User = { pos: 2, name: 'Towel', score: 5 };
+  currentUser: User = { pos: 2, name: 'Towel', score: 5 };
+
+  getUserPortfolio(userId: number) {
+    console.log('Getting portfolio for user: ' + userId);
+  }
+
+  onUserSelection(user: User) {
+    console.log('User selected: ' + user.name);
+  }
 }

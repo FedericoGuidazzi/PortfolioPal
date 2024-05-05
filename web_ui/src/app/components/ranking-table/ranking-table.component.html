@@ -3,7 +3,7 @@
     mat-table
     [dataSource]="ranking"
     class="mat-elevation-z8"
-    [ngClass]="{ 'hover-disabled': hover_disabled }"
+    [ngClass]="{ 'hover-disabled': hoverDisabled }"
   >
     <!-- Position Column -->
     <ng-container matColumnDef="pos">
@@ -12,14 +12,14 @@
         mat-cell
         class="text-center"
         *matCellDef="let user"
-        [ngClass]="{ 'fw-bold': user.pos == current_user?.pos }"
+        [ngClass]="{ 'fw-bold': user.pos == currentUser?.pos }"
       >
         <div class="circle d-flex justify-content-center align-items-center">
           {{ user.pos }}
         </div>
       </td>
       <td mat-footer-cell *matFooterCellDef class="fw-bold text-center pb-3">
-        {{ current_user?.pos }}
+        {{ currentUser?.pos }}
       </td>
     </ng-container>
 
@@ -29,12 +29,12 @@
       <td
         mat-cell
         *matCellDef="let user"
-        [ngClass]="{ 'fw-bold': user.pos == current_user?.pos }"
+        [ngClass]="{ 'fw-bold': user.pos == currentUser?.pos }"
       >
         {{ user.name }}
       </td>
       <td mat-footer-cell *matFooterCellDef class="fw-bold pb-3">
-        {{ current_user?.name }}
+        {{ currentUser?.name }}
       </td>
     </ng-container>
 
@@ -45,12 +45,12 @@
         mat-cell
         class="text-end"
         *matCellDef="let user"
-        [ngClass]="{ 'fw-bold': user.pos == current_user?.pos }"
+        [ngClass]="{ 'fw-bold': user.pos == currentUser?.pos }"
       >
         {{ user?.score }}
       </td>
       <td mat-footer-cell class="fw-bold text-end pb-3" *matFooterCellDef>
-        {{ current_user?.score }}
+        {{ currentUser?.score }}
       </td>
     </ng-container>
 
@@ -69,12 +69,13 @@
     <tr
       mat-row
       *matRowDef="let row; columns: displayedColumns"
-      [ngClass]="{ disabled: row.pos == current_user?.pos }"
+      [ngClass]="{ disabled: row.pos == currentUser?.pos }"
+      (click)="getSelectedUser(row)"
     ></tr>
 
-    @if (current_user && current_user.pos > 6) {
+    @if (currentUser && currentUser.pos > 6) {
     <tr mat-footer-row *matFooterRowDef="['spacer']"></tr>
-    } @if (current_user && current_user.pos >= 6) {
+    } @if (currentUser && currentUser.pos >= 6) {
     <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
     }
   </table>

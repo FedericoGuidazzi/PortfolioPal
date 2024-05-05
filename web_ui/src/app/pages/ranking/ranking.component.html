@@ -1,19 +1,19 @@
 <div
   class="d-flex mx-4 mt-5 flex-column flex-md-row gap-4 align-items-md-start"
 >
-  <div class="d-flex flex-column gap-4 col-md-4 col-12">
-    <div class="card p-3 gap-3">
-      <p class="fw-400">Valutazione portfolio</p>
-      <p class="h-auto mb-0">
-        <span class="fw-bold fs-1 me-2">$400,000.99</span>
-        <span class="text-secondary">+20%</span>
-      </p>
-    </div>
-
+  <div class="col-md-4 col-12 mb-4 mb-md-0">
     <app-ranking-table
       [ranking]="ranking"
-      [current_user]="current_user"
+      [currentUser]="currentUser"
+      (userSelection)="onUserSelection($event)"
     ></app-ranking-table>
   </div>
-  <div class="flex-fill bg-black p-4"></div>
+
+  <div class="d-flex flex-column">
+    <h1 class="text-center fw-bold">Nome Utente</h1>
+    <app-dashboard
+      [showHystory]="false"
+      [shrinkComponent]="true"
+    ></app-dashboard>
+  </div>
 </div>
