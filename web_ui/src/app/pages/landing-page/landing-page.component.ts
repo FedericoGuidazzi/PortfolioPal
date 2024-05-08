@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FaqCardComponent } from '../../components/faq-card/faq-card.component';
 import {
   NgbCarousel,

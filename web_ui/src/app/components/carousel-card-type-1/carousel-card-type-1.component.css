@@ -56,3 +56,10 @@ p {
   bottom: 0;
   right: 0;
 }
+
+/* media query for small screen */
+@media (max-width: 768px) {
+  .card-container {
+    min-height: 570px;
+  }
+}

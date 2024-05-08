@@ -57,3 +57,10 @@ app-ranking-table {
   grid-column: span 5;
   grid-row: span 3;
 }
+
+/* media query for small screen */
+@media (max-width: 768px) {
+  .card-container {
+    min-height: 570px;
+  }
+}
