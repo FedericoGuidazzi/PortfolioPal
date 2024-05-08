@@ -1,0 +1,53 @@
+<div class="pb-5">
+    <app-card-portfolio-valutation [data]="data"></app-card-portfolio-valutation>
+    <div class="mt-5 mb-5">
+        <div class="mx-auto col-11">
+            <canvas id="lineChartAsset"></canvas>
+        </div>
+        <div class="container-duration mx-auto col-11 mt-2 d-flex justify-content-center">
+            <div class="selectors pt-3 pb-3 rounded" id="selectorsDiv">
+                <div (click)="updateData('1S')" class="d-inline p-3 text-center selectorSelected rounded" id='1S'>1S</div>
+                @for (item of duration; track $index) {
+                    <div (click)="updateData(item)" class="d-inline p-3 text-center" [id]="item">{{ item }}</div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between col-11 mx-auto">
+        <div class="card p-3 gap-3 col-8 rounded-20" >
+            <h2 style="font-weight: bold;">Valore nel tuo Portfolio</h2>
+              <p class="h-auto mb-0 d-grid">
+                <span style="margin-bottom: 16px;" class="fw-bold fs-1 me-2">{{assetData?.currency}} {{assetData?.valueInPortfolio}}</span>
+                @if (assetData?.sharesNumber!=0) {
+                    <span class="text-secondary">Numero di shares: {{assetData?.sharesNumber}}</span>
+                }
+                @if (assetData?.totalCost!=0) {
+                    <span class="text-secondary">Spesa totale: {{assetData?.totalCost}}</span>
+                }
+                @if (assetData?.currentValuation!=0) {
+                    <span class="text-secondary">Valore attuale: {{assetData?.currentValuation}}</span>
+                }
+                @if (assetData?.balance!=0) {
+                    <span class="text-secondary">Bilancio attuale: {{assetData?.balance}}</span>
+                }
+                @if (assetData?.averageCostPerShare!=0) {
+                    <span class="text-secondary">Costo medio di ingresso: {{assetData?.averageCostPerShare}}</span>
+                }
+              </p>
+        </div>
+        <div style="text-align: center;" class="card rounded-20">
+            <h2 class="mx-auto" style="font-weight: bold;">Allocation</h2>
+            <div class="mx-auto d-flex justify-content-center align-items-center">
+                <canvas id="doughnutChartAsset"></canvas>
+            </div>
+        </div>
+    </div>
+    <app-history [transactions]="transactions"></app-history>
+    @if (assetData?.description) {
+        <div class="card p-3 gap-3 mt-5 rounded-20 col-11 mx-auto">
+            <h2 style="font-weight: bold;">Descrizione asset</h2>
+            <p>{{ assetData?.description }}</p>
+        </div>
+    }
+    
+</div>

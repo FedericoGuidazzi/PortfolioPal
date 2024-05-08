@@ -1,50 +1,60 @@
-import { Component, ViewChild } from '@angular/core';
-import { LineChartComponent } from '../../components/line-chart/line-chart.component';
-import { HistoryComponent, TransactionData } from '../../components/history/history.component';
+import { Component, Input } from '@angular/core';
 import { CardPortfolioValutationComponent, PortfolioAmount } from '../../components/card-portfolio-valutation/card-portfolio-valutation.component';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { Chart } from 'chart.js';
-import { RouterLink } from '@angular/router';
+import { HistoryComponent, TransactionData } from '../../components/history/history.component';
+import Chart from 'chart.js/auto';
+import { ActivatedRoute } from '@angular/router';
+import { LineChartComponent } from '../../components/line-chart/line-chart.component';
 
-
-export interface PortfolioAssets{
-  symbol: string,
-  percPortfolio: number,
-  percentage: number
+export interface AssetData{
+  name: string,
+  currentValue: number,
+  valueInPortfolio: number,
+  sharesNumber: number,
+  description: string,
+  percetageInPortfolio: number,
+  percentageWinLose: number,
+  currency: string,
+  totalCost: number,
+  currentValuation: number,
+  balance: number,
+  averageCostPerShare: number
 }
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-asset',
   standalone: true,
-  imports: [LineChartComponent, HistoryComponent, CardPortfolioValutationComponent, MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, MatFormFieldModule, MatInputModule, RouterLink],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  imports: [/*LineChartComponent,*/ HistoryComponent, CardPortfolioValutationComponent],
+  templateUrl: './asset.component.html',
+  styleUrl: './asset.component.css'
 })
-export class DashboardComponent {
-  transactions: TransactionData[] = [];
+export class AssetComponent {
+  @Input() assetName?: any;
   data?: PortfolioAmount;
-  assets: PortfolioAssets[] = [];
-  displayedColumns: string[] = ['symbol', 'portfolioPercentage', 'percentage'];
-  dataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
+  transactions: TransactionData[] = [];
+  assetData?: AssetData;
+  dataAsset: any = {};
   duration: string[]= ['1A', '5A', 'Max'];
   lineChart: any;
-  portfolioData: any = {};
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    let selector = document.getElementById('1S');
-    selector?.classList.add("selectorSelected");
-    selector?.classList.add("rounded");
+  constructor(private route: ActivatedRoute) {
   }
 
-  constructor() {
-    //use API to get data regarding transactions
+  prepareData(){
+    this.assetData = {
+      name: 'name',
+      currentValue: 3,
+      valueInPortfolio: 3,
+      sharesNumber: 3,
+      description: 'orem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione. È sopravvissuto non solo a più di cinque secoli, ma anche al passaggio alla videoimpaginazione, pervenendoci sostanzialmente inalterato. Fu reso popolare, negli anni ’60, con la diffusione dei fogli di caratteri trasferibili “Letraset”, che contenevano passaggi del Lorem Ipsum, e più recentemente da software di impaginazione come Aldus PageMaker, che includeva versioni del Lorem Ipsum.',
+      percetageInPortfolio: 3,
+      percentageWinLose: 3,
+      currency: '$',
+      totalCost: 3,
+      currentValuation: 3,
+      balance: 3,
+      averageCostPerShare: 3
+    }
+
     this.transactions = [
       { id: 1, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
       { id: 2, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
@@ -57,31 +67,11 @@ export class DashboardComponent {
     ];
 
     this.data = {
-      assetName: null,
-      currency :"EUR",
-      amount: 3,
-      percentage: 45
+      assetName: this.assetName,
+      currency :this.assetData?.currency,
+      amount: this.assetData?.currentValue,
+      percentage: this.assetData?.percentageWinLose
     }
-  }
-
-  ngOnInit(): void {
-    this.createLineChart();
-    this.createDoughnutChart();
-    this.createPaginator();
-  }
-
-  createPaginator() {
-    //call API to get data
-    this.dataSource.data = [
-      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
-      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5},
-      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
-      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5},
-      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
-      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5},
-      {symbol: 'AAPL', percPortfolio: 3, percentage: 3},
-      {symbol: 'GOOGL', percPortfolio: 3, percentage: 5}
-    ]
   }
 
   createDoughnutChart(): void {
@@ -114,37 +104,47 @@ export class DashboardComponent {
             display: false
           }
         },
-        maintainAspectRatio: true
+        maintainAspectRatio: false
       }
     };
 
-    const canvas = document.getElementById('doughnutChart') as HTMLCanvasElement;
+    const canvas = document.getElementById('doughnutChartAsset') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (ctx){
       new Chart(ctx, config);
     }
   }
+  
+  ngOnDestroy(){
+    this.lineChart.destroy();
+  }
+
+  ngOnInit(){
+    this.route.paramMap.subscribe( params =>
+      this.assetName = params.get('assetName')
+    )
+    this.prepareData();
+  }
+
+  ngAfterViewInit(){
+    this.createLineChart();
+    this.createDoughnutChart();
+  }
 
   createLineChart(): void {
-    
-    this.portfolioData = {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-        datasets: [
-          {
-            label: 'Valore Portfolio',
-            data: [100, 120, 130, 110, 150, 160, 140],
-          },
-          {
-            label: 'Liquidità Inserita',
-            data: [50, 50, 50, 50, 50, 50, 50],
-          }
-        ]
-      };
-    
+    this.dataAsset = {
+      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      datasets: [
+        {
+          label: 'Valore Portfolio',
+          data: [100, 120, 130, 110, 150, 160, 140],
+        }
+      ]
+    };
 
     const config:any = {
       type: 'line',
-      data: this.portfolioData,
+      data: this.dataAsset,
       options: {
         scales: {
           x: {
@@ -171,7 +171,7 @@ export class DashboardComponent {
       },
     };
 
-    const canvas = document.getElementById('lineChart')as HTMLCanvasElement;
+    const canvas = document.getElementById('lineChartAsset')as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
     if (ctx){
       this.lineChart = new Chart(ctx, config);
@@ -194,7 +194,6 @@ export class DashboardComponent {
         //fare chiamata api per prendere i dati rispetto alla scadenza desiderata
         this.lineChart.data.labels = ["asdfsdf", "afsfdsfds", "afsdfsdf", "afsfdsf", "asdfdsfd", "asfsdfsd", "asfsdfd"];
         this.lineChart.data.datasets[0].data = [10, 12, 13, 11, 15, 16, 14];
-        this.lineChart.data.datasets[1].data = [5, 5, 10, 5, 5, 5, 5];
         this.lineChart.update();
         break;
       case "1A":
@@ -206,4 +205,3 @@ export class DashboardComponent {
     }
   }
 }
-
