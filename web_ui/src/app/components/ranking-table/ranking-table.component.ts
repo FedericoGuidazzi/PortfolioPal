@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 
 export interface User {
@@ -18,6 +18,12 @@ export interface User {
 export class RankingTableComponent {
   displayedColumns: string[] = ['pos', 'name', 'score'];
   @Input() ranking: User[] = [];
-  @Input() current_user: User | undefined;
-  @Input() hover_disabled = false;
+  @Input() currentUser: User | undefined;
+  @Input() hoverDisabled = false;
+
+  @Output() userSelection = new EventEmitter<User>();
+
+  getSelectedUser(user: User) {
+    this.userSelection.emit(user);
+  }
 }
