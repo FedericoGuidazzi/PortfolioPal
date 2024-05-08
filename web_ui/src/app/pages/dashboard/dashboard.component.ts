@@ -46,13 +46,13 @@ export class DashboardComponent {
   constructor() {
     //use API to get data regarding transactions
     this.transactions = [
-      { id: 1, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 1, date: 'wjebf', type: 'Acquisto', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
       { id: 2, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
-      { id: 3, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 3, date: 'wjebf', type: 'Acquisto', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
       { id: 4, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
-      { id: 5, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 5, date: 'wjebf', type: 'Acquisto', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
       { id: 6, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'},
-      { id: 7, date: 'wjebf', type: 'Compra', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
+      { id: 7, date: 'wjebf', type: 'Acquisto', symbol: 'AAPL', quantity: 10, price: 150, currency:'$'},
       { id: 8, date: 'jbnwefkjn', type: 'Vendita', symbol: 'GOOGL', quantity: 5, price: 250, currency:'$'}
     ];
 
@@ -114,7 +114,7 @@ export class DashboardComponent {
             display: false
           }
         },
-        maintainAspectRatio: true
+        maintainAspectRatio: false
       }
     };
 

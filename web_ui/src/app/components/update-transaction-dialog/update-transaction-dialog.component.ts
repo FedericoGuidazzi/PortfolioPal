@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, Inject, Input} from '@angular/core';
 import {
   MatDialog,
   MAT_DIALOG_DATA,
@@ -16,6 +16,10 @@ import { TransactionData, TransactionTypes } from '../history/history.component'
 import { MatOption } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 
+export interface DialogData{
+  transactionData: TransactionData,
+  mobile: boolean
+}
 
 @Component({
   selector: 'update-transaction-dialog.',
@@ -37,10 +41,15 @@ import { MatSelectModule } from '@angular/material/select';
 })
 export class UpdateTransactionDialog {
   tipologiaOptions: string[] = Object.values(TransactionTypes);
+  transactions: TransactionData;
+  mobile: boolean;
   constructor(
     public dialogRef: MatDialogRef<UpdateTransactionDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: TransactionData
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
+  ) {
+    this.transactions = data.transactionData;
+    this.mobile = data.mobile;
+  }
 
   onNoClick(): void {
     this.dialogRef.close();
