@@ -6,7 +6,7 @@ import {
   NgbSlideEvent,
 } from '@ng-bootstrap/ng-bootstrap';
 import { CardType1Component } from '../../components/card-type-1/card-type-1.component';
-import { CardType2Component } from '../../components/card-type-2/card-type-2.component';
+import { CarouselCardType2Component } from '../../components/carousel-card-type-2/carousel-card-type-2.component';
 
 @Component({
   selector: 'app-landing-page',
@@ -15,7 +15,7 @@ import { CardType2Component } from '../../components/card-type-2/card-type-2.com
     NgbCarouselModule,
     FaqCardComponent,
     CardType1Component,
-    CardType2Component,
+    CarouselCardType2Component,
   ],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.css',

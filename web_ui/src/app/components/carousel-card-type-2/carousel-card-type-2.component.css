@@ -4,11 +4,6 @@
   margin: 0;
 }
 
-ul,
-li {
-  list-style-type: none;
-}
-
 p {
   line-height: 125%;
 }
@@ -26,7 +21,6 @@ p {
   display: grid;
   grid-template-columns: repeat(7, auto);
   grid-template-rows: repeat(3, auto);
-  column-gap: 16px;
   row-gap: 32px;
   height: 100%;
   z-index: 1;
