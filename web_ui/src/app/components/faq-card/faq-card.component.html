@@ -1,23 +1,20 @@
 <div class="card-container">
-  <div class="card-header box-shadow">
+  <div
+    class="card-header box-shadow"
+    (click)="toggleAndRotate()"
+    [attr.aria-expanded]="!isCollapsed"
+  >
     <div class="card-body">
       <p>FAQ {{ index }}</p>
-      <h1>
+      <h1 class="mb-0">
         {{ question }}
       </h1>
     </div>
-    <button
-      type="button"
-      class="btn"
-      (click)="toggleAndRotate()"
-      [attr.aria-expanded]="!isCollapsed"
-    >
-      <img
-        src="/assets/icons/arrow-down.svg"
-        alt="arrow-down"
-        [class.rotated]="rotated"
-      />
-    </button>
+    <img
+      src="/assets/icons/arrow-down.svg"
+      alt="arrow-down"
+      [class.rotated]="rotated"
+    />
   </div>
   <div #collapse="ngbCollapse" [(ngbCollapse)]="isCollapsed">
     <div class="card collapsed-content">

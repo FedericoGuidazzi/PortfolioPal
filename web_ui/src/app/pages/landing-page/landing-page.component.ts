@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild } from '@angular/core';
-import { CollapsedCardComponent } from '../../components/collapsed-card/collapsed-card.component';
+import { FaqCardComponent } from '../../components/faq-card/faq-card.component';
 import {
   NgbCarousel,
   NgbCarouselModule,
@@ -13,7 +13,7 @@ import { CardType2Component } from '../../components/card-type-2/card-type-2.com
   standalone: true,
   imports: [
     NgbCarouselModule,
-    CollapsedCardComponent,
+    FaqCardComponent,
     CardType1Component,
     CardType2Component,
   ],

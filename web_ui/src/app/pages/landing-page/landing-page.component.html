@@ -14,7 +14,7 @@
 <ul class="faq-list px-3">
   @for (faq of counter(numberOfFaqs); track $index){
   <li>
-    <app-collapsed-card [index]="$index + 1"></app-collapsed-card>
+    <app-faq-card [index]="$index + 1"></app-faq-card>
   </li>
   }
 </ul>
