@@ -114,7 +114,7 @@ export class DashboardComponent {
             display: false
           }
         },
-        maintainAspectRatio: true
+        maintainAspectRatio: false
       }
     };
 
