@@ -2,14 +2,14 @@
   <p>Modifica il record selezionato</p>
   <mat-form-field hidden>
     <mat-label>Id</mat-label>
-    <input matInput [(ngModel)]="data.id">
+    <input matInput [(ngModel)]="transactions.id">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Data</mat-label>
-    <input type="date" matInput [(ngModel)]="data.date">
+    <input type="date" matInput [(ngModel)]="transactions.date">
   </mat-form-field>
   <mat-form-field>
-    <mat-select [(ngModel)]="data.type">
+    <mat-select [(ngModel)]="transactions.type">
       @for (option of tipologiaOptions; track $index) {
         <mat-option [value]="option">{{ option }}</mat-option>
       }
@@ -17,22 +17,25 @@
   </mat-form-field>
   <mat-form-field>
     <mat-label>Asset</mat-label>
-    <input matInput [(ngModel)]="data.symbol">
+    <input matInput [(ngModel)]="transactions.symbol">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Quantità</mat-label>
-    <input type="number" matInput [(ngModel)]="data.quantity">
+    <input type="number" matInput [(ngModel)]="transactions.quantity">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Prezzo</mat-label>
-    <input type="number" matInput [(ngModel)]="data.price">
+    <input type="number" matInput [(ngModel)]="transactions.price">
   </mat-form-field>
   <mat-form-field>
     <mat-label>Valuta</mat-label>
-    <input matInput [(ngModel)]="data.currency">
+    <input matInput [(ngModel)]="transactions.currency">
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Annulla</button>
-  <button mat-button [mat-dialog-close]="[data.id, data.date, data.type, data.symbol, data.quantity, data.price, data.currency]" cdkFocusInitial>Okay</button>
+  @if (mobile) {
+    <button mat-button [mat-dialog-close]="[transactions.id]">Elimina record</button>
+  }
+  <button mat-button [mat-dialog-close]="[transactions.id, transactions.date, transactions.type, transactions.symbol, transactions.quantity, transactions.price, transactions.currency]" cdkFocusInitial>Okay</button>
 </mat-dialog-actions>

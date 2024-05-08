@@ -20,4 +20,12 @@
     border-radius: 20px;
     overflow: hidden;
   }
+
+  @media screen and (min-width: 0px) and (max-width: 768px) {
+    .nonMobile { display: none; }  /* hide it on small screens */
+  }
+
+  @media screen and (min-width: 768px) {
+    .mobile { display: none; }  /* hide it on small screens */
+  }
   

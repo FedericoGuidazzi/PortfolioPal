@@ -20,3 +20,11 @@
     color: white;
     pointer-events:none;
 }
+
+@media only screen and (max-width: 768px) {
+  .assetAllocation {
+    display: grid !important;
+    grid-template-columns: 1fr; /* Una colonna su dispositivi mobili */
+    grid-gap: 20px; /* Spazio tra la tabella e il donut chart */
+  }
+}

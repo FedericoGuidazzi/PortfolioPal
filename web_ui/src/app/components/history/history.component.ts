@@ -12,14 +12,14 @@ import { UploadFileDialog } from '../upload-file-dialog/upload-file-dialog.compo
 import { RouterLink } from '@angular/router';
 
 export enum TransactionTypes {
-  COMPRA = 'Compra',
+  ACQUISTO = 'Acquisto',
   VENDITA = 'Vendita'
 }
 
 export interface TransactionData {
   id: number;
   date: string;
-  type: 'Compra' | 'Vendita';
+  type: 'Acquisto' | 'Vendita';
   symbol: string;
   quantity: number;
   price: number;
@@ -56,7 +56,17 @@ export class HistoryComponent{
     this.openDialogUpload();
   }
 
+  updateDataDialog(id:number){
+    this.openDialogUpdate(id)
+  }
+
+  deleteDataDialog(id:number){
+    //call API to delete record
+    this.deleteData(id);
+  }
+
   updateData(id:number){
+    //Method to update data
     this.openDialogUpdate(id)
   }
 
@@ -65,25 +75,49 @@ export class HistoryComponent{
     this.refreshPage();
   }
 
+  updateDeleteDataMobile(id:number){
+  const foundTransaction = this.transactions.find(transaction => transaction.id === id);
+  const transaction = {id: foundTransaction?.id,
+    date: foundTransaction?.date,
+    type: foundTransaction?.type,
+    symbol: foundTransaction?.symbol,
+    quantity: foundTransaction?.quantity,
+    price: foundTransaction?.price,
+    currency: foundTransaction?.currency}
+  const dialogRef = this.dialogUpdate.open(UpdateTransactionDialog, {
+    data: {transactionData: transaction, mobile:true},
+  });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result){
+        //if something has changed update the row calling the API and refresh the page
+        this.updateData(id);
+        this.refreshPage();
+      }
+    });
+  }
+
   openDialogUpload() {
-    const dialogRef = this.dialogUpdate.open(UploadFileDialog);
+    this.dialogUpdate.open(UploadFileDialog);
   }
 
   openDialogUpdate(id:number): void {
     const foundTransaction = this.transactions.find(transaction => transaction.id === id);
+    const transaction = {id: foundTransaction?.id,
+      date: foundTransaction?.date,
+      type: foundTransaction?.type,
+      symbol: foundTransaction?.symbol,
+      quantity: foundTransaction?.quantity,
+      price: foundTransaction?.price,
+      currency: foundTransaction?.currency}
     const dialogRef = this.dialogUpdate.open(UpdateTransactionDialog, {
-      data: {id: foundTransaction?.id,
-        date: foundTransaction?.date,
-        type: foundTransaction?.type,
-        symbol: foundTransaction?.symbol,
-        quantity: foundTransaction?.quantity,
-        price: foundTransaction?.price,
-        currency: foundTransaction?.currency},
+      data: {transactionData: transaction, mobile:false}
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result){
         //if something has changed update the row calling the API and refresh the page
+        this.updateData(id);
         this.refreshPage();
       }
       

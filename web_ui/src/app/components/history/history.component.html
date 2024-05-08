@@ -1,4 +1,4 @@
-<div class="mat-elevation-z8 col-11 mx-auto mt-5 rounded-20">
+<div class="mat-elevation-z8 col-11 mx-auto mt-5 rounded-20 nonMobile">
   <div class="history-container pt-3 px-3">
     <h2 class="mb-0 fw-bold">Storico</h2>
     <button type="button" class="btn p-0" (click)="uploadData()"><img src="/assets/icons/mdi_import.svg" alt=""></button>
@@ -53,5 +53,30 @@
     </table>
   
     <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons aria-label="Select page of transactions"></mat-paginator>
+</div>
+  
+<div class="mat-elevation-z8 col-11 mx-auto mt-5 rounded-20 mobile">
+  <div class="history-container pt-3 px-3">
+    <h2 class="mb-0 fw-bold">Storico</h2>
+    <button type="button" class="btn p-0" (click)="uploadData()"><img src="/assets/icons/mdi_import.svg" alt=""></button>
+  </div>
+  @for (item of transactions; track $index) {
+    <div (click)="updateDeleteDataMobile(item.id)" class="card d-flex justify-content-center m-2">
+      <div class="row p-2">
+        <div class="col">
+          <div class="d-grid">
+            <span class="text-body-secondary">{{item.date}}</span>
+            <span>{{item.type}} {{item.symbol}}</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="d-grid text-end">
+            <span>Prezzo: {{item.price}}{{item.currency}}</span>
+            <span>Quantità: {{item.quantity}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }  
 </div>
   
