@@ -6,3 +6,17 @@
   .tableRow:hover{
     background-color: lightgray;
   }
+  .container-duration > div:hover{
+    cursor: pointer;
+}
+
+.selectors{
+    background-color: lightgray;
+    color: black;
+}
+
+.selectorSelected{
+    background-color: black;
+    color: white;
+    pointer-events:none;
+}

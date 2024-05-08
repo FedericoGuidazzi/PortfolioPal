@@ -1,9 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { CardPortfolioValutationComponent, PortfolioAmount } from '../../components/card-portfolio-valutation/card-portfolio-valutation.component';
-import { LineChartComponent } from '../../components/line-chart/line-chart.component';
 import { HistoryComponent, TransactionData } from '../../components/history/history.component';
-import { Chart } from 'chart.js';
+import Chart from 'chart.js/auto';
 import { ActivatedRoute } from '@angular/router';
+import { LineChartComponent } from '../../components/line-chart/line-chart.component';
 
 export interface AssetData{
   name: string,
@@ -23,7 +23,7 @@ export interface AssetData{
 @Component({
   selector: 'app-asset',
   standalone: true,
-  imports: [LineChartComponent, HistoryComponent, CardPortfolioValutationComponent],
+  imports: [/*LineChartComponent,*/ HistoryComponent, CardPortfolioValutationComponent],
   templateUrl: './asset.component.html',
   styleUrl: './asset.component.css'
 })
@@ -32,16 +32,11 @@ export class AssetComponent {
   data?: PortfolioAmount;
   transactions: TransactionData[] = [];
   assetData?: AssetData;
+  dataAsset: any = {};
+  duration: string[]= ['1A', '5A', 'Max'];
+  lineChart: any;
 
   constructor(private route: ActivatedRoute) {
-  }
-  
-  ngOnInit(){
-    this.route.paramMap.subscribe( params =>
-      this.assetName = params.get('assetName')
-    )
-    this.prepareData();
-    this.createDoughnutChart();
   }
 
   prepareData(){
@@ -119,5 +114,94 @@ export class AssetComponent {
       new Chart(ctx, config);
     }
   }
+  
+  ngOnDestroy(){
+    this.lineChart.destroy();
+  }
 
+  ngOnInit(){
+    this.route.paramMap.subscribe( params =>
+      this.assetName = params.get('assetName')
+    )
+    this.prepareData();
+  }
+
+  ngAfterViewInit(){
+    this.createLineChart();
+    this.createDoughnutChart();
+  }
+
+  createLineChart(): void {
+    this.dataAsset = {
+      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      datasets: [
+        {
+          label: 'Valore Portfolio',
+          data: [100, 120, 130, 110, 150, 160, 140],
+        }
+      ]
+    };
+
+    const config:any = {
+      type: 'line',
+      data: this.dataAsset,
+      options: {
+        scales: {
+          x: {
+            grid: {
+              display: false
+            }
+          },
+          y: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          title: {
+            display: false
+          }
+        },
+        maintainAspectRatio: false
+      },
+    };
+
+    const canvas = document.getElementById('lineChartAsset')as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    if (ctx){
+      this.lineChart = new Chart(ctx, config);
+    }
+  }
+
+  updateData(value: string) {
+    //gestire cambio di dati richiamando API
+    const selectorSelected = document.querySelectorAll(".selectorSelected");
+    selectorSelected.forEach(function(selected) {
+      selected.classList.remove("selectorSelected");
+    });
+    
+    let selector = document.getElementById(value);
+    selector?.classList.add("selectorSelected");
+    selector?.classList.add("rounded");
+    
+    switch(value){
+      case "1S":
+        //fare chiamata api per prendere i dati rispetto alla scadenza desiderata
+        this.lineChart.data.labels = ["asdfsdf", "afsfdsfds", "afsdfsdf", "afsfdsf", "asdfdsfd", "asfsdfsd", "asfsdfd"];
+        this.lineChart.data.datasets[0].data = [10, 12, 13, 11, 15, 16, 14];
+        this.lineChart.update();
+        break;
+      case "1A":
+        break;
+      case "5A":
+        break;
+      case "Max":
+        break;
+    }
+  }
 }
