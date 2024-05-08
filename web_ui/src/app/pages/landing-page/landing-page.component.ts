@@ -5,7 +5,7 @@ import {
   NgbCarouselModule,
   NgbSlideEvent,
 } from '@ng-bootstrap/ng-bootstrap';
-import { CardType1Component } from '../../components/card-type-1/card-type-1.component';
+import { CarouselCardType1Component } from '../../components/card-type-1/carousel-card-type-1.component';
 import { CarouselCardType2Component } from '../../components/carousel-card-type-2/carousel-card-type-2.component';
 
 @Component({
@@ -14,7 +14,7 @@ import { CarouselCardType2Component } from '../../components/carousel-card-type-
   imports: [
     NgbCarouselModule,
     FaqCardComponent,
-    CardType1Component,
+    CarouselCardType1Component,
     CarouselCardType2Component,
   ],
   templateUrl: './landing-page.component.html',
