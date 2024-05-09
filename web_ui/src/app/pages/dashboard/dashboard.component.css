@@ -1,24 +1,35 @@
-.rounded-20{
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    stroke: #d9d9d9;
-    border-radius: 20px;
-    overflow: hidden;
-  }
-
-  .tableRow:hover{
-    background-color: lightgray;
-  }
-  .container-duration > div:hover{
-    cursor: pointer;
+.rounded-20 {
+  stroke: #d9d9d9;
+  border-radius: 20px;
+  overflow: hidden;
 }
 
-.selectors{
-    background-color: lightgray;
-    color: black;
+.rounded-27 {
+  border-radius: 27%;
 }
 
-.selectorSelected{
-    background-color: black;
-    color: white;
-    pointer-events:none;
+.tableRow:hover {
+  background-color: whitesmoke;
+}
+.container-duration > div:hover {
+  cursor: pointer;
+}
+
+.selectors {
+  background-color: lightgray;
+  color: black;
+}
+
+.selectorSelected {
+  background-color: black;
+  color: white;
+  pointer-events: none;
+}
+
+.asset-table .mat-mdc-row {
+  cursor: pointer;
+}
+
+.disabled {
+  pointer-events: none;
 }

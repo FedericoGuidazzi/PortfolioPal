@@ -3,13 +3,13 @@ import { Component, Input } from '@angular/core';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-collapsed-card',
+  selector: 'app-faq-card',
   standalone: true,
   imports: [NgbCollapseModule, CommonModule],
-  templateUrl: './collapsed-card.component.html',
-  styleUrl: './collapsed-card.component.css',
+  templateUrl: './faq-card.component.html',
+  styleUrl: './faq-card.component.css',
 })
-export class CollapsedCardComponent {
+export class FaqCardComponent {
   isCollapsed: boolean = true;
   @Input() index: number = 0;
   @Input() question: string = 'Placeholder question';

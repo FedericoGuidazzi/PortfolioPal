@@ -1,21 +1,21 @@
-import { Component, Input, ViewChild } from '@angular/core';
-import { CollapsedCardComponent } from '../../components/collapsed-card/collapsed-card.component';
+import { Component, ViewChild } from '@angular/core';
+import { FaqCardComponent } from '../../components/faq-card/faq-card.component';
 import {
   NgbCarousel,
   NgbCarouselModule,
   NgbSlideEvent,
 } from '@ng-bootstrap/ng-bootstrap';
-import { CardType1Component } from '../../components/card-type-1/card-type-1.component';
-import { CardType2Component } from '../../components/card-type-2/card-type-2.component';
+import { CarouselCardType1Component } from '../../components/carousel-card-type-1/carousel-card-type-1.component';
+import { CarouselCardType2Component } from '../../components/carousel-card-type-2/carousel-card-type-2.component';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
   imports: [
     NgbCarouselModule,
-    CollapsedCardComponent,
-    CardType1Component,
-    CardType2Component,
+    FaqCardComponent,
+    CarouselCardType1Component,
+    CarouselCardType2Component,
   ],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.css',

@@ -1,13 +1,13 @@
-<div class="card p-3 gap-3 mt-3 mx-auto col-11">
+<div class="card p-3 gap-3 mt-3 mx-auto">
   @if (data?.assetName) {
-    <h2 class="fw-bold">{{data?.assetName}}</h2>
+  <h2 class="fw-bold">{{ data?.assetName }}</h2>
+  } @else {
+  <h2 class="fw-bold">Valutazione Portfolio</h2>
   }
-  @else {
-    <h2 class="fw-bold">Valutazione Portfolio</h2>
-  }
-    <p class="h-auto mb-0">
-      <span class="fw-bold fs-1 me-2">{{data?.currency}} {{data?.amount}}</span>
-      <span class="text-secondary">{{data?.percentage}}%</span>
-    </p>
+  <p class="h-auto mb-0">
+    <span class="fw-bold fs-1 me-2"
+      >{{ data?.currency }} {{ data?.amount }}</span
+    >
+    <span class="text-secondary">{{ data?.percentage }}%</span>
+  </p>
 </div>
-

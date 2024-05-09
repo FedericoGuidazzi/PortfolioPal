@@ -37,8 +37,6 @@ export const routes: Routes = [
   {
     path: 'asset/:assetName',
     loadComponent: () =>
-      import('./pages/asset/asset.component').then(
-        (c) => c.AssetComponent
-      ),
+      import('./pages/asset/asset.component').then((c) => c.AssetComponent),
   },
 ];

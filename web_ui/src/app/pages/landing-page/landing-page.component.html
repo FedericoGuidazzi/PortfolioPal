@@ -7,14 +7,18 @@
   [showNavigationArrows]="false"
   (slide)="onSlide($event)"
 >
-  <ng-template ngbSlide><app-card-type-1></app-card-type-1></ng-template>
-  <ng-template ngbSlide><app-card-type-2></app-card-type-2></ng-template>
+  <ng-template ngbSlide
+    ><app-carousel-card-type-1></app-carousel-card-type-1
+  ></ng-template>
+  <ng-template ngbSlide
+    ><app-carousel-card-type-2></app-carousel-card-type-2
+  ></ng-template>
 </ngb-carousel>
 
 <ul class="faq-list px-3">
   @for (faq of counter(numberOfFaqs); track $index){
   <li>
-    <app-collapsed-card [index]="$index + 1"></app-collapsed-card>
+    <app-faq-card [index]="$index + 1"></app-faq-card>
   </li>
   }
 </ul>

@@ -4,11 +4,6 @@
   margin: 0;
 }
 
-ul,
-li {
-  list-style-type: none;
-}
-
 p {
   line-height: 125%;
 }
@@ -26,7 +21,6 @@ p {
   display: grid;
   grid-template-columns: repeat(7, auto);
   grid-template-rows: repeat(3, auto);
-  column-gap: 16px;
   row-gap: 32px;
   height: 100%;
   z-index: 1;
@@ -62,4 +56,11 @@ p {
 app-ranking-table {
   grid-column: span 5;
   grid-row: span 3;
+}
+
+/* media query for small screen */
+@media (max-width: 768px) {
+  .card-container {
+    min-height: 570px;
+  }
 }
