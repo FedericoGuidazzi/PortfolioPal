@@ -20,6 +20,8 @@ public class AssetAPIResponse {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Chart {
         @JsonProperty("result")
         private List<Result> results;
