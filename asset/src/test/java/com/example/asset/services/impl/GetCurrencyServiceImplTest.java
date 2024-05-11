@@ -1,9 +1,9 @@
 package com.example.asset.services.impl;
 
 import com.example.asset.enums.DurationIntervalEnum;
-import com.example.asset.models.Asset;
+import com.example.asset.models.Currency;
 import com.example.asset.models.YahooAPIResponse;
-import com.example.asset.models.bin.GetAssetBin;
+import com.example.asset.models.bin.GetCurrencyBin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,13 +23,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetAssetServiceImplTest {
-
+class GetCurrencyServiceImplTest {
     @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private GetAssetServiceImpl service;
+    private GetCurrencyServiceImpl service;
 
     @Test
     void test_getAsset() {
@@ -38,18 +37,19 @@ public class GetAssetServiceImplTest {
         when(restTemplate.getForEntity(any(String.class), any())).thenReturn(new ResponseEntity<>(apiResponse, HttpStatus.OK));
 
         // Invoking the method under test
-        GetAssetBin bin = GetAssetBin.builder().build();
-        bin.setSymbol("AAPL");
+        GetCurrencyBin bin = GetCurrencyBin.builder().build();
+        bin.setCurrencyFrom("USD");
+        bin.setCurrencyTo("EUR");
         bin.setDuration(DurationIntervalEnum.S1);
-        Asset result = service.getAsset(bin);
+        Currency result = service.getCurrency(bin);
 
         // Assertions
-        assertEquals("AAPL", result.getSymbol());
-        assertEquals("USD", result.getCurrency());
-        assertEquals(1, result.getDates().size());
-        assertEquals(LocalDate.of(2022, 12, 25), result.getDates().get(0));
-        assertEquals(1, result.getPrices().size());
-        assertEquals(BigDecimal.valueOf(123.45), result.getPrices().get(0));
+        assertEquals("EUR", result.getCurrencyTo());
+        assertEquals("USD", result.getCurrencyFrom());
+        assertEquals(1, result.getDateList().size());
+        assertEquals(LocalDate.of(2022, 12, 25), result.getDateList().get(0));
+        assertEquals(1, result.getPriceList().size());
+        assertEquals(BigDecimal.valueOf(123.45), result.getPriceList().get(0));
     }
 
     private YahooAPIResponse createMockAssetAPIResponse() {
@@ -58,7 +58,7 @@ public class GetAssetServiceImplTest {
 
         YahooAPIResponse.Meta meta = new YahooAPIResponse.Meta();
         meta.setCurrency("USD");
-        meta.setSymbol("AAPL");
+        meta.setSymbol("EUR");
 
         YahooAPIResponse.Result result = new YahooAPIResponse.Result();
         result.setTimestamps(Collections.singletonList(1671993600L));
@@ -71,4 +71,6 @@ public class GetAssetServiceImplTest {
 
         return new YahooAPIResponse(chart);
     }
+
+
 }
