@@ -1,8 +1,10 @@
 package com.example.asset.services.impl;
 
+import com.example.asset.entities.AssetEntity;
 import com.example.asset.models.Asset;
 import com.example.asset.models.YahooAPIResponse;
 import com.example.asset.models.bin.GetAssetBin;
+import com.example.asset.repositories.AssetRepository;
 import com.example.asset.services.GetAssetService;
 import com.example.asset.utils.RangeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class GetAssetServiceImpl implements GetAssetService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    AssetRepository assetRepository;
 
     @Override
     public Asset getAsset(GetAssetBin assetBin) {
@@ -49,6 +54,9 @@ public class GetAssetServiceImpl implements GetAssetService {
 
             List<YahooAPIResponse.Quote> quotes = Optional.ofNullable(result).map(YahooAPIResponse.Result::getIndicators)
                     .map(YahooAPIResponse.Indicators::getQuotes).orElse(null);
+
+            AssetEntity assetEntity = AssetEntity.builder().symbol("ciao").build();
+            assetRepository.save(assetEntity);
 
             return Asset.builder()
                     .dates(Optional.ofNullable(result).map(el -> el.getTimestamps().stream().map(this::localDateFromTimestamp).toList()).orElse(null))

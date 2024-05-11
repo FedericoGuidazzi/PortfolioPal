@@ -4,6 +4,7 @@ import com.example.asset.enums.DurationIntervalEnum;
 import com.example.asset.models.Asset;
 import com.example.asset.models.YahooAPIResponse;
 import com.example.asset.models.bin.GetAssetBin;
+import com.example.asset.repositories.AssetRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,12 +32,15 @@ public class GetAssetServiceImplTest {
     @InjectMocks
     private GetAssetServiceImpl service;
 
+    @Mock
+    private AssetRepository assetRepository;
+
     @Test
     void test_getAsset() {
         // Mocking the response from the external API
         YahooAPIResponse apiResponse = createMockAssetAPIResponse();
         when(restTemplate.getForEntity(any(String.class), any())).thenReturn(new ResponseEntity<>(apiResponse, HttpStatus.OK));
-
+        when(assetRepository.save(any())).thenReturn(null);
         // Invoking the method under test
         GetAssetBin bin = GetAssetBin.builder().build();
         bin.setSymbol("AAPL");

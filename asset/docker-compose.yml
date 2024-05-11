@@ -1,0 +1,43 @@
+version: "3.2"
+services:
+  dbmariadb:
+    container_name: mariadb_menu
+    image: "mariadb"
+    ports:
+      - "3306:3306"
+    networks:
+      - scavolini-network
+      - scavolini-menu-internal
+    environment:
+      MARIADB_ROOT_PASSWORD: "root"
+      MARIADB_USER: menu
+      MARIADB_PASSWORD: menu
+      MARIADB_DATABASE: menu
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: data-mariadb
+        target: /data
+        volume:
+          nocopy: true
+  menu:
+    build: .
+    image: scavolini-menu
+    container_name: scavolini-menu
+    environment:
+      MARIADB_HOST: mariadb_menu
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dbmariadb
+    networks:
+      - scavolini-network
+      - scavolini-menu-internal
+
+networks:
+  scavolini-network:
+  scavolini-menu-internal:
+
+volumes:
+  data-mariadb:
