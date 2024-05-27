@@ -1,7 +1,6 @@
 package com.example.portfolio.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     private PortfolioRepository portfolioRepository;
 
     @Override
-    public Portfolio createPotfolio(PostPortfolioBin postPortfolioBin) throws CustomException {
+    public Portfolio createPortfolio(PostPortfolioBin postPortfolioBin) throws CustomException {
         List<PortfolioEntity> portfolioList = portfolioRepository
                 .findAllByUserId(postPortfolioBin.getUserId());
 
@@ -98,11 +97,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public void deletePortfolio(long id) {
-        Optional<PortfolioEntity> portfolioEntity = portfolioRepository.findById(id);
-        if (portfolioEntity.isPresent()) {
-            portfolioRepository.delete(portfolioEntity.get());
-
-        }
+        PortfolioEntity portfolioEntity = PortfolioEntity.builder()
+                .id(id)
+                .build();
+            portfolioRepository.delete(portfolioEntity);
 
     }
 

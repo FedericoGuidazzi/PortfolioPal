@@ -26,7 +26,7 @@ public class PortfolioController {
     @SneakyThrows
     @PostMapping("/create/{userId}")
     public ResponseEntity<Portfolio> createPortfolio(@PathVariable String userId, @RequestBody String name) {
-        return ResponseEntity.ok(portfolioService.createPotfolio(
+        return ResponseEntity.ok(portfolioService.createPortfolio(
                 PostPortfolioBin.builder()
                         .name(name)
                         .userId(userId)

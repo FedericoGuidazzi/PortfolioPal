@@ -36,7 +36,7 @@ public class PortfolioServiceImplTest {
     }
 
     @Test
-    void testCreatePotfolio() throws CustomException {
+    void testCreatePortfolio() throws CustomException {
         PostPortfolioBin postPortfolioBin = PostPortfolioBin.builder()
                 .name("name")
                 .userId("userId")
@@ -44,7 +44,7 @@ public class PortfolioServiceImplTest {
 
         when(portfolioRepository.findAllByUserId("userId")).thenReturn(List.of());
 
-        Portfolio portfolio = portfolioService.createPotfolio(postPortfolioBin);
+        Portfolio portfolio = portfolioService.createPortfolio(postPortfolioBin);
 
         verify(portfolioRepository, times(1)).save(any(PortfolioEntity.class));
         assertEquals("name", portfolio.getName());
@@ -54,17 +54,10 @@ public class PortfolioServiceImplTest {
     @Test
     void testDeletePortfolio() {
         long portfolioId = 1L;
-        PortfolioEntity portfolioEntity = PortfolioEntity.builder()
-                .id(portfolioId)
-                .userId("userId")
-                .name("name")
-                .build();
-
-        when(portfolioRepository.findById(portfolioId)).thenReturn(Optional.of(portfolioEntity));
 
         portfolioService.deletePortfolio(portfolioId);
 
-        verify(portfolioRepository, times(1)).deleteById(portfolioId);
+        verify(portfolioRepository, times(1)).delete(any());
     }
 
     @Test

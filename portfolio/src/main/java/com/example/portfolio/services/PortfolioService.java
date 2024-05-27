@@ -10,7 +10,7 @@ import com.example.portfolio.models.bin.PutUserPrivacyBin;
 
 public interface PortfolioService {
 
-    Portfolio createPotfolio(PostPortfolioBin postPortfolioBin) throws CustomException;
+    Portfolio createPortfolio(PostPortfolioBin postPortfolioBin) throws CustomException;
 
     Portfolio getPortfolio(long id) throws CustomException;
 
