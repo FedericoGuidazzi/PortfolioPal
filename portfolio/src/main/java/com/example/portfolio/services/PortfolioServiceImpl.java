@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.portfolio.custom_exceptions.CustomException;
 import com.example.portfolio.models.Portfolio;
 import com.example.portfolio.models.bin.PostPortfolioBin;
 import com.example.portfolio.models.bin.PutPortfolioNameBin;
@@ -19,13 +20,13 @@ public class PortfolioServiceImpl implements PortfolioService {
     private PortfolioRepository portfolioRepository;
 
     @Override
-    public Portfolio createPotfolio(PostPortfolioBin postPortfolioBin) {
+    public Portfolio createPotfolio(PostPortfolioBin postPortfolioBin) throws CustomException {
         List<PortfolioEntity> portfolioList = portfolioRepository
                 .findAllByUserId(postPortfolioBin.getUserId());
 
         // check if the user already has a portfolio
         if (!portfolioList.isEmpty()) {
-            throw new UnsupportedOperationException("User already has a portfolio");
+            throw new CustomException("User already has a portfolio");
         }
 
         // save the portfolio
@@ -43,9 +44,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public Portfolio updatePortfolioName(PutPortfolioNameBin putPortfolioNameBin) {
+    public Portfolio updatePortfolioName(PutPortfolioNameBin putPortfolioNameBin) throws CustomException {
         PortfolioEntity portfolioEntity = portfolioRepository.findById(putPortfolioNameBin.getId())
-                .orElseThrow(() -> new UnsupportedOperationException("Portfolio not found"));
+                .orElseThrow(() -> new CustomException("Portfolio not found"));
 
         portfolioEntity.setName(putPortfolioNameBin.getName());
         portfolioRepository.save(portfolioEntity);
@@ -58,11 +59,11 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public List<Portfolio> getPortfolioByUserId(String userId) {
+    public List<Portfolio> getPortfolioByUserId(String userId) throws CustomException {
         List<PortfolioEntity> portfolioList = portfolioRepository.findAllByUserId(userId);
 
         if (portfolioList.isEmpty()) {
-            throw new UnsupportedOperationException("User does not have a portfolio");
+            throw new CustomException("User does not have a portfolio");
         }
 
         return portfolioList.stream()
@@ -84,9 +85,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public Portfolio getPortfolio(long id) {
+    public Portfolio getPortfolio(long id) throws CustomException {
         PortfolioEntity portfolioEntity = portfolioRepository.findById(id)
-                .orElseThrow(() -> new UnsupportedOperationException("Portfolio not found"));
+                .orElseThrow(() -> new CustomException("Portfolio not found"));
 
         return Portfolio.builder()
                 .id(portfolioEntity.getId())

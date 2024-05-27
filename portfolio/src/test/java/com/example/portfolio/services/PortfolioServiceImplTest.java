@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.example.portfolio.custom_exceptions.CustomException;
 import com.example.portfolio.models.Portfolio;
 import com.example.portfolio.models.bin.PostPortfolioBin;
 import com.example.portfolio.models.bin.PutPortfolioNameBin;
@@ -35,7 +36,7 @@ public class PortfolioServiceImplTest {
     }
 
     @Test
-    void testCreatePotfolio() {
+    void testCreatePotfolio() throws CustomException {
         PostPortfolioBin postPortfolioBin = PostPortfolioBin.builder()
                 .name("name")
                 .userId("userId")
@@ -85,7 +86,7 @@ public class PortfolioServiceImplTest {
     }
 
     @Test
-    void testGetPortfolio() {
+    void testGetPortfolio() throws CustomException {
         long portfolioId = 1;
         PortfolioEntity portfolioEntity = PortfolioEntity.builder()
                 .id(portfolioId)
@@ -103,7 +104,7 @@ public class PortfolioServiceImplTest {
     }
 
     @Test
-    void testGetPortfolioByUserId() {
+    void testGetPortfolioByUserId() throws CustomException {
         String userId = "userId";
         long portfolioId = 1L;
         PortfolioEntity portfolioEntity = PortfolioEntity.builder()
@@ -124,7 +125,7 @@ public class PortfolioServiceImplTest {
     }
 
     @Test
-    void testUpdatePortfolioName() {
+    void testUpdatePortfolioName() throws CustomException {
         long portfolioId = 1L;
         String newName = "newName";
         String userId = "userId";
