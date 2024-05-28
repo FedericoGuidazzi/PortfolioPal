@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  app:
+    image: lucagrandi/portfoliopal
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - springboot-rabbitmq-network
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - springboot-rabbitmq-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+networks:
+  springboot-rabbitmq-network:
+    name: springboot-rabbitmq-network
+    driver: bridge
