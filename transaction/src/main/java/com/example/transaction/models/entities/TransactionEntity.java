@@ -3,6 +3,8 @@ package com.example.transaction.models.entities;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.example.transaction.models.TransactionTypeEnum;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,16 +27,19 @@ public class TransactionEntity {
     private long id;
 
     @Column
+    private TransactionTypeEnum type;
+
+    @Column
     private LocalDate date;
 
     @Column
-    private BigDecimal price;
-
-    @Column
-    private double quantity;
+    private double amount;
 
     @Column
     private String symbolId;
+
+    @Column
+    private BigDecimal price;
 
     @Column
     private long portfolioId;
