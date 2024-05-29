@@ -98,4 +98,22 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.deleteById(id);
     }
 
+    @Override
+    public List<Transaction> saveTransactionsFromCsv(InputStream inputStream) throws CustomException, IOException {
+        List<TransactionEntity> transactions = CsvPortfolioReader.readCsvFile(inputStream);
+        transactionRepository.saveAll(transactions);
+
+        return transactions.stream()
+                .map(entity -> Transaction.builder()
+                        .id(entity.getId())
+                        .type(entity.getType())
+                        .date(entity.getDate())
+                        .amount(entity.getAmount())
+                        .price(entity.getPrice())
+                        .symbolId(entity.getSymbolId())
+                        .currency(entity.getCurrency())
+                        .build())
+                .toList();
+    }
+
 }
