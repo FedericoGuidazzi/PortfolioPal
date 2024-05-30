@@ -79,23 +79,25 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction updateTransaction(Transaction transaction) throws CustomException {
-        TransactionEntity entity = transactionRepository.findById(transaction.getId())
+        transactionRepository.findById(transaction.getId())
                 .orElseThrow(() -> new CustomException("Transaction not found"));
 
-        return Transaction.builder()
-                .id(entity.getId())
-                .type(entity.getType())
-                .date(entity.getDate())
-                .amount(entity.getAmount())
-                .price(entity.getPrice())
-                .symbolId(entity.getSymbolId())
-                .currency(entity.getCurrency())
-                .build();
+        transactionRepository.save(TransactionEntity.builder()
+                .id(transaction.getId())
+                .type(transaction.getType())
+                .date(transaction.getDate())
+                .amount(transaction.getAmount())
+                .price(transaction.getPrice())
+                .symbolId(transaction.getSymbolId())
+                .currency(transaction.getCurrency())
+                .build());
+
+        return transaction;
     }
 
     @Override
     public void deleteTransaction(long id) {
-        transactionRepository.deleteById(id);
+        transactionRepository.delete(TransactionEntity.builder().id(id).build());
     }
 
     @Override
