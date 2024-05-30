@@ -4,6 +4,8 @@ import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.TransactionTypeEnum;
 import com.example.transaction.models.bin.PostTransactionBin;
+import com.example.transaction.models.bin.PutTransactionBin;
+import com.example.transaction.models.daos.PutTransactionDao;
 import com.example.transaction.models.entities.TransactionEntity;
 import com.example.transaction.repositories.TransactionRepository;
 import com.example.transaction.services.TransactionServiceImpl;
@@ -189,10 +191,25 @@ class TransactionServiceImplTest {
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
                 .symbolId("AAPL")
+                .portfolioId(1)
                 .currency("USD")
                 .build();
 
-        TransactionEntity entity = TransactionEntity.builder()
+        PutTransactionBin transactionBin = PutTransactionBin.builder()
+                .id(1L)
+                .transaction(
+                        PutTransactionDao.builder()
+                                .type(TransactionTypeEnum.BOUGHT.getPersistedValue())
+                                .date(LocalDate.parse("2022-01-01"))
+                                .amount(10)
+                                .price(BigDecimal.valueOf(100))
+                                .symbolId("AAPL")
+                                .portfolioId(1)
+                                .currency("USD")
+                                .build())
+                .build();
+
+        TransactionEntity savedEntity = TransactionEntity.builder()
                 .id(1L)
                 .type(TransactionTypeEnum.BOUGHT)
                 .date(LocalDate.parse("2022-01-01"))
@@ -203,10 +220,12 @@ class TransactionServiceImplTest {
                 .currency("USD")
                 .build();
 
-        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.of(entity));
+        when(transactionRepository.existsById(transaction.getId())).thenReturn(true);
+
+        when(transactionRepository.save(any(TransactionEntity.class))).thenReturn(savedEntity);
 
         // Act
-        Transaction updatedTransaction = transactionService.updateTransaction(transaction);
+        Transaction updatedTransaction = transactionService.updateTransaction(transactionBin);
 
         // Assert
         assertNotNull(updatedTransaction);
@@ -216,9 +235,10 @@ class TransactionServiceImplTest {
         assertEquals(transaction.getAmount(), updatedTransaction.getAmount());
         assertEquals(transaction.getPrice(), updatedTransaction.getPrice());
         assertEquals(transaction.getSymbolId(), updatedTransaction.getSymbolId());
+        assertEquals(transaction.getPortfolioId(), updatedTransaction.getPortfolioId());
         assertEquals(transaction.getCurrency(), updatedTransaction.getCurrency());
 
-        verify(transactionRepository, times(1)).findById(transaction.getId());
+        verify(transactionRepository, times(1)).existsById(transaction.getId());
 
         verify(transactionRepository, times(1)).save(any(TransactionEntity.class));
 
@@ -237,12 +257,26 @@ class TransactionServiceImplTest {
                 .currency("USD")
                 .build();
 
-        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.empty());
+        PutTransactionBin transactionBin = PutTransactionBin.builder()
+                .id(1L)
+                .transaction(
+                        PutTransactionDao.builder()
+                                .type(TransactionTypeEnum.BOUGHT.getPersistedValue())
+                                .date(LocalDate.parse("2022-01-01"))
+                                .amount(10)
+                                .price(BigDecimal.valueOf(100))
+                                .symbolId("AAPL")
+                                .portfolioId(1)
+                                .currency("USD")
+                                .build())
+                .build();
+
+        when(transactionRepository.existsById(transaction.getId())).thenReturn(false);
 
         // Act and Assert
-        assertThrows(CustomException.class, () -> transactionService.updateTransaction(transaction));
+        assertThrows(CustomException.class, () -> transactionService.updateTransaction(transactionBin));
 
-        verify(transactionRepository, times(1)).findById(transaction.getId());
+        verify(transactionRepository, times(1)).existsById(transaction.getId());
 
         verify(transactionRepository, times(0)).save(any(TransactionEntity.class));
 
