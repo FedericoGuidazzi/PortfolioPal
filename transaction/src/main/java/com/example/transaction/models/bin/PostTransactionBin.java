@@ -10,7 +10,6 @@ import lombok.Data;
 @Builder
 public class PostTransactionBin {
 
-    private long id;
     private String type;
     private LocalDate date;
     private double amount;

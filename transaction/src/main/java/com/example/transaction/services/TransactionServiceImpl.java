@@ -12,6 +12,7 @@ import com.example.transaction.models.CsvPortfolioReader;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.TransactionTypeEnum;
 import com.example.transaction.models.bin.PostTransactionBin;
+import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.entities.TransactionEntity;
 import com.example.transaction.repositories.TransactionRepository;
 
@@ -40,6 +41,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .amount(entity.getAmount())
                 .price(entity.getPrice())
                 .symbolId(entity.getSymbolId())
+                .portfolioId(entity.getPortfolioId())
                 .currency(entity.getCurrency())
                 .build();
     }
@@ -78,21 +80,33 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction updateTransaction(Transaction transaction) throws CustomException {
-        transactionRepository.findById(transaction.getId())
-                .orElseThrow(() -> new CustomException("Transaction not found"));
+    public Transaction updateTransaction(PutTransactionBin transactionBin) throws CustomException {
 
-        transactionRepository.save(TransactionEntity.builder()
-                .id(transaction.getId())
-                .type(transaction.getType())
-                .date(transaction.getDate())
-                .amount(transaction.getAmount())
-                .price(transaction.getPrice())
-                .symbolId(transaction.getSymbolId())
-                .currency(transaction.getCurrency())
+        if (!transactionRepository.existsById(transactionBin.getId())) {
+            throw new CustomException("Transaction not found");
+        }
+
+        TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
+                .id(transactionBin.getId())
+                .type(TransactionTypeEnum.fromValue(transactionBin.getTransaction().getType()))
+                .date(transactionBin.getTransaction().getDate())
+                .amount(transactionBin.getTransaction().getAmount())
+                .price(transactionBin.getTransaction().getPrice())
+                .symbolId(transactionBin.getTransaction().getSymbolId())
+                .portfolioId(transactionBin.getTransaction().getPortfolioId())
+                .currency(transactionBin.getTransaction().getCurrency())
                 .build());
 
-        return transaction;
+        return Transaction.builder()
+                .id(entity.getId())
+                .type(entity.getType())
+                .date(entity.getDate())
+                .amount(entity.getAmount())
+                .price(entity.getPrice())
+                .symbolId(entity.getSymbolId())
+                .portfolioId(entity.getPortfolioId())
+                .currency(entity.getCurrency())
+                .build();
     }
 
     @Override
@@ -113,6 +127,7 @@ public class TransactionServiceImpl implements TransactionService {
                         .amount(entity.getAmount())
                         .price(entity.getPrice())
                         .symbolId(entity.getSymbolId())
+                        .portfolioId(entity.getPortfolioId())
                         .currency(entity.getCurrency())
                         .build())
                 .toList();

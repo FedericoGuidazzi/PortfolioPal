@@ -1,4 +1,4 @@
-package com.example.transaction.models;
+package com.example.transaction.models.daos;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -8,22 +8,12 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Transaction {
-
-    private long id;
-
-    private TransactionTypeEnum type;
-
+public class PutTransactionDao {
+    private String type;
     private LocalDate date;
-
     private double amount;
-
-    private String symbolId;
-
     private BigDecimal price;
-
+    private String symbolId;
     private long portfolioId;
-
     private String currency;
-
 }

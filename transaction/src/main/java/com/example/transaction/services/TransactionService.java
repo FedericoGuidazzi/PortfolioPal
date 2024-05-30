@@ -7,6 +7,7 @@ import java.util.List;
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.PostTransactionBin;
+import com.example.transaction.models.bin.PutTransactionBin;
 
 public interface TransactionService {
 
@@ -16,7 +17,7 @@ public interface TransactionService {
 
     List<Transaction> getAllTransactionsByPortfolioId(long portfolioId);
 
-    Transaction updateTransaction(Transaction transaction) throws CustomException;
+    Transaction updateTransaction(PutTransactionBin transactionBin) throws CustomException;
 
     void deleteTransaction(long id);
 
