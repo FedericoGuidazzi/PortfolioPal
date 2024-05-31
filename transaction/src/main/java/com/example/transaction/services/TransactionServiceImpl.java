@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.CsvPortfolioReader;
 import com.example.transaction.models.Transaction;
-import com.example.transaction.models.TransactionTypeEnum;
 import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.entities.TransactionEntity;
@@ -25,7 +24,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Transaction createTransaction(PostTransactionBin transactionBin) {
         TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
-                .type(TransactionTypeEnum.fromValue(transactionBin.getType()))
+                .type(transactionBin.getType())
                 .date(transactionBin.getDate())
                 .amount(transactionBin.getAmount())
                 .price(transactionBin.getPrice())
@@ -88,7 +87,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
                 .id(transactionBin.getId())
-                .type(TransactionTypeEnum.fromValue(transactionBin.getTransaction().getType()))
+                .type(transactionBin.getTransaction().getType())
                 .date(transactionBin.getTransaction().getDate())
                 .amount(transactionBin.getTransaction().getAmount())
                 .price(transactionBin.getTransaction().getPrice())
@@ -99,7 +98,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         return Transaction.builder()
                 .id(entity.getId())
-                .type(entity.getType())
+                .type(transactionBin.getTransaction().getType())
                 .date(entity.getDate())
                 .amount(entity.getAmount())
                 .price(entity.getPrice())

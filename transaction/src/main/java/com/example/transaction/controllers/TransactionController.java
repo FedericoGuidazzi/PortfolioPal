@@ -17,7 +17,7 @@ import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
-import com.example.transaction.models.daos.PutTransactionDao;
+import com.example.transaction.models.dtos.PutTransactionDto;
 import com.example.transaction.services.TransactionService;
 
 import lombok.SneakyThrows;
@@ -37,7 +37,7 @@ public class TransactionController {
 
     @SneakyThrows
     @PutMapping("update/{id}")
-    public ResponseEntity<Transaction> updateTransaction(@PathVariable String id, @RequestBody PutTransactionDao entity) {
+    public ResponseEntity<Transaction> updateTransaction(@PathVariable String id, @RequestBody PutTransactionDto entity) {
         return ResponseEntity.ok(transactionService.updateTransaction(
                 PutTransactionBin.builder()
                         .id(Long.parseLong(id))

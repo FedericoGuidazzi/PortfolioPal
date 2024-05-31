@@ -1,20 +1,12 @@
 package com.example.transaction;
 
-import com.example.transaction.custom_exceptions.CustomException;
-import com.example.transaction.models.Transaction;
-import com.example.transaction.models.TransactionTypeEnum;
-import com.example.transaction.models.bin.PostTransactionBin;
-import com.example.transaction.models.bin.PutTransactionBin;
-import com.example.transaction.models.daos.PutTransactionDao;
-import com.example.transaction.models.entities.TransactionEntity;
-import com.example.transaction.repositories.TransactionRepository;
-import com.example.transaction.services.TransactionServiceImpl;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,8 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.example.transaction.custom_exceptions.CustomException;
+import com.example.transaction.models.Transaction;
+import com.example.transaction.models.bin.PostTransactionBin;
+import com.example.transaction.models.bin.PutTransactionBin;
+import com.example.transaction.models.dtos.PutTransactionDto;
+import com.example.transaction.models.entities.TransactionEntity;
+import com.example.transaction.models.enums.TransactionType;
+import com.example.transaction.repositories.TransactionRepository;
+import com.example.transaction.services.TransactionServiceImpl;
 
 class TransactionServiceImplTest {
 
@@ -42,7 +47,7 @@ class TransactionServiceImplTest {
     void testCreateTransaction() {
         // Arrange
         PostTransactionBin transactionBin = PostTransactionBin.builder()
-                .type(TransactionTypeEnum.BOUGHT.getPersistedValue())
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -53,7 +58,7 @@ class TransactionServiceImplTest {
 
         TransactionEntity savedEntity = TransactionEntity.builder()
                 .id(1L)
-                .type(TransactionTypeEnum.BOUGHT)
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -89,7 +94,7 @@ class TransactionServiceImplTest {
         List<TransactionEntity> entities = new ArrayList<>();
         entities.add(TransactionEntity.builder()
                 .id(1L)
-                .type(TransactionTypeEnum.BOUGHT)
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -100,7 +105,7 @@ class TransactionServiceImplTest {
 
         entities.add(TransactionEntity.builder()
                 .id(2L)
-                .type(TransactionTypeEnum.SOLD)
+                .type(TransactionType.SELL)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -141,7 +146,7 @@ class TransactionServiceImplTest {
 
         TransactionEntity entity = TransactionEntity.builder()
                 .id(1L)
-                .type(TransactionTypeEnum.BOUGHT)
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -186,7 +191,7 @@ class TransactionServiceImplTest {
 
         Transaction transaction = Transaction.builder()
                 .id(1L)
-                .type(TransactionTypeEnum.BOUGHT)
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -198,8 +203,8 @@ class TransactionServiceImplTest {
         PutTransactionBin transactionBin = PutTransactionBin.builder()
                 .id(1L)
                 .transaction(
-                        PutTransactionDao.builder()
-                                .type(TransactionTypeEnum.BOUGHT.getPersistedValue())
+                        PutTransactionDto.builder()
+                                .type(TransactionType.BUY)
                                 .date(LocalDate.parse("2022-01-01"))
                                 .amount(10)
                                 .price(BigDecimal.valueOf(100))
@@ -211,7 +216,7 @@ class TransactionServiceImplTest {
 
         TransactionEntity savedEntity = TransactionEntity.builder()
                 .id(1L)
-                .type(TransactionTypeEnum.BOUGHT)
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -249,7 +254,7 @@ class TransactionServiceImplTest {
         // Arrange
         Transaction transaction = Transaction.builder()
                 .id(1L)
-                .type(TransactionTypeEnum.BOUGHT)
+                .type(TransactionType.BUY)
                 .date(LocalDate.parse("2022-01-01"))
                 .amount(10)
                 .price(BigDecimal.valueOf(100))
@@ -260,8 +265,8 @@ class TransactionServiceImplTest {
         PutTransactionBin transactionBin = PutTransactionBin.builder()
                 .id(1L)
                 .transaction(
-                        PutTransactionDao.builder()
-                                .type(TransactionTypeEnum.BOUGHT.getPersistedValue())
+                        PutTransactionDto.builder()
+                                .type(TransactionType.BUY)
                                 .date(LocalDate.parse("2022-01-01"))
                                 .amount(10)
                                 .price(BigDecimal.valueOf(100))

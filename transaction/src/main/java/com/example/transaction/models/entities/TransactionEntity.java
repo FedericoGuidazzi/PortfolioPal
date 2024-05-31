@@ -3,7 +3,7 @@ package com.example.transaction.models.entities;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.example.transaction.models.TransactionTypeEnum;
+import com.example.transaction.models.enums.TransactionType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,9 +27,9 @@ public class TransactionEntity {
     private long id;
 
     @Column
-    private TransactionTypeEnum type;
+    private TransactionType type;
 
-    @Column
+    @Column(columnDefinition = "DATE")
     private LocalDate date;
 
     @Column

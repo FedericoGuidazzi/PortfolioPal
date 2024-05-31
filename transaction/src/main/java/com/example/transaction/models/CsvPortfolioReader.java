@@ -18,6 +18,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.entities.TransactionEntity;
+import com.example.transaction.models.enums.TransactionType;
 
 public class CsvPortfolioReader {
 
@@ -35,7 +36,7 @@ public class CsvPortfolioReader {
                 LocalDate date = LocalDate.parse(csvRecord.get("date"), formatter);
                 TransactionEntity entry = TransactionEntity.builder()
                         .type(Optional.ofNullable(
-                                TransactionTypeEnum.fromValue(csvRecord.get("type")))
+                                TransactionType.fromValue(csvRecord.get("type")))
                                 .orElseThrow(() -> new CustomException("Invalid transaction type")))
                         .date(date)
                         .amount(Double.parseDouble(csvRecord.get("amount")))

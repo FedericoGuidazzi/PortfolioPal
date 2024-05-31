@@ -1,6 +1,6 @@
 package com.example.transaction.models.bin;
 
-import com.example.transaction.models.daos.PutTransactionDao;
+import com.example.transaction.models.dtos.PutTransactionDto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +10,6 @@ import lombok.Data;
 public class PutTransactionBin {
 
     private long id;
-    private PutTransactionDao transaction;
+    private PutTransactionDto transaction;
 
 }
