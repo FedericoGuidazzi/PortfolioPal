@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -298,6 +299,9 @@ class TransactionServiceImplTest {
                 "2021-Feb-01,Vendita,5,GOOGL,200.0,1,USD";
 
         InputStream inputStream = new ByteArrayInputStream(csvData.getBytes(StandardCharsets.UTF_8));
+
+
+        when(transactionRepository.saveAll(anyIterable())).thenReturn(null);
 
         List<Transaction> transactions = transactionService.saveTransactionsFromCsv(inputStream);
 
