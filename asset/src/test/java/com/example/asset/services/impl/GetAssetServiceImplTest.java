@@ -1,14 +1,17 @@
 package com.example.asset.services.impl;
 
+import com.example.asset.enums.AssetClass;
 import com.example.asset.enums.DurationIntervalEnum;
 import com.example.asset.models.Asset;
-import com.example.asset.models.YahooAPIResponse;
+import com.example.asset.models.YahooAPIAssetResponse;
 import com.example.asset.models.bin.GetAssetBin;
-import com.example.asset.repositories.AssetRepository;
+import com.example.asset.utils.RangeUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,63 +19,65 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GetAssetServiceImplTest {
-
     @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private GetAssetServiceImpl service;
-
-    @Mock
-    private AssetRepository assetRepository;
+    private GetAssetServiceImpl getAssetService;
 
     @Test
-    void test_getAsset() {
-        // Mocking the response from the external API
-        YahooAPIResponse apiResponse = createMockAssetAPIResponse();
-        when(restTemplate.getForEntity(any(String.class), any())).thenReturn(new ResponseEntity<>(apiResponse, HttpStatus.OK));
-        when(assetRepository.save(any())).thenReturn(null);
-        // Invoking the method under test
-        GetAssetBin bin = GetAssetBin.builder().build();
-        bin.setSymbol("AAPL");
-        bin.setDuration(DurationIntervalEnum.S1);
-        Asset result = service.getAsset(bin);
+    void testGetAsset() {
+        // Mocking RangeUtils
+        RangeUtils.rangeMap.put("short", 7);
 
-        // Assertions
-        assertEquals("AAPL", result.getSymbol());
-        assertEquals("USD", result.getCurrency());
-        assertEquals(1, result.getDates().size());
-        assertEquals(LocalDate.of(2022, 12, 25), result.getDates().get(0));
-        assertEquals(1, result.getPrices().size());
-        assertEquals(BigDecimal.valueOf(123.45), result.getPrices().get(0));
-    }
+        // Create a mock GetAssetBin
+        GetAssetBin assetBin = GetAssetBin.builder().symbol("AAPL").duration(DurationIntervalEnum.S1).build();
 
-    private YahooAPIResponse createMockAssetAPIResponse() {
-        YahooAPIResponse.Quote quote = new YahooAPIResponse.Quote();
-        quote.setCloses(List.of(123.45));
-
-        YahooAPIResponse.Meta meta = new YahooAPIResponse.Meta();
+        // Create a mock response for YahooAPIAssetResponse
+        YahooAPIAssetResponse.Quote quote = new YahooAPIAssetResponse.Quote();
+        quote.setCloses(List.of(150.0, 152.0, 148.0));
+        YahooAPIAssetResponse.Indicators indicators = new YahooAPIAssetResponse.Indicators();
+        indicators.setQuotes(List.of(quote));
+        YahooAPIAssetResponse.Meta meta = new YahooAPIAssetResponse.Meta();
         meta.setCurrency("USD");
         meta.setSymbol("AAPL");
-
-        YahooAPIResponse.Result result = new YahooAPIResponse.Result();
-        result.setTimestamps(Collections.singletonList(1671993600L));
-        result.setIndicators(new YahooAPIResponse.Indicators());
-        result.getIndicators().setQuotes(List.of(quote));
+        YahooAPIAssetResponse.Result result = new YahooAPIAssetResponse.Result();
+        result.setTimestamps(List.of(1609459200L, 1609545600L, 1609632000L));
+        result.setIndicators(indicators);
         result.setMeta(meta);
+        YahooAPIAssetResponse.Chart chart = new YahooAPIAssetResponse.Chart();
+        chart.setResults(List.of(result));
+        YahooAPIAssetResponse response = new YahooAPIAssetResponse();
+        response.setChart(chart);
 
-        YahooAPIResponse.Chart chart = YahooAPIResponse.Chart.builder().build();
-        chart.setResults(Collections.singletonList(result));
+        when(restTemplate.getForEntity(anyString(), eq(YahooAPIAssetResponse.class)))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
 
-        return new YahooAPIResponse(chart);
+        // Mocking the description response
+        String descriptionBody = "<html><body><div class=\"Mt(15px) Lh(1.6)\">Apple Inc. is a...</div></body></html>";
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>(descriptionBody, HttpStatus.OK));
+
+        // Call the method
+        Asset asset = getAssetService.getAsset(assetBin);
+
+        // Assertions
+        assertNotNull(asset);
+        assertEquals("AAPL", asset.getSymbol());
+        assertEquals("USD", asset.getCurrency());
+        assertEquals(AssetClass.EQUITY, asset.getAssetClass());
+        assertEquals("Apple Inc. is a...", asset.getDescription());
+        assertEquals(List.of(BigDecimal.valueOf(150.0), BigDecimal.valueOf(152.0), BigDecimal.valueOf(148.0)), asset.getPrices());
+        assertEquals(List.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2), LocalDate.of(2021, 1, 3)), asset.getDates());
     }
 }

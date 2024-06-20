@@ -1,7 +1,7 @@
 package com.example.asset.services.impl;
 
 import com.example.asset.models.Currency;
-import com.example.asset.models.YahooAPIResponse;
+import com.example.asset.models.YahooAPIAssetResponse;
 import com.example.asset.models.bin.GetCurrencyBin;
 import com.example.asset.services.GetCurrencyService;
 import com.example.asset.utils.RangeUtils;
@@ -40,16 +40,16 @@ public class GetCurrencyServiceImpl implements GetCurrencyService {
                 timestampFromLocalDate(LocalDate.now()) +
                 "&events=capitalGain%7Cdiv%7Csplit&useYfid=true&corsDomain=it.finance.yahoo.com";
         try {
-            ResponseEntity<YahooAPIResponse> response = restTemplate.getForEntity(url, YahooAPIResponse.class);
-            YahooAPIResponse.Result result = Optional.ofNullable(response.getBody())
-                    .map(YahooAPIResponse::getChart)
-                    .map(YahooAPIResponse.Chart::getResults)
+            ResponseEntity<YahooAPIAssetResponse> response = restTemplate.getForEntity(url, YahooAPIAssetResponse.class);
+            YahooAPIAssetResponse.Result result = Optional.ofNullable(response.getBody())
+                    .map(YahooAPIAssetResponse::getChart)
+                    .map(YahooAPIAssetResponse.Chart::getResults)
                     .filter(el -> !CollectionUtils.isEmpty(el))
                     .map(el -> el.get(0))
                     .orElse(null);
 
-            List<YahooAPIResponse.Quote> quotes = Optional.ofNullable(result).map(YahooAPIResponse.Result::getIndicators)
-                    .map(YahooAPIResponse.Indicators::getQuotes).orElse(null);
+            List<YahooAPIAssetResponse.Quote> quotes = Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getIndicators)
+                    .map(YahooAPIAssetResponse.Indicators::getQuotes).orElse(null);
 
             return Currency.builder()
                     .dateList(Optional.ofNullable(result).map(el -> el.getTimestamps().stream().map(this::localDateFromTimestamp).toList()).orElse(null))

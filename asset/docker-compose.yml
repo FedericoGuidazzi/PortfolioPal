@@ -1,43 +1,45 @@
 version: "3.2"
 services:
-  dbmariadb:
-    container_name: mariadb_menu
-    image: "mariadb"
-    ports:
-      - "3306:3306"
-    networks:
-      - scavolini-network
-      - scavolini-menu-internal
-    environment:
-      MARIADB_ROOT_PASSWORD: "root"
-      MARIADB_USER: menu
-      MARIADB_PASSWORD: menu
-      MARIADB_DATABASE: menu
-    restart: unless-stopped
-    volumes:
-      - type: volume
-        source: data-mariadb
-        target: /data
-        volume:
-          nocopy: true
-  menu:
+  #dbmysql:
+  #  image: mysql
+  #  container_name: mysqlcontainer
+  #  ports:
+  #    - "3306:3306"
+  #  environment:
+  #    MYSQL_ROOT_PASSWORD: "root"
+  #    MYSQL_DATABASE: "assets"
+  #  networks:
+  #    - networkmysql
+  #  healthcheck:
+  #    test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+  #    timeout: 20s
+  #    retries: 10
+  #  restart: unless-stopped
+  #  volumes:
+  #    - asset:/assetdata
+
+  asset:
     build: .
-    image: scavolini-menu
-    container_name: scavolini-menu
-    environment:
-      MARIADB_HOST: mariadb_menu
-    restart: unless-stopped
+    image: assetimage
+    container_name: assetcontainer
     ports:
       - "8080:8080"
-    depends_on:
-      - dbmariadb
-    networks:
-      - scavolini-network
-      - scavolini-menu-internal
+    #environment:
+    #  MYSQL_HOST: mysqlcontainer
+    #  MYSQL_PORT: 3306
+    #  MYSQL_DB_NAME: assets
+    #  MYSQL_USER: root
+    #  MYSQL_PASSWORD: root
+    #networks:
+    #  - networkmysql
+    #depends_on:
+    #  dbmysql:
+    #    condition:
+    #      service_healthy
+    #volumes:
+    #  - asset:/assetdata
 
-networks:
-  scavolini-network:
-  scavolini-menu-internal:
-
-volumes:
-  data-mariadb:
+#networks:
+#  networkmysql:
+#volumes:
+#  asset:

@@ -1,10 +1,9 @@
 package com.example.asset.services.impl;
 
-import com.example.asset.entities.AssetEntity;
+import com.example.asset.enums.AssetClass;
 import com.example.asset.models.Asset;
-import com.example.asset.models.YahooAPIResponse;
+import com.example.asset.models.YahooAPIAssetResponse;
 import com.example.asset.models.bin.GetAssetBin;
-import com.example.asset.repositories.AssetRepository;
 import com.example.asset.services.GetAssetService;
 import com.example.asset.utils.RangeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +18,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class GetAssetServiceImpl implements GetAssetService {
@@ -26,8 +27,9 @@ public class GetAssetServiceImpl implements GetAssetService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    AssetRepository assetRepository;
+    AssetClass assetClass;
+    String description;
+
 
     @Override
     public Asset getAsset(GetAssetBin assetBin) {
@@ -43,21 +45,46 @@ public class GetAssetServiceImpl implements GetAssetService {
                 "&period2=" +
                 timestampFromLocalDate(LocalDate.now()) +
                 "&events=capitalGain%7Cdiv%7Csplit&useYfid=true&corsDomain=it.finance.yahoo.com";
+
         try {
-            ResponseEntity<YahooAPIResponse> response = restTemplate.getForEntity(url, YahooAPIResponse.class);
-            YahooAPIResponse.Result result = Optional.ofNullable(response.getBody())
-                    .map(YahooAPIResponse::getChart)
-                    .map(YahooAPIResponse.Chart::getResults)
+            ResponseEntity<YahooAPIAssetResponse> response = restTemplate.getForEntity(url, YahooAPIAssetResponse.class);
+            YahooAPIAssetResponse.Result result = Optional.ofNullable(response.getBody())
+                    .map(YahooAPIAssetResponse::getChart)
+                    .map(YahooAPIAssetResponse.Chart::getResults)
                     .filter(el -> !CollectionUtils.isEmpty(el))
                     .map(el -> el.get(0))
                     .orElse(null);
 
-            List<YahooAPIResponse.Quote> quotes = Optional.ofNullable(result).map(YahooAPIResponse.Result::getIndicators)
-                    .map(YahooAPIResponse.Indicators::getQuotes).orElse(null);
+            List<YahooAPIAssetResponse.Quote> quotes = Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getIndicators)
+                    .map(YahooAPIAssetResponse.Indicators::getQuotes).orElse(null);
 
-            AssetEntity assetEntity = AssetEntity.builder().symbol("ciao").build();
-            assetRepository.save(assetEntity);
 
+            //Mt(15px) Lh(1.6) -> asset
+            //prof-desc -> crypto
+            String urlDescription = "https://it.finance.yahoo.com/quote/" + assetBin.getSymbol() + "/profile";
+            ResponseEntity<String> responseDescription = restTemplate.getForEntity(urlDescription, String.class);
+
+            String responseDescriptionBody = Optional.ofNullable(responseDescription.getBody()).map(el->el.toString()).orElse("");
+            // Pattern per trovare il contenuto dopo il tag specificato
+            String tag = "Mt(15px) Lh(1.6)";
+
+            int index = responseDescriptionBody.indexOf(tag);
+
+            // Trovare e stampare il contenuto
+            if (index != -1) {
+                assetClass = AssetClass.EQUITY;
+                description = getDescription(responseDescriptionBody, index);
+            } else {
+                tag = "prof-desc";
+                index = responseDescriptionBody.indexOf(tag);
+
+                if (index != -1) {
+                    assetClass = AssetClass.CRYPTO;
+                    description = getDescription(responseDescriptionBody, index);
+                } else {
+                    assetClass = AssetClass.ETF;
+                }
+            }
             return Asset.builder()
                     .dates(Optional.ofNullable(result).map(el -> el.getTimestamps().stream().map(this::localDateFromTimestamp).toList()).orElse(null))
                     .prices(Optional.ofNullable(quotes).filter(el -> !CollectionUtils.isEmpty(el)).map(el -> el.get(0)).map(e -> Optional.ofNullable(e.getCloses()).orElse(Collections.emptyList()).stream().map(x -> {
@@ -66,14 +93,31 @@ public class GetAssetServiceImpl implements GetAssetService {
                         }
                         return x;
                     }).map(BigDecimal::valueOf).toList()).orElse(null))
-                    .currency(Optional.ofNullable(result).map(YahooAPIResponse.Result::getMeta).map(YahooAPIResponse.Meta::getCurrency).orElse(null))
-                    .symbol(Optional.ofNullable(result).map(YahooAPIResponse.Result::getMeta).map(YahooAPIResponse.Meta::getSymbol).orElse(null))
+                    .currency(Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getMeta).map(YahooAPIAssetResponse.Meta::getCurrency).orElse(null))
+                    .symbol(Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getMeta).map(YahooAPIAssetResponse.Meta::getSymbol).orElse(null))
+                    .description(description)
+                    .assetClass(assetClass)
                     .build();
 
         } catch (Exception e) {
             System.err.println("Exception while calling Yahoo Finance");
             return Asset.builder().build();
         }
+    }
+
+    private static String getDescription(String responseDescriptionBody, int index) {
+        String regex = ">([^<]*)<";
+
+        // Compilare il pattern
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(responseDescriptionBody.substring(index));
+
+        String x = "";
+        // Trovare e stampare il contenuto
+        if (matcher.find()) {
+            x = matcher.group(1);
+        }
+        return x;
     }
 
     public LocalDate localDateFromTimestamp(Long timestamp) {

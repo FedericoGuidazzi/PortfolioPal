@@ -1,11 +1,4 @@
-FROM maven:3-amazoncorretto-17 AS build
-RUN mkdir -p /workspace
-WORKDIR /workspace
-COPY pom.xml /workspace
-COPY src /workspace/src
-RUN mvn -f pom.xml clean package
-
-FROM amazoncorretto:17
-COPY --from=build /workspace/target/*.jar app.jar
+FROM openjdk:17-jdk
+COPY target/asset.jar .
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "asset.jar"]

@@ -2,7 +2,7 @@ package com.example.asset.services.impl;
 
 import com.example.asset.enums.DurationIntervalEnum;
 import com.example.asset.models.Currency;
-import com.example.asset.models.YahooAPIResponse;
+import com.example.asset.models.YahooAPIAssetResponse;
 import com.example.asset.models.bin.GetCurrencyBin;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,7 @@ class GetCurrencyServiceImplTest {
     @Test
     void test_getAsset() {
         // Mocking the response from the external API
-        YahooAPIResponse apiResponse = createMockAssetAPIResponse();
+        YahooAPIAssetResponse apiResponse = createMockAssetAPIResponse();
         when(restTemplate.getForEntity(any(String.class), any())).thenReturn(new ResponseEntity<>(apiResponse, HttpStatus.OK));
 
         // Invoking the method under test
@@ -52,24 +52,24 @@ class GetCurrencyServiceImplTest {
         assertEquals(BigDecimal.valueOf(123.45), result.getPriceList().get(0));
     }
 
-    private YahooAPIResponse createMockAssetAPIResponse() {
-        YahooAPIResponse.Quote quote = new YahooAPIResponse.Quote();
+    private YahooAPIAssetResponse createMockAssetAPIResponse() {
+        YahooAPIAssetResponse.Quote quote = new YahooAPIAssetResponse.Quote();
         quote.setCloses(List.of(123.45));
 
-        YahooAPIResponse.Meta meta = new YahooAPIResponse.Meta();
+        YahooAPIAssetResponse.Meta meta = new YahooAPIAssetResponse.Meta();
         meta.setCurrency("USD");
         meta.setSymbol("EUR");
 
-        YahooAPIResponse.Result result = new YahooAPIResponse.Result();
+        YahooAPIAssetResponse.Result result = new YahooAPIAssetResponse.Result();
         result.setTimestamps(Collections.singletonList(1671993600L));
-        result.setIndicators(new YahooAPIResponse.Indicators());
+        result.setIndicators(new YahooAPIAssetResponse.Indicators());
         result.getIndicators().setQuotes(List.of(quote));
         result.setMeta(meta);
 
-        YahooAPIResponse.Chart chart = YahooAPIResponse.Chart.builder().build();
+        YahooAPIAssetResponse.Chart chart = YahooAPIAssetResponse.Chart.builder().build();
         chart.setResults(Collections.singletonList(result));
 
-        return new YahooAPIResponse(chart);
+        return new YahooAPIAssetResponse(chart);
     }
 
 

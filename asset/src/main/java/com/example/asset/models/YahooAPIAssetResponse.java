@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class YahooAPIResponse {
+public class YahooAPIAssetResponse {
 
     @JsonProperty("chart")
     private Chart chart;
