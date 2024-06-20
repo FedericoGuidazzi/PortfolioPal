@@ -18,118 +18,118 @@ import com.example.transaction.repositories.TransactionRepository;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+	@Autowired
+	private TransactionRepository transactionRepository;
 
-    @Override
-    public Transaction createTransaction(PostTransactionBin transactionBin) {
-        TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
-                .type(transactionBin.getType())
-                .date(transactionBin.getDate())
-                .amount(transactionBin.getAmount())
-                .price(transactionBin.getPrice())
-                .symbolId(transactionBin.getSymbolId())
-                .portfolioId(transactionBin.getPortfolioId())
-                .currency(transactionBin.getCurrency())
-                .build());
+	@Override
+	public Transaction createTransaction(PostTransactionBin transactionBin) {
+		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
+				.type(transactionBin.getType())
+				.date(transactionBin.getDate())
+				.amount(transactionBin.getAmount())
+				.price(transactionBin.getPrice())
+				.symbolId(transactionBin.getSymbolId())
+				.portfolioId(transactionBin.getPortfolioId())
+				.currency(transactionBin.getCurrency())
+				.build());
 
-        return Transaction.builder()
-                .id(entity.getId())
-                .type(entity.getType())
-                .date(entity.getDate())
-                .amount(entity.getAmount())
-                .price(entity.getPrice())
-                .symbolId(entity.getSymbolId())
-                .portfolioId(entity.getPortfolioId())
-                .currency(entity.getCurrency())
-                .build();
-    }
+		return Transaction.builder()
+				.id(entity.getId())
+				.type(entity.getType())
+				.date(entity.getDate())
+				.amount(entity.getAmount())
+				.price(entity.getPrice())
+				.symbolId(entity.getSymbolId())
+				.portfolioId(entity.getPortfolioId())
+				.currency(entity.getCurrency())
+				.build();
+	}
 
-    @Override
-    public List<Transaction> getAllTransactionsByPortfolioId(long portfolioId) {
-        List<TransactionEntity> entities = transactionRepository.findAllByPortfolioId(portfolioId);
+	@Override
+	public List<Transaction> getAllTransactionsByPortfolioId(long portfolioId) {
+		List<TransactionEntity> entities = transactionRepository.findAllByPortfolioId(portfolioId);
 
-        return entities.stream()
-                .map(entity -> Transaction.builder()
-                        .id(entity.getId())
-                        .type(entity.getType())
-                        .date(entity.getDate())
-                        .amount(entity.getAmount())
-                        .price(entity.getPrice())
-                        .symbolId(entity.getSymbolId())
-                        .currency(entity.getCurrency())
-                        .build())
-                .toList();
-    }
+		return entities.stream()
+				.map(entity -> Transaction.builder()
+						.id(entity.getId())
+						.type(entity.getType())
+						.date(entity.getDate())
+						.amount(entity.getAmount())
+						.price(entity.getPrice())
+						.symbolId(entity.getSymbolId())
+						.currency(entity.getCurrency())
+						.build())
+				.toList();
+	}
 
-    @Override
-    public Transaction getTransactionById(long id) throws CustomException {
-        TransactionEntity entity = transactionRepository.findById(id)
-                .orElseThrow(() -> new CustomException("Transaction not found"));
+	@Override
+	public Transaction getTransactionById(long id) throws CustomException {
+		TransactionEntity entity = transactionRepository.findById(id)
+				.orElseThrow(() -> new CustomException("Transaction not found"));
 
-        return Transaction.builder()
-                .id(entity.getId())
-                .type(entity.getType())
-                .date(entity.getDate())
-                .amount(entity.getAmount())
-                .price(entity.getPrice())
-                .symbolId(entity.getSymbolId())
-                .currency(entity.getCurrency())
-                .build();
-    }
+		return Transaction.builder()
+				.id(entity.getId())
+				.type(entity.getType())
+				.date(entity.getDate())
+				.amount(entity.getAmount())
+				.price(entity.getPrice())
+				.symbolId(entity.getSymbolId())
+				.currency(entity.getCurrency())
+				.build();
+	}
 
-    @Override
-    public Transaction updateTransaction(PutTransactionBin transactionBin) throws CustomException {
+	@Override
+	public Transaction updateTransaction(PutTransactionBin transactionBin) throws CustomException {
 
-        if (!transactionRepository.existsById(transactionBin.getId())) {
-            throw new CustomException("Transaction not found");
-        }
+		if (!transactionRepository.existsById(transactionBin.getId())) {
+			throw new CustomException("Transaction not found");
+		}
 
-        TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
-                .id(transactionBin.getId())
-                .type(transactionBin.getTransaction().getType())
-                .date(transactionBin.getTransaction().getDate())
-                .amount(transactionBin.getTransaction().getAmount())
-                .price(transactionBin.getTransaction().getPrice())
-                .symbolId(transactionBin.getTransaction().getSymbolId())
-                .portfolioId(transactionBin.getTransaction().getPortfolioId())
-                .currency(transactionBin.getTransaction().getCurrency())
-                .build());
+		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
+				.id(transactionBin.getId())
+				.type(transactionBin.getTransaction().getType())
+				.date(transactionBin.getTransaction().getDate())
+				.amount(transactionBin.getTransaction().getAmount())
+				.price(transactionBin.getTransaction().getPrice())
+				.symbolId(transactionBin.getTransaction().getSymbolId())
+				.portfolioId(transactionBin.getTransaction().getPortfolioId())
+				.currency(transactionBin.getTransaction().getCurrency())
+				.build());
 
-        return Transaction.builder()
-                .id(entity.getId())
-                .type(transactionBin.getTransaction().getType())
-                .date(entity.getDate())
-                .amount(entity.getAmount())
-                .price(entity.getPrice())
-                .symbolId(entity.getSymbolId())
-                .portfolioId(entity.getPortfolioId())
-                .currency(entity.getCurrency())
-                .build();
-    }
+		return Transaction.builder()
+				.id(entity.getId())
+				.type(transactionBin.getTransaction().getType())
+				.date(entity.getDate())
+				.amount(entity.getAmount())
+				.price(entity.getPrice())
+				.symbolId(entity.getSymbolId())
+				.portfolioId(entity.getPortfolioId())
+				.currency(entity.getCurrency())
+				.build();
+	}
 
-    @Override
-    public void deleteTransaction(long id) {
-        transactionRepository.delete(TransactionEntity.builder().id(id).build());
-    }
+	@Override
+	public void deleteTransaction(long id) {
+		transactionRepository.delete(TransactionEntity.builder().id(id).build());
+	}
 
-    @Override
-    public List<Transaction> saveTransactionsFromCsv(InputStream inputStream) throws CustomException, IOException {
-        List<TransactionEntity> transactions = CsvPortfolioReader.readCsvFile(inputStream);
-        transactionRepository.saveAll(transactions);
+	@Override
+	public List<Transaction> saveTransactionsFromCsv(InputStream inputStream) throws CustomException, IOException {
+		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(inputStream);
+		transactionRepository.saveAll(transactions.stream()
+				.map(entity -> TransactionEntity.builder()
+						.id(entity.getId())
+						.type(entity.getType())
+						.date(entity.getDate())
+						.amount(entity.getAmount())
+						.price(entity.getPrice())
+						.symbolId(entity.getSymbolId())
+						.portfolioId(entity.getPortfolioId())
+						.currency(entity.getCurrency())
+						.build())
+				.toList());
 
-        return transactions.stream()
-                .map(entity -> Transaction.builder()
-                        .id(entity.getId())
-                        .type(entity.getType())
-                        .date(entity.getDate())
-                        .amount(entity.getAmount())
-                        .price(entity.getPrice())
-                        .symbolId(entity.getSymbolId())
-                        .portfolioId(entity.getPortfolioId())
-                        .currency(entity.getCurrency())
-                        .build())
-                .toList();
-    }
+		return transactions;
+	}
 
 }

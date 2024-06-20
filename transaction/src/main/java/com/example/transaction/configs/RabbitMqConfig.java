@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfig {
     @Bean
-    public Queue privacyUpdateQueue() {
+    public Queue transactionUpdateQueue() {
         return new Queue("transactionUpdates", true);
     }
 }

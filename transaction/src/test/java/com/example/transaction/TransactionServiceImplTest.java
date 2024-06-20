@@ -300,7 +300,6 @@ class TransactionServiceImplTest {
 
         InputStream inputStream = new ByteArrayInputStream(csvData.getBytes(StandardCharsets.UTF_8));
 
-
         when(transactionRepository.saveAll(anyIterable())).thenReturn(null);
 
         List<Transaction> transactions = transactionService.saveTransactionsFromCsv(inputStream);
