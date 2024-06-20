@@ -1,5 +1,5 @@
 {
-  "name": "web-ui",
+  "name": "web-app",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -11,19 +11,19 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.3.0",
-    "@angular/cdk": "^17.3.5",
+    "@angular/cdk": "^17.3.10",
     "@angular/common": "^17.3.0",
     "@angular/compiler": "^17.3.0",
     "@angular/core": "^17.3.0",
     "@angular/forms": "^17.3.0",
-    "@angular/material": "^17.3.5",
+    "@angular/material": "^17.3.10",
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.2",
-    "chart.js": "^4.4.2",
+    "chart.js": "^4.4.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
@@ -41,9 +41,5 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.4.2"
-  },
-  "description": "This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.4.",
-  "main": "index.js",
-  "author": "",
-  "license": "ISC"
+  }
 }
