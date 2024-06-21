@@ -4,11 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +32,7 @@ import com.example.transaction.models.dtos.PutTransactionDto;
 import com.example.transaction.models.entities.TransactionEntity;
 import com.example.transaction.models.enums.TransactionType;
 import com.example.transaction.repositories.TransactionRepository;
+import com.example.transaction.services.TransactionService;
 import com.example.transaction.services.TransactionServiceImpl;
 
 class TransactionServiceImplTest {
@@ -287,4 +292,36 @@ class TransactionServiceImplTest {
 
     }
 
+    @Test
+    public void testReadCsvFile() throws Exception {
+        String csvData = "date,type,amount,symbolId,price,portfolioId,currency\n" +
+                "2021-Jan-01,Acquisto,10,AAPL,100.0,1,USD\n" +
+                "2021-Feb-01,Vendita,5,GOOGL,200.0,1,USD";
+
+        InputStream inputStream = new ByteArrayInputStream(csvData.getBytes(StandardCharsets.UTF_8));
+
+        when(transactionRepository.saveAll(anyIterable())).thenReturn(null);
+
+        List<Transaction> transactions = transactionService.saveTransactionsFromCsv(inputStream);
+
+        assertEquals(2, transactions.size());
+
+        Transaction firstTransaction = transactions.get(0);
+        assertEquals(LocalDate.of(2021, 1, 1), firstTransaction.getDate());
+        assertEquals(TransactionType.BUY, firstTransaction.getType());
+        assertEquals(10.0, firstTransaction.getAmount());
+        assertEquals("AAPL", firstTransaction.getSymbolId());
+        assertEquals(BigDecimal.valueOf(100.0), firstTransaction.getPrice());
+        assertEquals(1L, firstTransaction.getPortfolioId());
+        assertEquals("USD", firstTransaction.getCurrency());
+
+        Transaction secondTransaction = transactions.get(1);
+        assertEquals(LocalDate.of(2021, 2, 1), secondTransaction.getDate());
+        assertEquals(TransactionType.SELL, secondTransaction.getType());
+        assertEquals(5.0, secondTransaction.getAmount());
+        assertEquals("GOOGL", secondTransaction.getSymbolId());
+        assertEquals(BigDecimal.valueOf(200.0), secondTransaction.getPrice());
+        assertEquals(1L, secondTransaction.getPortfolioId());
+        assertEquals("USD", secondTransaction.getCurrency());
+    }
 }

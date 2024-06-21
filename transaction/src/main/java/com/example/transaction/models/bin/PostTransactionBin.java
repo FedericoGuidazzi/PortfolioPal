@@ -13,11 +13,17 @@ import lombok.Data;
 public class PostTransactionBin {
 
     private TransactionType type;
+
     private LocalDate date;
+
     private double amount;
+
     private BigDecimal price;
+
     private String symbolId;
+
     private long portfolioId;
+
     private String currency;
 
 }

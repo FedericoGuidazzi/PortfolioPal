@@ -18,6 +18,7 @@ import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.dtos.PutTransactionDto;
+import com.example.transaction.services.RabbitMqSender;
 import com.example.transaction.services.TransactionService;
 
 import lombok.SneakyThrows;
@@ -26,39 +27,66 @@ import lombok.SneakyThrows;
 @RequestMapping("/api/v1/transactions")
 public class TransactionController {
 
-    @Autowired
-    private TransactionService transactionService;
+	@Autowired
+	private TransactionService transactionService;
 
-    @PostMapping("/create")
-    public ResponseEntity<Transaction> createTransaction(
-            @RequestBody PostTransactionBin transaction) {
-        return ResponseEntity.ok(transactionService.createTransaction(transaction));
-    }
+	@Autowired
+	private RabbitMqSender sender;
 
-    @SneakyThrows
-    @PutMapping("update/{id}")
-    public ResponseEntity<Transaction> updateTransaction(@PathVariable String id, @RequestBody PutTransactionDto entity) {
-        return ResponseEntity.ok(transactionService.updateTransaction(
-                PutTransactionBin.builder()
-                        .id(Long.parseLong(id))
-                        .transaction(entity)
-                        .build()));
-    }
+	@PostMapping("/create")
+	public ResponseEntity<Transaction> createTransaction(
+			@RequestBody PostTransactionBin transactionBin) {
+		Transaction transaction = transactionService.createTransaction(transactionBin);
+		this.sender.send(PostTransactionBin.builder()
+				.date(transaction.getDate())
+				.portfolioId(transaction.getPortfolioId())
+				.build());
+		return ResponseEntity.ok(transaction);
+	}
 
-    @PutMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
-        transactionService.deleteTransaction(Long.parseLong(id));
-        return ResponseEntity.ok().build();
-    }
+	@SneakyThrows
+	@PutMapping("update/{id}")
+	public ResponseEntity<Transaction> updateTransaction(@PathVariable String id,
+			@RequestBody PutTransactionDto entity) {
+		this.sender.send(PostTransactionBin.builder()
+				.date(entity.getDate())
+				.portfolioId(entity.getPortfolioId())
+				.build());
+		return ResponseEntity.ok(transactionService.updateTransaction(
+				PutTransactionBin.builder()
+						.id(Long.parseLong(id))
+						.transaction(entity)
+						.build()));
+	}
 
-    @SneakyThrows
-    @PostMapping("/upload")
-    public ResponseEntity<List<Transaction>> uploadFile(
-            @RequestParam(value = "file", required = true) MultipartFile file) {
-        if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
-            throw new CustomException("Please upload a valid CSV file.");
-        }
+	@PutMapping("/delete/{id}")
+	public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
+		try {
+			Transaction transaction = transactionService.getTransactionById(Long.parseLong(id));
+			this.sender
+					.send(PostTransactionBin.builder()
+							.date(transaction.getDate())
+							.portfolioId(transaction.getPortfolioId())
+							.build());
+		} catch (NumberFormatException | CustomException e) {
+		}
+		transactionService.deleteTransaction(Long.parseLong(id));
+		return ResponseEntity.ok().build();
+	}
 
-        return ResponseEntity.ok(transactionService.saveTransactionsFromCsv(file.getInputStream()));
-    }
+	@SneakyThrows
+	@PostMapping("/upload")
+	public ResponseEntity<List<Transaction>> uploadFile(
+			@RequestParam(value = "file", required = true) MultipartFile file) {
+		if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
+			throw new CustomException("Please upload a valid CSV file.");
+		}
+		List<Transaction> list = transactionService.saveTransactionsFromCsv(file.getInputStream());
+		list.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
+		this.sender.send(PostTransactionBin.builder()
+				.date(list.get(list.size() - 1).getDate())
+				.portfolioId(list.get(list.size() - 1).getPortfolioId())
+				.build());
+		return ResponseEntity.ok(list);
+	}
 }
