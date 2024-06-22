@@ -18,9 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
+import com.example.transaction.models.bin.GetAssetQtyOutputBin;
 import com.example.transaction.models.bin.GetTransactionAfterDateBin;
 import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
+import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.dtos.PutTransactionDto;
 import com.example.transaction.models.enums.TransactionType;
 import com.example.transaction.services.RabbitMqSender;
@@ -29,7 +31,7 @@ import com.example.transaction.services.TransactionService;
 import lombok.SneakyThrows;
 
 @RestController
-@RequestMapping("/api/v1/transactions")
+@RequestMapping("/api/v1/transaction")
 public class TransactionController {
 
 	@Autowired
@@ -38,29 +40,81 @@ public class TransactionController {
 	@Autowired
 	private RabbitMqSender sender;
 
-	@GetMapping("/get/{portfolioId}")
+	@SneakyThrows
+	@PutMapping("update/{id}")
+	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id,
+			@RequestBody PutTransactionDto entity) {
+
+		Transaction transaction = transactionService.updateTransaction(
+				PutTransactionBin.builder()
+						.id(id)
+						.transaction(entity)
+						.build());
+
+		this.sender.send(PostTransactionBin.builder()
+				.date(entity.getDate())
+				.portfolioId(entity.getPortfolioId())
+				.build());
+
+		return ResponseEntity.ok(transaction);
+	}
+
+	@PutMapping("/delete/{portfolioId}")
+	public ResponseEntity<Void> deleteTransaction(@PathVariable long portfolioId, @RequestParam long id) {
+		try {
+			Transaction transaction = transactionService.getTransactionById(id);
+			this.sender
+					.send(PostTransactionBin.builder()
+							.date(transaction.getDate())
+							.portfolioId(portfolioId)
+							.build());
+		} catch (NumberFormatException | CustomException e) {
+		}
+		transactionService.deleteTransaction(id);
+		return ResponseEntity.ok().build();
+	}
+
+	@SneakyThrows
+	@PostMapping("/upload/{portfolioId}")
+	public ResponseEntity<List<Transaction>> uploadFile(
+			@PathVariable long portfolioId,
+			@RequestParam(value = "file", required = true) MultipartFile file) {
+		if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
+			throw new CustomException("Please upload a valid CSV file.");
+		}
+		List<Transaction> list = transactionService.saveTransactionsFromCsv(UploadBin.builder()
+				.portfolioId(portfolioId)
+				.inputStream(file.getInputStream())
+				.build());
+		list.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
+		this.sender.send(PostTransactionBin.builder()
+				.date(list.get(list.size() - 1).getDate())
+				.portfolioId(portfolioId)
+				.build());
+		return ResponseEntity.ok(list);
+	}
+
+	@GetMapping("/get-by-portfolio/{portfolioId}")
 	public ResponseEntity<List<Transaction>> getAllTransactionsByPortfolioId(@PathVariable long portfolioId,
 			@RequestParam(defaultValue = "false") boolean mock) {
 		if (mock) {
 			return ResponseEntity.ok(List.of(
 					Transaction.builder()
 							.id(1)
-							.type(TransactionType.BUY)
+							.type(TransactionType.BUY.getPersistedValue())
 							.date(LocalDate.parse("2021-01-01"))
 							.amount(100)
 							.price(BigDecimal.valueOf(100))
 							.symbolId("AAPL")
-							.portfolioId(portfolioId)
 							.currency("USD")
 							.build(),
 					Transaction.builder()
 							.id(2)
-							.type(TransactionType.BUY)
+							.type(TransactionType.BUY.getPersistedValue())
 							.date(LocalDate.parse("2021-01-02"))
 							.amount(100)
 							.price(BigDecimal.valueOf(100))
 							.symbolId("AAPL")
-							.portfolioId(portfolioId)
 							.currency("USD")
 							.build()));
 
@@ -68,53 +122,7 @@ public class TransactionController {
 		return ResponseEntity.ok(transactionService.getAllTransactionsByPortfolioId(portfolioId));
 	}
 
-	@SneakyThrows
-	@PutMapping("update/{id}")
-	public ResponseEntity<Transaction> updateTransaction(@PathVariable String id,
-			@RequestBody PutTransactionDto entity) {
-		this.sender.send(PostTransactionBin.builder()
-				.date(entity.getDate())
-				.portfolioId(entity.getPortfolioId())
-				.build());
-		return ResponseEntity.ok(transactionService.updateTransaction(
-				PutTransactionBin.builder()
-						.id(Long.parseLong(id))
-						.transaction(entity)
-						.build()));
-	}
-
-	@PutMapping("/delete/{id}")
-	public ResponseEntity<Void> deleteTransaction(@PathVariable String id) {
-		try {
-			Transaction transaction = transactionService.getTransactionById(Long.parseLong(id));
-			this.sender
-					.send(PostTransactionBin.builder()
-							.date(transaction.getDate())
-							.portfolioId(transaction.getPortfolioId())
-							.build());
-		} catch (NumberFormatException | CustomException e) {
-		}
-		transactionService.deleteTransaction(Long.parseLong(id));
-		return ResponseEntity.ok().build();
-	}
-
-	@SneakyThrows
-	@PostMapping("/upload")
-	public ResponseEntity<List<Transaction>> uploadFile(
-			@RequestParam(value = "file", required = true) MultipartFile file) {
-		if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
-			throw new CustomException("Please upload a valid CSV file.");
-		}
-		List<Transaction> list = transactionService.saveTransactionsFromCsv(file.getInputStream());
-		list.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
-		this.sender.send(PostTransactionBin.builder()
-				.date(list.get(list.size() - 1).getDate())
-				.portfolioId(list.get(list.size() - 1).getPortfolioId())
-				.build());
-		return ResponseEntity.ok(list);
-	}
-
-	@GetMapping("/get/{portfolioId}/after_date")
+	@GetMapping("/get-by-portfolio/{portfolioId}/after-date")
 	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndDate(
 			@PathVariable long portfolioId,
 			@RequestParam String date, @RequestParam(defaultValue = "false") boolean mock) {
@@ -122,12 +130,11 @@ public class TransactionController {
 		if (mock) {
 			return ResponseEntity.ok(List.of(Transaction.builder()
 					.id(1)
-					.type(TransactionType.BUY)
+					.type(TransactionType.BUY.getPersistedValue())
 					.date(LocalDate.now())
 					.amount(100)
 					.price(BigDecimal.valueOf(100))
 					.symbolId("AAPL")
-					.portfolioId(portfolioId)
 					.currency("USD")
 					.build()));
 		}
@@ -139,5 +146,17 @@ public class TransactionController {
 						.date(localDate)
 						.build());
 		return ResponseEntity.ok(transactions);
+	}
+
+	@GetMapping("/get-by-portfolio/{portfolioId}/assets-qty")
+	public ResponseEntity<List<GetAssetQtyOutputBin>> getAssetsQtyByPortfolioId(@PathVariable long portfolioId,
+			@RequestParam(defaultValue = "false") boolean mock) {
+		if (mock) {
+			return ResponseEntity.ok(List.of(GetAssetQtyOutputBin.builder()
+					.symbolId("AAPL")
+					.amount(100)
+					.build()));
+		}
+		return ResponseEntity.ok(transactionService.getAssetsQtyByPortfolioId(portfolioId));
 	}
 }

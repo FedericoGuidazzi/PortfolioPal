@@ -253,6 +253,7 @@ class TransactionServiceImplTest {
 	public void testReadCsvFile() throws Exception {
 		String csvData = "date,type,amount,symbolId,price,portfolioId,currency\n" +
 				"2021-Jan-01,Acquisto,10,AAPL,100.0,1,USD\n" +
+				"2021-Jan-01,Acquisto,10,GOOGL,100.0,1,USD\n" +
 				"2021-Feb-01,Vendita,5,GOOGL,200.0,1,USD";
 
 		InputStream inputStream = new ByteArrayInputStream(csvData.getBytes(StandardCharsets.UTF_8));
@@ -265,7 +266,7 @@ class TransactionServiceImplTest {
 						.portfolioId(1)
 						.build());
 
-		assertEquals(2, transactions.size());
+		assertEquals(3, transactions.size());
 
 		Transaction firstTransaction = transactions.get(0);
 		assertEquals(LocalDate.of(2021, 1, 1), firstTransaction.getDate());
@@ -276,11 +277,11 @@ class TransactionServiceImplTest {
 		assertEquals("USD", firstTransaction.getCurrency());
 
 		Transaction secondTransaction = transactions.get(1);
-		assertEquals(LocalDate.of(2021, 2, 1), secondTransaction.getDate());
-		assertEquals(TransactionType.SELL.getPersistedValue(), secondTransaction.getType());
-		assertEquals(5.0, secondTransaction.getAmount());
+		assertEquals(LocalDate.of(2021, 1, 1), secondTransaction.getDate());
+		assertEquals(TransactionType.BUY.getPersistedValue(), secondTransaction.getType());
+		assertEquals(10.0, secondTransaction.getAmount());
 		assertEquals("GOOGL", secondTransaction.getSymbolId());
-		assertEquals(BigDecimal.valueOf(200.0), secondTransaction.getPrice());
+		assertEquals(BigDecimal.valueOf(100.0), secondTransaction.getPrice());
 		assertEquals("USD", secondTransaction.getCurrency());
 	}
 

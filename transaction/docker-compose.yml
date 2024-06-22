@@ -4,17 +4,18 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8090:8090
+      - 8080:8080
     depends_on:
       rabbitmq:
         condition: service_healthy
       mysqldb:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/${MYSQL_DATABASE}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/mydatabase
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - PORT=8080
     networks:
       - springboot-mysql-network
       - springboot-rabbitmq-network
@@ -38,8 +39,8 @@ services:
     ports:
       - 3306:3306
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=mydatabase
+      - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
       - mysql-data:/var/lib/mysql
     networks:

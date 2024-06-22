@@ -1,8 +1,10 @@
 package com.example.transaction.services;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,9 +12,12 @@ import org.springframework.stereotype.Service;
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.CsvPortfolioReader;
 import com.example.transaction.models.Transaction;
+import com.example.transaction.models.bin.GetAssetQtyOutputBin;
 import com.example.transaction.models.bin.GetTransactionAfterDateBin;
 import com.example.transaction.models.bin.PutTransactionBin;
+import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.entities.TransactionEntity;
+import com.example.transaction.models.enums.TransactionType;
 import com.example.transaction.repositories.TransactionRepository;
 
 @Service
@@ -28,7 +33,7 @@ public class TransactionServiceImpl implements TransactionService {
 		return entities.stream()
 				.map(entity -> Transaction.builder()
 						.id(entity.getId())
-						.type(entity.getType())
+						.type(entity.getType().getPersistedValue())
 						.date(entity.getDate())
 						.amount(entity.getAmount())
 						.price(entity.getPrice())
@@ -45,7 +50,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 		return Transaction.builder()
 				.id(entity.getId())
-				.type(entity.getType())
+				.type(entity.getType().getPersistedValue())
 				.date(entity.getDate())
 				.amount(entity.getAmount())
 				.price(entity.getPrice())
@@ -63,7 +68,9 @@ public class TransactionServiceImpl implements TransactionService {
 
 		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
 				.id(transactionBin.getId())
-				.type(transactionBin.getTransaction().getType())
+				.type(Optional.ofNullable(
+						TransactionType.fromValue(transactionBin.getTransaction().getType()))
+						.orElseThrow(() -> new CustomException("Invalid transaction type")))
 				.date(transactionBin.getTransaction().getDate())
 				.amount(transactionBin.getTransaction().getAmount())
 				.price(transactionBin.getTransaction().getPrice())
@@ -79,7 +86,6 @@ public class TransactionServiceImpl implements TransactionService {
 				.amount(entity.getAmount())
 				.price(entity.getPrice())
 				.symbolId(entity.getSymbolId())
-				.portfolioId(entity.getPortfolioId())
 				.currency(entity.getCurrency())
 				.build();
 	}
@@ -90,17 +96,31 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Override
-	public List<Transaction> saveTransactionsFromCsv(InputStream inputStream) throws CustomException, IOException {
-		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(inputStream);
+	public List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException {
+		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream());
+		Map<String, Double> assetsQty = this.getAssetsQtyByPortfolioId(bin.getPortfolioId()).stream().collect(
+				Collectors.toMap(GetAssetQtyOutputBin::getSymbolId, GetAssetQtyOutputBin::getAmount));
+		for (Transaction transaction : transactions) {
+			if (TransactionType.fromValue(transaction.getType()) == TransactionType.SELL) {
+				if (assetsQty.getOrDefault(transaction.getSymbolId(), 0.0) < transaction.getAmount()) {
+					throw new CustomException("Not enough assets to sell");
+				}
+				assetsQty.put(transaction.getSymbolId(),
+						assetsQty.get(transaction.getSymbolId()) - transaction.getAmount());
+			} else {
+				assetsQty.put(transaction.getSymbolId(),
+						assetsQty.getOrDefault(transaction.getSymbolId(), 0.0) + transaction.getAmount());
+			}
+		}
 		transactionRepository.saveAll(transactions.stream()
 				.map(entity -> TransactionEntity.builder()
 						.id(entity.getId())
-						.type(entity.getType())
+						.type(TransactionType.fromValue(entity.getType()))
 						.date(entity.getDate())
 						.amount(entity.getAmount())
 						.price(entity.getPrice())
 						.symbolId(entity.getSymbolId())
-						.portfolioId(entity.getPortfolioId())
+						.portfolioId(bin.getPortfolioId())
 						.currency(entity.getCurrency())
 						.build())
 				.toList());
@@ -116,7 +136,7 @@ public class TransactionServiceImpl implements TransactionService {
 		return list.stream()
 				.map(entity -> Transaction.builder()
 						.id(entity.getId())
-						.type(entity.getType())
+						.type(entity.getType().getPersistedValue())
 						.date(entity.getDate())
 						.amount(entity.getAmount())
 						.price(entity.getPrice())
@@ -124,6 +144,11 @@ public class TransactionServiceImpl implements TransactionService {
 						.currency(entity.getCurrency())
 						.build())
 				.toList();
+	}
+
+	@Override
+	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioId(long portfolioId) {
+		return this.transactionRepository.findAssetsQtyByPortfolioId(portfolioId);
 	}
 
 }
