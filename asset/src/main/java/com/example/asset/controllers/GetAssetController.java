@@ -35,6 +35,13 @@ public class GetAssetController {
         return getAssetService.getAsset(assetBin);
     }
 
+    @GetMapping("/search/{search}")
+    public List<String> getAsset(
+            @PathVariable String search
+    ) {
+        return getAssetService.getAssetsMatching(search);
+    }
+
     private static Asset mockAsset(String symbol) {
         return Asset.builder()
                 .dates(Collections.singletonList(LocalDate.now()))

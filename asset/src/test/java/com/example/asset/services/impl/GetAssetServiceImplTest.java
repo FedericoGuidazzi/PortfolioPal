@@ -1,17 +1,15 @@
 package com.example.asset.services.impl;
 
-import com.example.asset.enums.AssetClass;
 import com.example.asset.enums.DurationIntervalEnum;
 import com.example.asset.models.Asset;
 import com.example.asset.models.YahooAPIAssetResponse;
+import com.example.asset.models.YahooAPISearch;
 import com.example.asset.models.bin.GetAssetBin;
 import com.example.asset.utils.RangeUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,8 +58,13 @@ public class GetAssetServiceImplTest {
         YahooAPIAssetResponse response = new YahooAPIAssetResponse();
         response.setChart(chart);
 
+        YahooAPISearch yahooAPISearchResponse = YahooAPISearch.builder().quotes(List.of(YahooAPISearch.Quote.builder().symbol("AAPL").quoteType("ASSET").build())).build();
+
         when(restTemplate.getForEntity(anyString(), eq(YahooAPIAssetResponse.class)))
                 .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
+
+        when(restTemplate.getForEntity(anyString(), eq(YahooAPISearch.class)))
+                .thenReturn(new ResponseEntity<>(yahooAPISearchResponse, HttpStatus.OK));
 
         // Mocking the description response
         String descriptionBody = "<html><body><div class=\"Mt(15px) Lh(1.6)\">Apple Inc. is a...</div></body></html>";
@@ -75,7 +78,7 @@ public class GetAssetServiceImplTest {
         assertNotNull(asset);
         assertEquals("AAPL", asset.getSymbol());
         assertEquals("USD", asset.getCurrency());
-        assertEquals(AssetClass.EQUITY, asset.getAssetClass());
+        assertEquals("ASSET", asset.getAssetClass());
         assertEquals("Apple Inc. is a...", asset.getDescription());
         assertEquals(List.of(BigDecimal.valueOf(150.0), BigDecimal.valueOf(152.0), BigDecimal.valueOf(148.0)), asset.getPrices());
         assertEquals(List.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2), LocalDate.of(2021, 1, 3)), asset.getDates());

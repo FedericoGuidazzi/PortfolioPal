@@ -1,8 +1,8 @@
 package com.example.asset.services.impl;
 
-import com.example.asset.enums.AssetClass;
 import com.example.asset.models.Asset;
 import com.example.asset.models.YahooAPIAssetResponse;
+import com.example.asset.models.YahooAPISearch;
 import com.example.asset.models.bin.GetAssetBin;
 import com.example.asset.services.GetAssetService;
 import com.example.asset.utils.RangeUtils;
@@ -14,10 +14,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +25,6 @@ public class GetAssetServiceImpl implements GetAssetService {
     @Autowired
     private RestTemplate restTemplate;
 
-    AssetClass assetClass;
     String description;
 
 
@@ -64,7 +61,7 @@ public class GetAssetServiceImpl implements GetAssetService {
             String urlDescription = "https://it.finance.yahoo.com/quote/" + assetBin.getSymbol() + "/profile";
             ResponseEntity<String> responseDescription = restTemplate.getForEntity(urlDescription, String.class);
 
-            String responseDescriptionBody = Optional.ofNullable(responseDescription.getBody()).map(el->el.toString()).orElse("");
+            String responseDescriptionBody = Optional.ofNullable(responseDescription.getBody()).orElse("");
             // Pattern per trovare il contenuto dopo il tag specificato
             String tag = "Mt(15px) Lh(1.6)";
 
@@ -72,17 +69,13 @@ public class GetAssetServiceImpl implements GetAssetService {
 
             // Trovare e stampare il contenuto
             if (index != -1) {
-                assetClass = AssetClass.EQUITY;
                 description = getDescription(responseDescriptionBody, index);
             } else {
                 tag = "prof-desc";
                 index = responseDescriptionBody.indexOf(tag);
 
                 if (index != -1) {
-                    assetClass = AssetClass.CRYPTO;
                     description = getDescription(responseDescriptionBody, index);
-                } else {
-                    assetClass = AssetClass.ETF;
                 }
             }
             return Asset.builder()
@@ -96,13 +89,56 @@ public class GetAssetServiceImpl implements GetAssetService {
                     .currency(Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getMeta).map(YahooAPIAssetResponse.Meta::getCurrency).orElse(null))
                     .symbol(Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getMeta).map(YahooAPIAssetResponse.Meta::getSymbol).orElse(null))
                     .description(description)
-                    .assetClass(assetClass)
+                    .assetClass(getAssetClass(assetBin.getSymbol()))
                     .build();
 
         } catch (Exception e) {
             System.err.println("Exception while calling Yahoo Finance");
             return Asset.builder().build();
         }
+    }
+
+    private String getAssetClass(String search) {
+        String url = "https://query1.finance.yahoo.com/v1/finance/search?q=" +
+                search + "&lang=it-IT&region=IT&quotesCount=6&newsCount=4&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&enableNavLinks=true&enableEnhancedTrivialQuery=true&enableCulturalAssets=true&enableLogoUrl=true";
+
+        AtomicReference<String> assetClass = new AtomicReference<>("");
+        try {
+            ResponseEntity<YahooAPISearch> response = restTemplate.getForEntity(url, YahooAPISearch.class);
+            Optional.ofNullable(response.getBody())
+                    .map(YahooAPISearch::getQuotes)
+                    .ifPresent(e -> e.forEach(el -> {
+                        if (search.equals(el.getSymbol())) {
+                            assetClass.set(el.getQuoteType());
+                        }
+                    }));
+
+        } catch (Exception e) {
+            System.err.println("Exception while calling Yahoo Finance Asset search");
+        }
+        if (assetClass.get().isBlank()) {
+            assetClass.set("OTHERS");
+        }
+        return assetClass.get();
+    }
+
+    @Override
+    public List<String> getAssetsMatching(String search) {
+        String url = "https://query1.finance.yahoo.com/v1/finance/search?q=" +
+                search + "&lang=it-IT&region=IT&quotesCount=6&newsCount=4&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&enableNavLinks=true&enableEnhancedTrivialQuery=true&enableCulturalAssets=true&enableLogoUrl=true";
+
+        List<String> stringList = new ArrayList<>();
+        try {
+            ResponseEntity<YahooAPISearch> response = restTemplate.getForEntity(url, YahooAPISearch.class);
+            Optional.ofNullable(response.getBody())
+                    .map(YahooAPISearch::getQuotes)
+                    .ifPresent(e -> e.forEach(el -> stringList.add(el.getSymbol())));
+            stringList.removeAll(Collections.singleton(null));
+
+        } catch (Exception e) {
+            System.err.println("Exception while calling Yahoo Finance Asset search");
+        }
+        return stringList;
     }
 
     private static String getDescription(String responseDescriptionBody, int index) {
