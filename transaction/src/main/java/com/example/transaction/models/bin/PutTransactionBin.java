@@ -10,6 +10,7 @@ import lombok.Data;
 public class PutTransactionBin {
 
     private long id;
+
     private PutTransactionDto transaction;
 
 }
