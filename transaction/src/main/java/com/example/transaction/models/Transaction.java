@@ -14,7 +14,7 @@ public class Transaction {
 
     private long id;
 
-    private TransactionType type;
+    private String type;
 
     private LocalDate date;
 
@@ -23,8 +23,6 @@ public class Transaction {
     private String symbolId;
 
     private BigDecimal price;
-
-    private long portfolioId;
 
     private String currency;
 

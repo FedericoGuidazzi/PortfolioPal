@@ -30,6 +30,7 @@ import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetTransactionAfterDateBin;
 import com.example.transaction.models.bin.PutTransactionBin;
+import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.dtos.PutTransactionDto;
 import com.example.transaction.models.entities.TransactionEntity;
 import com.example.transaction.models.enums.TransactionType;
@@ -91,7 +92,7 @@ class TransactionServiceImplTest {
 			Transaction transaction = transactions.get(i);
 
 			assertEquals(entity.getId(), transaction.getId());
-			assertEquals(entity.getType(), transaction.getType());
+			assertEquals(entity.getType().getPersistedValue(), transaction.getType());
 			assertEquals(entity.getDate(), transaction.getDate());
 			assertEquals(entity.getAmount(), transaction.getAmount());
 			assertEquals(entity.getPrice(), transaction.getPrice());
@@ -126,7 +127,7 @@ class TransactionServiceImplTest {
 		// Assert
 		assertNotNull(transaction);
 		assertEquals(entity.getId(), transaction.getId());
-		assertEquals(entity.getType(), transaction.getType());
+		assertEquals(entity.getType().getPersistedValue(), transaction.getType());
 		assertEquals(entity.getDate(), transaction.getDate());
 		assertEquals(entity.getAmount(), transaction.getAmount());
 		assertEquals(entity.getPrice(), transaction.getPrice());
@@ -154,12 +155,11 @@ class TransactionServiceImplTest {
 
 		Transaction transaction = Transaction.builder()
 				.id(1L)
-				.type(TransactionType.BUY)
+				.type(TransactionType.BUY.getPersistedValue())
 				.date(LocalDate.parse("2022-01-01"))
 				.amount(10)
 				.price(BigDecimal.valueOf(100))
 				.symbolId("AAPL")
-				.portfolioId(1)
 				.currency("USD")
 				.build();
 
@@ -167,7 +167,7 @@ class TransactionServiceImplTest {
 				.id(1L)
 				.transaction(
 						PutTransactionDto.builder()
-								.type(TransactionType.BUY)
+								.type(TransactionType.BUY.getPersistedValue())
 								.date(LocalDate.parse("2022-01-01"))
 								.amount(10)
 								.price(BigDecimal.valueOf(100))
@@ -203,7 +203,6 @@ class TransactionServiceImplTest {
 		assertEquals(transaction.getAmount(), updatedTransaction.getAmount());
 		assertEquals(transaction.getPrice(), updatedTransaction.getPrice());
 		assertEquals(transaction.getSymbolId(), updatedTransaction.getSymbolId());
-		assertEquals(transaction.getPortfolioId(), updatedTransaction.getPortfolioId());
 		assertEquals(transaction.getCurrency(), updatedTransaction.getCurrency());
 
 		verify(transactionRepository, times(1)).existsById(transaction.getId());
@@ -217,7 +216,7 @@ class TransactionServiceImplTest {
 		// Arrange
 		Transaction transaction = Transaction.builder()
 				.id(1L)
-				.type(TransactionType.BUY)
+				.type(TransactionType.BUY.getPersistedValue())
 				.date(LocalDate.parse("2022-01-01"))
 				.amount(10)
 				.price(BigDecimal.valueOf(100))
@@ -229,7 +228,7 @@ class TransactionServiceImplTest {
 				.id(1L)
 				.transaction(
 						PutTransactionDto.builder()
-								.type(TransactionType.BUY)
+								.type(TransactionType.BUY.getPersistedValue())
 								.date(LocalDate.parse("2022-01-01"))
 								.amount(10)
 								.price(BigDecimal.valueOf(100))
@@ -260,26 +259,28 @@ class TransactionServiceImplTest {
 
 		when(transactionRepository.saveAll(anyIterable())).thenReturn(null);
 
-		List<Transaction> transactions = transactionService.saveTransactionsFromCsv(inputStream);
+		List<Transaction> transactions = transactionService.saveTransactionsFromCsv(
+				UploadBin.builder()
+						.inputStream(inputStream)
+						.portfolioId(1)
+						.build());
 
 		assertEquals(2, transactions.size());
 
 		Transaction firstTransaction = transactions.get(0);
 		assertEquals(LocalDate.of(2021, 1, 1), firstTransaction.getDate());
-		assertEquals(TransactionType.BUY, firstTransaction.getType());
+		assertEquals(TransactionType.BUY.getPersistedValue(), firstTransaction.getType());
 		assertEquals(10.0, firstTransaction.getAmount());
 		assertEquals("AAPL", firstTransaction.getSymbolId());
 		assertEquals(BigDecimal.valueOf(100.0), firstTransaction.getPrice());
-		assertEquals(1L, firstTransaction.getPortfolioId());
 		assertEquals("USD", firstTransaction.getCurrency());
 
 		Transaction secondTransaction = transactions.get(1);
 		assertEquals(LocalDate.of(2021, 2, 1), secondTransaction.getDate());
-		assertEquals(TransactionType.SELL, secondTransaction.getType());
+		assertEquals(TransactionType.SELL.getPersistedValue(), secondTransaction.getType());
 		assertEquals(5.0, secondTransaction.getAmount());
 		assertEquals("GOOGL", secondTransaction.getSymbolId());
 		assertEquals(BigDecimal.valueOf(200.0), secondTransaction.getPrice());
-		assertEquals(1L, secondTransaction.getPortfolioId());
 		assertEquals("USD", secondTransaction.getCurrency());
 	}
 
@@ -321,7 +322,7 @@ class TransactionServiceImplTest {
 
 		Transaction transaction1 = transactions.get(0);
 		assertEquals(1L, transaction1.getId());
-		assertEquals(TransactionType.BUY, transaction1.getType());
+		assertEquals(TransactionType.BUY.getPersistedValue(), transaction1.getType());
 		assertEquals(LocalDate.of(2021, 1, 1), transaction1.getDate());
 		assertEquals(100.0, transaction1.getAmount());
 		assertEquals(BigDecimal.valueOf(50.0), transaction1.getPrice());
@@ -330,7 +331,7 @@ class TransactionServiceImplTest {
 
 		Transaction transaction2 = transactions.get(1);
 		assertEquals(2L, transaction2.getId());
-		assertEquals(TransactionType.SELL, transaction2.getType());
+		assertEquals(TransactionType.SELL.getPersistedValue(), transaction2.getType());
 		assertEquals(LocalDate.of(2021, 2, 1), transaction2.getDate());
 		assertEquals(50.0, transaction2.getAmount());
 		assertEquals(BigDecimal.valueOf(60.0), transaction2.getPrice());
