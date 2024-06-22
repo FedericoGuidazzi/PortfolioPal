@@ -38,6 +38,36 @@ public class TransactionController {
 	@Autowired
 	private RabbitMqSender sender;
 
+	@GetMapping("/get/{portfolioId}")
+	public ResponseEntity<List<Transaction>> getAllTransactionsByPortfolioId(@PathVariable long portfolioId,
+			@RequestParam(defaultValue = "false") boolean mock) {
+		if (mock) {
+			return ResponseEntity.ok(List.of(
+					Transaction.builder()
+							.id(1)
+							.type(TransactionType.BUY)
+							.date(LocalDate.parse("2021-01-01"))
+							.amount(100)
+							.price(BigDecimal.valueOf(100))
+							.symbolId("AAPL")
+							.portfolioId(portfolioId)
+							.currency("USD")
+							.build(),
+					Transaction.builder()
+							.id(2)
+							.type(TransactionType.BUY)
+							.date(LocalDate.parse("2021-01-02"))
+							.amount(100)
+							.price(BigDecimal.valueOf(100))
+							.symbolId("AAPL")
+							.portfolioId(portfolioId)
+							.currency("USD")
+							.build()));
+
+		}
+		return ResponseEntity.ok(transactionService.getAllTransactionsByPortfolioId(portfolioId));
+	}
+
 	@SneakyThrows
 	@PutMapping("update/{id}")
 	public ResponseEntity<Transaction> updateTransaction(@PathVariable String id,
@@ -84,9 +114,9 @@ public class TransactionController {
 		return ResponseEntity.ok(list);
 	}
 
-	@GetMapping("/get/portfolio_and_date")
+	@GetMapping("/get/{portfolioId}/after_date")
 	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndDate(
-			@RequestParam long portfolioId,
+			@PathVariable long portfolioId,
 			@RequestParam String date, @RequestParam(defaultValue = "false") boolean mock) {
 
 		if (mock) {
