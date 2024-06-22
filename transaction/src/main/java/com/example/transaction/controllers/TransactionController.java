@@ -1,9 +1,12 @@
 package com.example.transaction.controllers;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,9 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
+import com.example.transaction.models.bin.GetTransactionAfterDateBin;
 import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.dtos.PutTransactionDto;
+import com.example.transaction.models.enums.TransactionType;
 import com.example.transaction.services.RabbitMqSender;
 import com.example.transaction.services.TransactionService;
 
@@ -32,17 +37,6 @@ public class TransactionController {
 
 	@Autowired
 	private RabbitMqSender sender;
-
-	@PostMapping("/create")
-	public ResponseEntity<Transaction> createTransaction(
-			@RequestBody PostTransactionBin transactionBin) {
-		Transaction transaction = transactionService.createTransaction(transactionBin);
-		this.sender.send(PostTransactionBin.builder()
-				.date(transaction.getDate())
-				.portfolioId(transaction.getPortfolioId())
-				.build());
-		return ResponseEntity.ok(transaction);
-	}
 
 	@SneakyThrows
 	@PutMapping("update/{id}")
@@ -88,5 +82,32 @@ public class TransactionController {
 				.portfolioId(list.get(list.size() - 1).getPortfolioId())
 				.build());
 		return ResponseEntity.ok(list);
+	}
+
+	@GetMapping("/get/portfolio_and_date")
+	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndDate(
+			@RequestParam long portfolioId,
+			@RequestParam String date, @RequestParam(defaultValue = "false") boolean mock) {
+
+		if (mock) {
+			return ResponseEntity.ok(List.of(Transaction.builder()
+					.id(1)
+					.type(TransactionType.BUY)
+					.date(LocalDate.now())
+					.amount(100)
+					.price(BigDecimal.valueOf(100))
+					.symbolId("AAPL")
+					.portfolioId(portfolioId)
+					.currency("USD")
+					.build()));
+		}
+
+		LocalDate localDate = LocalDate.parse(date);
+		List<Transaction> transactions = transactionService
+				.getTransactionsByPortfolioIdAndDate(GetTransactionAfterDateBin.builder()
+						.portfolioId(portfolioId)
+						.date(localDate)
+						.build());
+		return ResponseEntity.ok(transactions);
 	}
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.CsvPortfolioReader;
 import com.example.transaction.models.Transaction;
-import com.example.transaction.models.bin.PostTransactionBin;
+import com.example.transaction.models.bin.GetTransactionAfterDateBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.entities.TransactionEntity;
 import com.example.transaction.repositories.TransactionRepository;
@@ -20,30 +20,6 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Autowired
 	private TransactionRepository transactionRepository;
-
-	@Override
-	public Transaction createTransaction(PostTransactionBin transactionBin) {
-		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
-				.type(transactionBin.getType())
-				.date(transactionBin.getDate())
-				.amount(transactionBin.getAmount())
-				.price(transactionBin.getPrice())
-				.symbolId(transactionBin.getSymbolId())
-				.portfolioId(transactionBin.getPortfolioId())
-				.currency(transactionBin.getCurrency())
-				.build());
-
-		return Transaction.builder()
-				.id(entity.getId())
-				.type(entity.getType())
-				.date(entity.getDate())
-				.amount(entity.getAmount())
-				.price(entity.getPrice())
-				.symbolId(entity.getSymbolId())
-				.portfolioId(entity.getPortfolioId())
-				.currency(entity.getCurrency())
-				.build();
-	}
 
 	@Override
 	public List<Transaction> getAllTransactionsByPortfolioId(long portfolioId) {
@@ -130,6 +106,24 @@ public class TransactionServiceImpl implements TransactionService {
 				.toList());
 
 		return transactions;
+	}
+
+	@Override
+	public List<Transaction> getTransactionsByPortfolioIdAndDate(GetTransactionAfterDateBin bin) {
+		List<TransactionEntity> list = transactionRepository.findAllByPortfolioIdAndDateAfter(bin.getPortfolioId(),
+				bin.getDate());
+
+		return list.stream()
+				.map(entity -> Transaction.builder()
+						.id(entity.getId())
+						.type(entity.getType())
+						.date(entity.getDate())
+						.amount(entity.getAmount())
+						.price(entity.getPrice())
+						.symbolId(entity.getSymbolId())
+						.currency(entity.getCurrency())
+						.build())
+				.toList();
 	}
 
 }
