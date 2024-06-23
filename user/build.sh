@@ -5,5 +5,3 @@ rm -f *.jar
 cp target/*.jar runnable.jar
 
 echo "App Compiled Successfully"
-
-docker-compose up

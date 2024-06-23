@@ -27,7 +27,7 @@ public class CsvPortfolioReader {
         try (
                 Reader reader = new InputStreamReader(inputStream);
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                        .withHeader("date", "type", "amount", "symbolId", "price", "portfolioId", "currency")
+                        .withHeader("date", "type", "amount", "symbolId", "price", "currency")
                         .withIgnoreHeaderCase()
                         .withTrim()
                         .withFirstRecordAsHeader());) {
@@ -36,13 +36,12 @@ public class CsvPortfolioReader {
                 LocalDate date = LocalDate.parse(csvRecord.get("date"), formatter);
                 Transaction entry = Transaction.builder()
                         .type(Optional.ofNullable(
-                                TransactionType.fromValue(csvRecord.get("type")))
+                                TransactionType.fromValue(csvRecord.get("type")).getPersistedValue())
                                 .orElseThrow(() -> new CustomException("Invalid transaction type")))
                         .date(date)
                         .amount(Double.parseDouble(csvRecord.get("amount")))
                         .symbolId(csvRecord.get("symbolId"))
                         .price(BigDecimal.valueOf(Double.parseDouble(csvRecord.get("price"))))
-                        .portfolioId(Long.parseLong(csvRecord.get("portfolioId")))
                         .currency(csvRecord.get("currency"))
                         .build();
                 portfolioEntries.add(entry);

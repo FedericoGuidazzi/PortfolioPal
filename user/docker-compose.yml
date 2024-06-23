@@ -2,6 +2,8 @@ version: "3.7"
 services:
   app:
     image: lucagrandi/portfoliopal
+    ports:
+      - 8080:8080
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -9,6 +11,8 @@ services:
       - springboot-rabbitmq-network
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - PORT=8080
+    platform: linux/amd64
 
   rabbitmq:
     image: rabbitmq:3.9-management

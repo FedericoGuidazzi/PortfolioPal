@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8090:8090
+      - 8080:8080
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -16,6 +16,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - PORT=8080
     networks:
       - springboot-mysql-network
       - springboot-rabbitmq-network
