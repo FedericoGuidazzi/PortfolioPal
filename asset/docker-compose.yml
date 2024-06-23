@@ -1,0 +1,45 @@
+version: "3.2"
+services:
+  #dbmysql:
+  #  image: mysql
+  #  container_name: mysqlcontainer
+  #  ports:
+  #    - "3306:3306"
+  #  environment:
+  #    MYSQL_ROOT_PASSWORD: "root"
+  #    MYSQL_DATABASE: "assets"
+  #  networks:
+  #    - networkmysql
+  #  healthcheck:
+  #    test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+  #    timeout: 20s
+  #    retries: 10
+  #  restart: unless-stopped
+  #  volumes:
+  #    - asset:/assetdata
+
+  asset:
+    build: .
+    image: assetimage
+    container_name: assetcontainer
+    ports:
+      - "8080:8080"
+    #environment:
+    #  MYSQL_HOST: mysqlcontainer
+    #  MYSQL_PORT: 3306
+    #  MYSQL_DB_NAME: assets
+    #  MYSQL_USER: root
+    #  MYSQL_PASSWORD: root
+    #networks:
+    #  - networkmysql
+    #depends_on:
+    #  dbmysql:
+    #    condition:
+    #      service_healthy
+    #volumes:
+    #  - asset:/assetdata
+
+#networks:
+#  networkmysql:
+#volumes:
+#  asset:
