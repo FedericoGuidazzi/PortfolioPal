@@ -8,6 +8,7 @@ import {
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { GoogleSsoDirective } from '../../utils/auth/google-sso.directive';
 @Component({
   selector: 'app-sign-up',
   standalone: true,
@@ -17,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     ReactiveFormsModule,
     MatIconModule,
+    GoogleSsoDirective,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.css',

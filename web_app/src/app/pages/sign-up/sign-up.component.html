@@ -1,50 +1,54 @@
-<form
-  (submit)="onSubmit()"
-  class="d-flex flex-column justify-content-center m-auto gap-3 col-10 col-md-12"
+<div
+  class="form-container d-flex flex-column justify-content-center m-auto gap-3 col-10 col-md-12 text-center"
 >
-  <h1 class="h3 mb-1 fw-bold">Create an account</h1>
-  <p class="w-100 mt-2 mb-0">Enter your email to sign up for this app</p>
-  <mat-form-field>
-    <mat-label>Email</mat-label>
-    <input
-      type="email"
-      matInput
-      [formControl]="emailFormControl"
-      placeholder="Ex. pat@example.com"
-    />
-    @if (emailFormControl.hasError('email') &&
-    !emailFormControl.hasError('required')) {
-    <mat-error>Please enter a valid email address</mat-error>
-    } @if (emailFormControl.hasError('required')) {
-    <mat-error>Email is <strong>required</strong></mat-error>
-    }
-  </mat-form-field>
-  <mat-form-field>
-    <input
-      matInput
-      placeholder="Password"
-      [type]="hide ? 'password' : 'text'"
-      [formControl]="passwordFormControl"
-      required
-    />
-    <mat-icon matSuffix (click)="hide = !hide">{{
-      hide ? "visibility_off" : "visibility"
-    }}</mat-icon>
-    @if (passwordFormControl.hasError('required')){
-    <mat-error>Enter your password</mat-error>
-    } @if (passwordFormControl.hasError('pattern')) {
-    <mat-error>Password must contain at least 8 characters</mat-error>
-    }
-  </mat-form-field>
-  <button
-    class="btn w-100"
-    type="submit"
-    [disabled]="!emailFormControl.valid || !passwordFormControl.valid"
+  <form
+    (submit)="onSubmit()"
+    class="d-flex flex-column justify-content-center gap-3 col-12"
   >
-    Sign up with email
-  </button>
+    <h1 class="h3 mb-1 fw-bold">Create an account</h1>
+    <p class="w-100 mt-2 mb-0">Enter your email to sign up for this app</p>
+    <mat-form-field>
+      <mat-label>Email</mat-label>
+      <input
+        type="email"
+        matInput
+        [formControl]="emailFormControl"
+        placeholder="Ex. pat@example.com"
+      />
+      @if (emailFormControl.hasError('email') &&
+      !emailFormControl.hasError('required')) {
+      <mat-error>Please enter a valid email address</mat-error>
+      } @if (emailFormControl.hasError('required')) {
+      <mat-error>Email is <strong>required</strong></mat-error>
+      }
+    </mat-form-field>
+    <mat-form-field>
+      <input
+        matInput
+        placeholder="Password"
+        [type]="hide ? 'password' : 'text'"
+        [formControl]="passwordFormControl"
+        required
+      />
+      <mat-icon matSuffix (click)="hide = !hide">{{
+        hide ? "visibility_off" : "visibility"
+      }}</mat-icon>
+      @if (passwordFormControl.hasError('required')){
+      <mat-error>Enter your password</mat-error>
+      } @if (passwordFormControl.hasError('pattern')) {
+      <mat-error>Password must contain at least 8 characters</mat-error>
+      }
+    </mat-form-field>
+    <button
+      class="btn w-100"
+      type="submit"
+      [disabled]="!emailFormControl.valid || !passwordFormControl.valid"
+    >
+      Sign up with email
+    </button>
+  </form>
   <p class="delimited-text">or continue with</p>
-  <button class="g-btn w-100">
+  <button class="g-btn w-100" appGoogleSso>
     <span><img src="/assets/icons/ic-google.svg" alt="" /></span>
     <span>Google</span>
   </button>
@@ -54,4 +58,4 @@
     and
     <a href="/">Privacy Policy</a>
   </p>
-</form>
+</div>

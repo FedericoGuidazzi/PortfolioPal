@@ -8,6 +8,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { GoogleSsoDirective } from '../../utils/auth/google-sso.directive';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ import { MatInputModule } from '@angular/material/input';
     MatInputModule,
     ReactiveFormsModule,
     MatIconModule,
+    GoogleSsoDirective,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
