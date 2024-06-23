@@ -1,1 +1,6 @@
+@if (angularFireAuth.authState | async) {
+<app-user-navbar></app-user-navbar>
+} @else {
+<app-navbar></app-navbar>
+}
 <router-outlet />
