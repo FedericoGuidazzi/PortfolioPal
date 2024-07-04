@@ -6,9 +6,3 @@ spring:
           enabled: true
     kubernetes:
       enabled: false
-server:
-  port: 8080
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_SERVER:http://localhost:8761/eureka}
