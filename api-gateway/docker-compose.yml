@@ -102,8 +102,8 @@ services:
     depends_on:
       service-discovery:
         condition: service_healthy
-      # user-service:
-      #   condition: service_started
+      user-service:
+        condition: service_started
       transaction-service:
         condition: service_started
     networks:

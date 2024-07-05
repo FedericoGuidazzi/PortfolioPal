@@ -1,6 +1,8 @@
 # Use a base image with Java 17
 FROM openjdk:17
 
+COPY serviceAccountKey.json serviceAccountKey.json
+
 # Copy the JAR package into the image
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
