@@ -14,5 +14,6 @@ export class GoogleSsoDirective {
       new GoogleAuthProvider()
     );
     // do what you want with the credentials, for ex adding them to firestore...
+    
   }
 }
