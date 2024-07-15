@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { authGuard } from './utils/auth-guard/auth.guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,7 @@ export const routes: Routes = [
       import('./pages/ranking/ranking.component').then(
         (c) => c.RankingComponent
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'dashboard',
@@ -34,11 +36,13 @@ export const routes: Routes = [
       import('./pages/dashboard/dashboard.component').then(
         (c) => c.DashboardComponent
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'asset/:assetName',
     loadComponent: () =>
       import('./pages/asset/asset.component').then((c) => c.AssetComponent),
+    canActivate: [authGuard],
   },
 ];
 
