@@ -3,6 +3,7 @@ package com.example.user.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,6 +32,12 @@ public class UserController {
     @GetMapping("/create")
     public ResponseEntity<User> create(@RequestHeader("uid") String id) {
         return ResponseEntity.ok(userService.addUser(id));
+    }
+
+    @SneakyThrows
+    @GetMapping("/get/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable String id) {
+        return ResponseEntity.ok(userService.getUser(id));
     }
 
     @SneakyThrows
