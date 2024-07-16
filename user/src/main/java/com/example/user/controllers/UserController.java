@@ -3,9 +3,9 @@ package com.example.user.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,19 +28,19 @@ public class UserController {
     private UserService userService;
 
     @SneakyThrows
-    @GetMapping("/create/{id}")
-    public ResponseEntity<User> create(@PathVariable String id) {
+    @GetMapping("/create")
+    public ResponseEntity<User> create(@RequestHeader("uid") String id) {
         return ResponseEntity.ok(userService.addUser(id));
     }
 
     @SneakyThrows
-    @GetMapping("/get/{id}")
-    public ResponseEntity<User> getUser(@PathVariable String id) {
+    @GetMapping("/get")
+    public ResponseEntity<User> getUser(@RequestHeader("uid") String id) {
         return ResponseEntity.ok(userService.getUser(id));
     }
 
-    @PutMapping("/update_privacy/{id}")
-    public void updateUserPrivacy(@PathVariable String id, @RequestBody boolean sharePortfolio) {
+    @PutMapping("/update-privacy")
+    public void updateUserPrivacy(@RequestHeader("uid") String id, @RequestBody boolean sharePortfolio) {
         PutUserPrivacyBin privacyBin = PutUserPrivacyBin.builder()
                 .userID(id)
                 .sharePortfolio(sharePortfolio)
@@ -49,8 +49,8 @@ public class UserController {
     }
 
     @SneakyThrows
-    @PutMapping("/update_currency/{id}")
-    public ResponseEntity<User> updateCurrency(@PathVariable String id, @RequestBody String currency) {
+    @PutMapping("/update-currency")
+    public ResponseEntity<User> updateCurrency(@RequestHeader("uid") String id, @RequestBody String currency) {
         PutUserCurrencyBin currencyBin = PutUserCurrencyBin.builder()
                 .userID(id)
                 .currency(currency)
