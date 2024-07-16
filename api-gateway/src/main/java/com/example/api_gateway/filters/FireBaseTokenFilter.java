@@ -45,8 +45,10 @@ public class FireBaseTokenFilter implements GatewayFilter {
         // Extract Uid and Email
         String uid = decodedToken.getUid();
 
-        exchange.getAttributes().put("uid", uid);
-        
-        return chain.filter(exchange);
+        ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                .header("uid", uid)
+                .build();
+
+        return chain.filter(exchange.mutate().request(modifiedRequest).build());
     }
 }

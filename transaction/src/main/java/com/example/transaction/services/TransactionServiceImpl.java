@@ -66,6 +66,11 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new CustomException("Transaction not found");
 		}
 
+		// Check if current user is the owner of the portfolio
+		if(!isOwner(transactionBin.getTransaction().getPortfolioId(), transactionBin.getUserId())) {
+			throw new CustomException("User is not the owner of the portfolio");
+		}
+
 		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
 				.id(transactionBin.getId())
 				.type(Optional.ofNullable(
@@ -91,12 +96,31 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Override
-	public void deleteTransaction(long id) {
+	public Transaction deleteTransaction(long id, String uid) {
+		Transaction deletedTransaction;
+		try {
+			deletedTransaction = this.getTransactionById(id);
+		} catch (CustomException e) {
+			return null;
+		}
+
+		// Check if current user is the owner of the portfolio
+		if (!isOwner(deletedTransaction.getPortfolioId(), uid)) {
+			return null;
+			
+		}
+
 		transactionRepository.delete(TransactionEntity.builder().id(id).build());
+		return deletedTransaction;
 	}
 
 	@Override
 	public List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException {
+		// Check if current user is the owner of the portfolio
+		if (!isOwner(bin.getPortfolioId(), bin.getUserId())) {
+			throw new CustomException("User is not the owner of the portfolio");
+		}
+
 		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream());
 		Map<String, Double> assetsQty = this.getAssetsQtyByPortfolioId(bin.getPortfolioId()).stream().collect(
 				Collectors.toMap(GetAssetQtyOutputBin::getSymbolId, GetAssetQtyOutputBin::getAmount));
@@ -149,6 +173,12 @@ public class TransactionServiceImpl implements TransactionService {
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioId(long portfolioId) {
 		return this.transactionRepository.findAssetsQtyByPortfolioId(portfolioId);
+	}
+
+	private boolean isOwner(long portfolioId, String uid) {
+		// TODO: Request list of portfolios from portfolio-service
+
+		return false;
 	}
 
 }

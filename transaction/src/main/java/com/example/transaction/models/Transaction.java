@@ -24,4 +24,6 @@ public class Transaction {
 
     private String currency;
 
+    private long portfolioId;
+
 }
