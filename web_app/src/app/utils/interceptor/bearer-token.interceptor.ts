@@ -28,7 +28,7 @@ const addBearerToken = async (
 export const bearerTokenInterceptor: HttpInterceptorFn = (req, next) => {
   // only add the bearer token to requests to the backend
   // Note that you can customize it to only add the bearer token to certain requests
-  if (req.url.startsWith(environment.backendUrl)) {
+  if (req.url.startsWith(environment.backendUrl+"/transaction") || req.url.startsWith(environment.backendUrl+"/user")) {
     return from(addBearerToken(req, next));
   } else {
     return next(req);
