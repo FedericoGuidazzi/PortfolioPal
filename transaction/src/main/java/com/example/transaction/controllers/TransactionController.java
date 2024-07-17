@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.transaction.PublicEndpoint;
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetAssetQtyOutputBin;
@@ -97,6 +98,7 @@ public class TransactionController {
 		return ResponseEntity.ok(list);
 	}
 
+	@PublicEndpoint
 	@GetMapping("/get-by-portfolio/{portfolioId}")
 	public ResponseEntity<List<Transaction>> getAllTransactionsByPortfolioId(@PathVariable long portfolioId,
 			@RequestParam(defaultValue = "false") boolean mock) {
@@ -125,6 +127,7 @@ public class TransactionController {
 		return ResponseEntity.ok(transactionService.getAllTransactionsByPortfolioId(portfolioId));
 	}
 
+	@PublicEndpoint
 	@GetMapping("/get-by-portfolio/{portfolioId}/after-date")
 	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndDate(
 			@PathVariable long portfolioId,
@@ -151,6 +154,7 @@ public class TransactionController {
 		return ResponseEntity.ok(transactions);
 	}
 
+	@PublicEndpoint
 	@GetMapping("/get-by-portfolio/{portfolioId}/assets-qty")
 	public ResponseEntity<List<GetAssetQtyOutputBin>> getAssetsQtyByPortfolioId(@PathVariable long portfolioId,
 			@RequestParam(defaultValue = "false") boolean mock) {
