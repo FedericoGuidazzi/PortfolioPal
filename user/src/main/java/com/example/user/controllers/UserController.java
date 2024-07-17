@@ -30,7 +30,7 @@ public class UserController {
 
     @SneakyThrows
     @GetMapping("/create")
-    public ResponseEntity<User> create(@RequestHeader("uid") String id) {
+    public ResponseEntity<User> create(@RequestHeader("X-Authenticated-UserId") String id) {
         return ResponseEntity.ok(userService.addUser(id));
     }
 
@@ -42,12 +42,12 @@ public class UserController {
 
     @SneakyThrows
     @GetMapping("/get")
-    public ResponseEntity<User> getUser(@RequestHeader("uid") String id) {
+    public ResponseEntity<User> getUser(@RequestHeader("X-Authenticated-UserId") String id) {
         return ResponseEntity.ok(userService.getUser(id));
     }
 
     @PutMapping("/update-privacy")
-    public void updateUserPrivacy(@RequestHeader("uid") String id, @RequestBody boolean sharePortfolio) {
+    public void updateUserPrivacy(@RequestHeader("X-Authenticated-UserId") String id, @RequestBody boolean sharePortfolio) {
         PutUserPrivacyBin privacyBin = PutUserPrivacyBin.builder()
                 .userID(id)
                 .sharePortfolio(sharePortfolio)
@@ -57,7 +57,7 @@ public class UserController {
 
     @SneakyThrows
     @PutMapping("/update-currency")
-    public ResponseEntity<User> updateCurrency(@RequestHeader("uid") String id, @RequestBody String currency) {
+    public ResponseEntity<User> updateCurrency(@RequestHeader("X-Authenticated-UserId") String id, @RequestBody String currency) {
         PutUserCurrencyBin currencyBin = PutUserCurrencyBin.builder()
                 .userID(id)
                 .currency(currency)

@@ -44,7 +44,7 @@ public class TransactionController {
 
 	@SneakyThrows
 	@PutMapping("update/{id}")
-	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id, @RequestHeader("uid") String uid,
+	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id, @RequestHeader("X-Authenticated-UserId") String uid,
 			@RequestBody PutTransactionDto entity) {
 
 		Transaction transaction = transactionService.updateTransaction(
@@ -64,7 +64,7 @@ public class TransactionController {
 
 	@SneakyThrows
 	@PutMapping("/delete/{id}")
-	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id, @RequestHeader("uid") String uid) {
+	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id, @RequestHeader("X-Authenticated-UserId") String uid) {
 		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id, uid)).orElseThrow(() -> new CustomException("Transaction not found"));
 			this.sender
 					.send(PostTransactionBin.builder()
@@ -79,7 +79,7 @@ public class TransactionController {
 	@PostMapping("/upload/{portfolioId}")
 	public ResponseEntity<List<Transaction>> uploadFile(
 			@PathVariable long portfolioId,
-			@RequestHeader("uid") String uid,
+			@RequestHeader("X-Authenticated-UserId") String uid,
 			@RequestParam(value = "file", required = true) MultipartFile file) {
 		if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
 			throw new CustomException("Please upload a valid CSV file.");

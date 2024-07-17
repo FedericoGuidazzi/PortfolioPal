@@ -31,7 +31,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
         }
         token = Optional.ofNullable(request.getHeaders().get("Authorization"))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token!")).toString()
-                .split(" ")[1];
+                .substring(7);
 
         FirebaseToken decodedToken;
         try {
@@ -46,7 +46,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
         String uid = decodedToken.getUid();
 
         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-                .header("uid", uid)
+                .header("X-Authenticated-UserId", uid)
                 .build();
 
         return chain.filter(exchange.mutate().request(modifiedRequest).build());
