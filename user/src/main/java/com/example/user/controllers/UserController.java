@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.user.PublicEndpoint;
 import com.example.user.models.User;
 import com.example.user.models.bin.PutUserCurrencyBin;
 import com.example.user.models.bin.PutUserPrivacyBin;
@@ -34,6 +35,7 @@ public class UserController {
         return ResponseEntity.ok(userService.addUser(id));
     }
 
+    @PublicEndpoint
     @SneakyThrows
     @GetMapping("/get/{id}")
     public ResponseEntity<User> getUserById(@PathVariable String id) {
