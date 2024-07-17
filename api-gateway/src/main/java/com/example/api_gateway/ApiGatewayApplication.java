@@ -25,12 +25,14 @@ public class ApiGatewayApplication {
 	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
 		return builder.routes()
 				.route(r -> r.path("/user/**")
-						.filters(f -> f.rewritePath("/user/(?<segment>.*)", "/api/v1/user/${segment}")
-								.filter(auTokenFilter))
+						.filters(f -> f
+								.filter(auTokenFilter)
+								.rewritePath("/user/(?<segment>.*)", "/api/v1/user/${segment}"))
 						.uri("lb://user"))
 				.route(r -> r.path("/transaction/**")
-						.filters(f -> f.rewritePath("/transaction/(?<segment>.*)", "/api/v1/transaction/${segment}")
-								.filter(auTokenFilter))
+						.filters(f -> f
+								.filter(auTokenFilter)
+								.rewritePath("/transaction/(?<segment>.*)", "/api/v1/transaction/${segment}"))
 						.uri("lb://transaction"))
 				.build();
 	}

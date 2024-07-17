@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 public class FireBaseTokenFilter implements GatewayFilter {
     /**
      * Authenticating user via fireBase authorizer verify fireBase token and extract
-     * Uid and Email from token
+     * Uid from token
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
