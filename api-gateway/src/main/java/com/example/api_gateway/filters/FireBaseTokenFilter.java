@@ -29,7 +29,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
         if (!request.getHeaders().containsKey("Authorization")) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token!");
         }
-        token = Optional.ofNullable(request.getHeaders().get("Authorization"))
+        token = Optional.ofNullable(request.getHeaders().getFirst("Authorization"))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token!")).toString()
                 .substring(7);
 
