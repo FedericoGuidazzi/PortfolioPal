@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { authGuard } from './utils/auth-guard/auth.guard';
+import { loginGuard } from './utils/login-guard/login.guard';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,7 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./pages/login/login.component').then((c) => c.LoginComponent),
+    canActivate: [loginGuard],
   },
   {
     path: 'signup',
@@ -21,6 +23,7 @@ export const routes: Routes = [
       import('./pages/sign-up/sign-up.component').then(
         (c) => c.SignUpComponent
       ),
+    canActivate: [loginGuard],
   },
   {
     path: 'ranking',
