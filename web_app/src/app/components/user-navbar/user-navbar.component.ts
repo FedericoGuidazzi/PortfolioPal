@@ -1,7 +1,8 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
+import { AuthService } from '../../utils/auth/auth.service';
 
 @Component({
   selector: 'app-user-navbar',
@@ -40,7 +41,11 @@ export class UserNavbarComponent {
 
   supportedLanguages: string[] = ['Italiano', 'English', 'Spanish', 'French'];
 
-  constructor(public location: Location) {}
+  constructor(
+    public location: Location,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   @ViewChild('language') language!: ElementRef;
   onSelected(): void {
@@ -49,5 +54,16 @@ export class UserNavbarComponent {
 
   onToggle(index: number): void {
     this.settings[index].value = !this.settings[index].value;
+  }
+
+  onLogout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['']);
+      },
+      error: (error) => {
+        console.error('Error logging out', error);
+      },
+    });
   }
 }

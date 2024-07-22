@@ -11,7 +11,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { AuthService } from '../../utils/auth/auth.service';
-import { GoogleSsoDirective } from '../../utils/google-directive/google-sso.directive';
 
 @Component({
   selector: 'app-sign-up',
@@ -22,7 +21,6 @@ import { GoogleSsoDirective } from '../../utils/google-directive/google-sso.dire
     MatInputModule,
     ReactiveFormsModule,
     MatIconModule,
-    GoogleSsoDirective,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.css',
@@ -51,25 +49,37 @@ export class SignUpComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  onSubmit() {
+  async onSubmit() {
     if (this.formGroup.valid) {
       // Register new user
       const email = this.emailFormControl.getRawValue();
       const password = this.passwordFormControl.getRawValue();
 
       if (email !== null && password !== null) {
-        this.authService
-          .signUpWithEmailAndPassword({ email, password })
-          .subscribe({
-            next: (response) => {
-              console.log('Sign up successful');
-              this.router.navigate(['/dashboard']);
-            },
-            error: (error) => {
-              console.error('Error signing up', error);
-            },
-          });
+        (
+          await this.authService.signUpWithEmailAndPassword({ email, password })
+        ).subscribe({
+          next: (response) => {
+            console.log('Sign up successful');
+            this.router.navigate(['/dashboard']);
+          },
+          error: (error) => {
+            console.error('Error signing up', error);
+          },
+        });
       }
     }
+  }
+
+  async submitWithGoogle() {
+    (await this.authService.signUpWithGoogle()).subscribe({
+      next: (response) => {
+        console.log('Sign up successful');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Error signing up', error);
+      },
+    });
   }
 }

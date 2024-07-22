@@ -20,8 +20,8 @@ export class UserService {
     return this.http.get(this.userUrl + '/get/' + id);
   }
 
-  createUser(data: any): Observable<any> {
-    return this.http.post(this.userUrl + '/create', data);
+  createUser(): Observable<any> {
+    return this.http.post(this.userUrl + '/create', {});
   }
 
   updatePrivacy(data: any): Observable<any> {

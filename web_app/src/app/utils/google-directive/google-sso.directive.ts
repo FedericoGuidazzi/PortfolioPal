@@ -1,19 +1,15 @@
 import { Directive, HostListener } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { GoogleAuthProvider } from '@firebase/auth';
+import { AuthService } from '../auth/auth.service';
 
 @Directive({
   selector: '[appGoogleSso]',
   standalone: true,
 })
 export class GoogleSsoDirective {
-  constructor(private angularFireAuth: AngularFireAuth) {}
+  constructor(private authService: AuthService) {}
   @HostListener('click')
   async onClick() {
-    const creds = await this.angularFireAuth.signInWithPopup(
-      new GoogleAuthProvider()
-    );
+    this.authService.loginWithGoogle();
     // do what you want with the credentials, for ex adding them to firestore...
-    
   }
 }

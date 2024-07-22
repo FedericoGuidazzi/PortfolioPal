@@ -85,12 +85,13 @@
           }
           <li><hr class="dropdown-divider mb-2" /></li>
           <li class="px-2">
-            <div
-              class="dropdown-item logout py-3 d-flex gap-3 align-items-center"
+            <button
+              class="dropdown-item logout p-2 d-flex gap-3 align-items-center"
+              (click)="onLogout()"
             >
               <img src="assets/icons/ic-logout.svg" alt="" />
               Sign out
-            </div>
+            </button>
           </li>
         </ul>
       </div>
