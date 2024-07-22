@@ -8,6 +8,10 @@ nav {
   background-color: white;
 }
 
+.nav-link.active {
+  font-weight: bold;
+}
+
 .dropdown-menu {
   width: 250px;
   border-radius: 16px;

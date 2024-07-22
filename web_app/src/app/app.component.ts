@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AuthService } from './utils/auth/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -9,5 +10,22 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 export class AppComponent {
   title = 'PortfolioPal';
 
-  constructor(public angularFireAuth: AngularFireAuth) {}
+  public isAuthenticated!: boolean;
+  private authSubscription!: Subscription;
+
+  constructor(private authService: AuthService) {}
+  ngOnInit() {
+    this.authSubscription = this.authService
+      .isAuthenticated()
+      .subscribe((auth) => {
+        this.isAuthenticated = auth;
+        console.log('Stato di autenticazione:', auth);
+      });
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
+  }
 }

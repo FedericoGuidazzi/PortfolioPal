@@ -1,13 +1,12 @@
 import { inject } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 export const authGuard: CanActivateFn = async () => {
-  const angularFireAuth = inject(AngularFireAuth);
+  const authService = inject(AuthService);
   const router = inject(Router);
-  const user = await angularFireAuth.currentUser;
-  // coerce to boolean
-  const isLoggedIn = !!user;
+  const isLoggedIn = await firstValueFrom(authService.isAuthenticated());
 
   if (!isLoggedIn) {
     router.navigate(['/login']);

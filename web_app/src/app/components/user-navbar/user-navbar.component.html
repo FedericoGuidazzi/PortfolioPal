@@ -17,13 +17,18 @@
         <li class="nav-item">
           <a
             class="nav-link"
-            [routerLink]=""
-            [class.active]="this.location.path() == ''"
+            [routerLink]="'/dashboard'"
+            [class.active]="this.location.path().includes('dashboard')"
             >Home</a
           >
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled" aria-disabled="true">Ranking</a>
+          <a
+            class="nav-link"
+            [routerLink]="'/ranking'"
+            [class.active]="this.location.path().includes('ranking')"
+            >Ranking</a
+          >
         </li>
       </ul>
       <div class="dropdown text-end">
