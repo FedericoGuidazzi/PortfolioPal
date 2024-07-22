@@ -39,7 +39,7 @@ export class LoginComponent {
 
   private formGroup!: FormGroup;
 
-  private hide!: boolean;
+  public hide!: boolean;
 
   ngOnInit() {
     this.hide = true;
