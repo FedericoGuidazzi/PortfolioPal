@@ -9,25 +9,26 @@
       <canvas id="lineChart"></canvas>
     </div>
     <div class="mt-3 d-flex justify-content-center">
-      <div class="p-2 selectors rounded-20">
-        <div class="py-3" id="selectorsDiv">
-          <div
-            (click)="updateData('1S')"
-            class="d-inline p-3 text-center selectorSelected rounded-27"
-            id="1S"
-          >
-            1S
-          </div>
-          @for (item of duration; track $index) {
-          <div
-            (click)="updateData(item)"
-            class="d-inline p-3 text-center rounded-27"
-            [id]="item"
-          >
-            {{ item }}
-          </div>
-          }
+      <div
+        class="col-3 p-2 selectors rounded-pill d-flex justify-content-around"
+        id="selectorsDiv"
+      >
+        <div
+          (click)="updateData('1S')"
+          class="d-inline py-1 px-3 text-center active rounded-pill"
+          id="1S"
+        >
+          1S
         </div>
+        @for (item of duration; track $index) {
+        <div
+          (click)="updateData(item)"
+          class="d-inline py-1 px-3 text-center rounded-pill"
+          [id]="item"
+        >
+          {{ item }}
+        </div>
+        }
       </div>
     </div>
   </div>
@@ -36,7 +37,7 @@
     class="mx-auto gap-3"
     [class]="
       colView
-        ? 'col-12 d-flex flex-column align-items-center'
+        ? 'col-12 d-flex flex-column align-items-center gap-4'
         : 'col-11 row justify-content-between'
     "
   >
@@ -85,14 +86,13 @@
 
     <div
       class="card rounded-20 col-md-4"
-      [class]="colView ? 'col-12 col-md-12 border-0' : ''"
+      [class]="colView ? 'col-12 col-md-8 border-0' : ''"
     >
-      <canvas id="doughnutChart"></canvas>
+      <canvas class="w-100 h-100" id="doughnutChart"></canvas>
     </div>
   </div>
 
-  <app-history
-    [transactions]="transactions"
-    [hidden]="hideHistory"
-  ></app-history>
+  @if (!hideHistory) {
+  <app-history [transactions]="transactions"></app-history>
+  }
 </div>

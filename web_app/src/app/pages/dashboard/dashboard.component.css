@@ -20,7 +20,7 @@
   color: black;
 }
 
-.selectorSelected {
+.selectors > .active {
   background-color: black;
   color: white;
   pointer-events: none;
