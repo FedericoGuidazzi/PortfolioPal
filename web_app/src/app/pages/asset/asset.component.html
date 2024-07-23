@@ -5,8 +5,8 @@
     ></app-card-portfolio-valutation>
   </div>
   <div class="mt-5 mb-5">
-    <div class="mx-auto col-11">
-      <canvas id="lineChartAsset"></canvas>
+    <div class="mx-auto col-11 ratio-2x1 mh-50">
+      <canvas class="h-100 w-100" id="lineChartAsset"></canvas>
     </div>
     <div class="mt-3 d-flex justify-content-center">
       <div
@@ -15,7 +15,7 @@
       >
         <div
           (click)="updateData('1S')"
-          class="d-inline py-1 px-3 text-center active rounded-pill"
+          class="d-inline py-1 px-3 text-center active rounded-pill p-cursor"
           id="1S"
         >
           1S
@@ -23,7 +23,7 @@
         @for (item of duration; track $index) {
         <div
           (click)="updateData(item)"
-          class="d-inline py-1 px-3 text-center rounded-pill"
+          class="d-inline py-1 px-3 text-center rounded-pill p-cursor"
           [id]="item"
         >
           {{ item }}
@@ -64,10 +64,12 @@
         }
       </p>
     </div>
-    <div class="text-center card px-0 py-2 rounded-20 col-md-4">
-      <h2 class="mx-auto fw-bold">Allocation</h2>
-      <div class="mx-auto d-flex justify-content-center align-items-center">
-        <canvas id="doughnutChartAsset"></canvas>
+    <div class="text-center card px-0 py-2 rounded-20 col-md-3">
+      <h2 class="mx-auto fw-bold mb-0">Allocation</h2>
+      <div
+        class="mx-auto d-flex justify-content-center align-items-center w-100 h-100"
+      >
+        <canvas class="h-75 w-75" id="doughnutChartAsset"></canvas>
       </div>
     </div>
   </div>
