@@ -4,16 +4,16 @@ import {
   HttpHandlerFn,
   HttpInterceptorFn,
   HttpRequest,
-} from "@angular/common/http";
-import { inject } from "@angular/core";
-import { AngularFireAuth } from "@angular/fire/compat/auth";
-import { from, lastValueFrom, Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+} from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { from, lastValueFrom, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 // needs to add this function because getting the token is async
 const addBearerToken = async (
   req: HttpRequest<any>,
-  next: HttpHandlerFn,
+  next: HttpHandlerFn
 ): Promise<HttpEvent<any>> => {
   const angularFireAuth = inject(AngularFireAuth);
   const firebaseUser = await angularFireAuth.currentUser;
@@ -28,7 +28,10 @@ const addBearerToken = async (
 export const bearerTokenInterceptor: HttpInterceptorFn = (req, next) => {
   // only add the bearer token to requests to the backend
   // Note that you can customize it to only add the bearer token to certain requests
-  if (req.url.startsWith(environment.backendUrl+"/transaction") || req.url.startsWith(environment.backendUrl+"/user")) {
+  if (
+    req.url.startsWith(environment.backendUrl + '/transaction') ||
+    req.url.startsWith(environment.backendUrl + '/user')
+  ) {
     return from(addBearerToken(req, next));
   } else {
     return next(req);
