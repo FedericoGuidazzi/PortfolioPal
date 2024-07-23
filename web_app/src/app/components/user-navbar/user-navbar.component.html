@@ -60,11 +60,12 @@
                 <mat-slide-toggle
                   [checked]="s.value"
                   (change)="onToggle($index)"
+                  [disabled]="s.name.toLocaleLowerCase() !== 'share'"
                 ></mat-slide-toggle>
                 } @case ('select') {
                 <select
                   class="form-select form-select-sm"
-                  aria-label="Small select example"
+                  [disabled]="true"
                   #language
                   (change)="onSelected()"
                 >

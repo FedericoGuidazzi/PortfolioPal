@@ -17,12 +17,25 @@ nav {
   border-radius: 16px;
 }
 
+.dropdown-item:not(.logout):active {
+  color: inherit;
+  background-color: inherit;
+}
+
+.dropdown-item:not(.logout):hover {
+  background-color: inherit;
+}
+
+.dropdown-item.logout:hover {
+  background-color: red;
+}
+
 .option {
   margin-left: auto;
 }
 
 .logout {
-  background-color: red;
+  background-color: #d23131;
   color: white;
   font-weight: 700;
   font-size: 20px;
