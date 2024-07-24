@@ -50,36 +50,52 @@
           class="dropdown-menu mx-0 mt-2 shadow dropdown-menu-end"
           data-bs-theme="light"
         >
-          @for (s of settings; track $index) {
+          @for (item of settings | keyvalue; track item.key) {
           <li class="mb-3">
             <div class="dropdown-item d-flex gap-3 align-items-center">
-              <img src="{{ s.icon_loc }}" alt="" />
-              {{ s.name }}
+              <img src="{{ item.value.icon_loc }}" alt="" />
+              {{ item.value.name }}
               <div class="option">
-                @switch (s.type) { @case ('toggle') {
+                @switch (item.value.type) { @case ('toggle') {
                 <mat-slide-toggle
-                  [checked]="s.value"
-                  (change)="onToggle($index)"
-                  [disabled]="s.name.toLocaleLowerCase() !== 'share'"
+                  [checked]="item.value.value"
+                  (change)="onToggle(item.key)"
+                  [disabled]="item.value.disabled"
                 ></mat-slide-toggle>
-                } @case ('select') {
+                } @case ('select') { @switch (item.key) { @case ('language') {
                 <select
                   class="form-select form-select-sm"
-                  [disabled]="true"
+                  [disabled]="item.value.disabled"
                   #language
-                  (change)="onSelected()"
+                  (change)="onSelectedLanguage()"
                 >
                   @for (language of supportedLanguages; track $index) {
                   <option
-                    selected
                     value="{{ language }}"
-                    [selected]="language == s.value"
+                    [selected]="language == item.value.value"
                   >
                     {{ language }}
                   </option>
                   }
                 </select>
-                } }
+                } @case ('currency') {
+                <select
+                  class="form-select form-select-sm"
+                  [disabled]="item.value.disabled"
+                  #currency
+                  (change)="onSelectedCurrency()"
+                  [value]="item.value.value"
+                >
+                  @for (currency of supportedCurrencies; track $index) {
+                  <option
+                    value="{{ currency }}"
+                    [selected]="currency == item.value.value"
+                  >
+                    {{ currency }}
+                  </option>
+                  }
+                </select>
+                } } } }
               </div>
             </div>
           </li>

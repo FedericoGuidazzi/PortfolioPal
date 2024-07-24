@@ -1,59 +1,136 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '../../utils/auth/auth.service';
+import { UserService } from '../../utils/api/user/user.service';
 
+interface BaseSetting {
+  name: string;
+  value: boolean | string;
+  icon_loc: string;
+  disabled: boolean;
+  type: 'toggle' | 'select';
+}
+
+interface ToggleSetting extends BaseSetting {
+  type: 'toggle';
+  value: boolean;
+}
+
+interface SelectSetting extends BaseSetting {
+  type: 'select';
+  value: string;
+  supportedField: string[];
+}
+
+type Setting = ToggleSetting | SelectSetting;
+
+interface Settings {
+  [key: string]: Setting;
+}
 @Component({
   selector: 'app-user-navbar',
   standalone: true,
-  imports: [MatSlideToggleModule, RouterLink],
+  imports: [MatSlideToggleModule, RouterLink, CommonModule],
   templateUrl: './user-navbar.component.html',
   styleUrl: './user-navbar.component.css',
 })
 export class UserNavbarComponent {
-  settings = [
-    {
-      name: 'Lingua',
+  supportedLanguages: string[] = ['Italiano', 'English', 'Spanish', 'French'];
+  supportedCurrencies: string[] = ['EUR', 'USD', 'GBP', 'JPY', 'CNY'];
+
+  settings: Settings = {
+    language: {
+      name: 'lingua',
+      value: 'Italiano',
       icon_loc: '/assets/icons/ic-language.svg',
-      value: 'Spanish',
+      disabled: true,
+      supportedField: this.supportedLanguages,
       type: 'select',
     },
-    {
-      name: 'Tema scuro',
+    currency: {
+      name: 'valuta',
+      value: 'EUR',
+      icon_loc: '/assets/icons/ic-currency-exchange.svg',
+      disabled: false,
+      supportedField: this.supportedCurrencies,
+      type: 'select',
+    },
+    dark_theme: {
+      name: 'tema scuro',
+      value: false,
       icon_loc: '/assets/icons/moon.svg',
-      value: true,
+      disabled: true,
       type: 'toggle',
     },
-    {
-      name: 'Notifiche',
+    notifications: {
+      name: 'notifiche',
+      value: false,
       icon_loc: '/assets/icons/notification.svg',
-      value: true,
+      disabled: true,
       type: 'toggle',
     },
-    {
-      name: 'Share',
+    sharePortfolio: {
+      name: 'share',
+      value: true,
       icon_loc: '/assets/icons/ic-share.svg',
-      value: true,
+      disabled: false,
       type: 'toggle',
     },
-  ];
-
-  supportedLanguages: string[] = ['Italiano', 'English', 'Spanish', 'French'];
+  };
 
   constructor(
     public location: Location,
     private authService: AuthService,
+    private userService: UserService,
     private router: Router
   ) {}
 
-  @ViewChild('language') language!: ElementRef;
-  onSelected(): void {
-    this.settings[0].value = this.language.nativeElement.value;
+  ngOnInit() {
+    this.userService.getUser().subscribe({
+      next: (user) => {
+        this.settings['currency'].value = user.currency;
+        this.settings['share'].value = user.sharePortfolio;
+      },
+      error: (error) => {
+        console.error('Error getting user', error);
+      },
+    });
   }
 
-  onToggle(index: number): void {
-    this.settings[index].value = !this.settings[index].value;
+  @ViewChild('language') language!: ElementRef;
+  onSelectedLanguage(): void {
+    this.settings['language'].value = this.language.nativeElement.value;
+  }
+
+  @ViewChild('currency') currency!: ElementRef;
+  onSelectedCurrency(): void {
+    this.userService
+      .updateCurrency({ currency: this.language.nativeElement.value })
+      .subscribe({
+        next: () => {
+          console.log('Currency updated');
+          this.settings['currency'].value = this.language.nativeElement.value;
+        },
+        error: (error) => {
+          this.currency.nativeElement.value =
+            this.settings['currency']?.value || '';
+          console.error('Error updating currency', error);
+        },
+      });
+  }
+
+  onToggle(key: string): void {
+    if (this.settings.hasOwnProperty(key)) {
+      this.settings[key].value = !this.settings[key].value;
+      if (key === 'sharePortfolio') {
+        this.userService.updatePrivacy({
+          key: this.settings[key].value,
+        });
+      }
+    }
   }
 
   onLogout() {

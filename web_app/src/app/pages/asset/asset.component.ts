@@ -176,6 +176,7 @@ export class AssetComponent {
           },
         },
         maintainAspectRatio: false,
+        cutout: '70%',
       },
     };
 

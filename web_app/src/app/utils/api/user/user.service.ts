@@ -4,10 +4,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
-
   private userUrl = `${environment.backendUrl}/user`;
 
   constructor(private http: HttpClient) {}
@@ -24,8 +23,8 @@ export class UserService {
     return this.http.post(this.userUrl + '/create', {});
   }
 
-  updatePrivacy(data: any): Observable<any> {
-    return this.http.put(this.userUrl + '/update-privacy', data);
+  updatePrivacy(data: any): void {
+    this.http.put(this.userUrl + '/update-privacy', data);
   }
 
   updateCurrency(data: any): Observable<any> {
