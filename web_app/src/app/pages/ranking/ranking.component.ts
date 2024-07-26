@@ -51,6 +51,7 @@ export class RankingComponent {
     this.dataSource.paginator = this.paginator;
     this.createLineChart();
     this.createDoughnutChart();
+    this.updateUserView('1');
   }
 
   constructor(private userService: UserService) {}
