@@ -38,7 +38,7 @@ public class UserController {
 
     @PublicEndpoint
     @SneakyThrows
-    @GetMapping("/get/{id}")
+    @GetMapping("/get-name/{id}")
     public ResponseEntity<String> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUser(id).getName());
     }

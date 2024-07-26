@@ -16,7 +16,7 @@ export class UserService {
   }
 
   getUserById(id: String): Observable<any> {
-    return this.http.get(this.userUrl + '/get/' + id);
+    return this.http.get(this.userUrl + '/get-name/' + id);
   }
 
   createUser(): Observable<any> {
