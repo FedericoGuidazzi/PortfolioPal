@@ -262,10 +262,6 @@ export class RankingComponent {
     }
   }
 
-  getUserPortfolio(userId: number) {
-    console.log('Getting portfolio for user: ' + userId);
-  }
-
   onUserSelection(user: User) {
     console.log('User selected: ' + user.name);
     this.updateUserView(user.id);
