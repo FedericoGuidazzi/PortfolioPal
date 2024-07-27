@@ -1,10 +1,9 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { Router, RouterLink } from '@angular/router';
-import { Location } from '@angular/common';
-import { AuthService } from '../../utils/auth/auth.service';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 import { UserService } from '../../utils/api/user/user.service';
+import { AuthService } from '../../utils/auth/auth.service';
 
 interface BaseSetting {
   name: string;
@@ -33,7 +32,7 @@ interface Settings {
 @Component({
   selector: 'app-user-navbar',
   standalone: true,
-  imports: [MatSlideToggleModule, RouterLink, CommonModule],
+  imports: [MatSlideToggleModule, RouterLink, CommonModule, RouterModule],
   templateUrl: './user-navbar.component.html',
   styleUrl: './user-navbar.component.css',
 })
@@ -95,7 +94,7 @@ export class UserNavbarComponent {
         this.settings['share'].value = user.sharePortfolio;
       },
       error: (error) => {
-        console.error('Error getting user', error);
+        // console.error('Error getting user', error);
       },
     });
   }

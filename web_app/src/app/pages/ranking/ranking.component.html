@@ -25,12 +25,18 @@
           <div
             class="col-9 p-2 selectors rounded-pill d-flex justify-content-between col-sm-7 col-md-6"
           >
+            <div
+              (click)="updateLineChart('1S')"
+              class="d-inline py-1 px-3 text-center active rounded-pill p-cursor"
+              id="1S"
+            >
+              1S
+            </div>
             @for (item of duration; track $index) {
             <div
               (click)="updateLineChart(item)"
               class="d-inline py-1 px-3 text-center rounded-pill p-cursor"
               [id]="item"
-              [class]="$index === 0 ? 'active' : ''"
             >
               {{ item }}
             </div>

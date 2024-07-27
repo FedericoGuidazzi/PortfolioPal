@@ -4,7 +4,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Chart } from 'chart.js';
 import {
   CardPortfolioValutationComponent,
@@ -14,8 +14,8 @@ import {
   RankingTableComponent,
   User,
 } from '../../components/ranking-table/ranking-table.component';
-import { PortfolioAssets } from '../dashboard/dashboard.component';
 import { UserService } from '../../utils/api/user/user.service';
+import { PortfolioAssets } from '../dashboard/dashboard.component';
 
 @Component({
   selector: 'app-ranking',
@@ -38,7 +38,7 @@ import { UserService } from '../../utils/api/user/user.service';
 export class RankingComponent {
   displayedColumns: string[] = ['symbol', 'portfolioPercentage', 'percentage'];
   dataSource = new MatTableDataSource<PortfolioAssets>([]);
-  duration: string[] = ['1S', '1A', '5A', 'Max'];
+  duration: string[] = ['1A', '5A', 'Max'];
   lineChart: any;
   portfolioInfo!: PortfolioAmount;
   ranking: User[] = [];
@@ -51,12 +51,15 @@ export class RankingComponent {
     this.dataSource.paginator = this.paginator;
     this.createLineChart();
     this.createDoughnutChart();
-    this.updateUserView('1');
   }
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private router: Router) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
+    this.initializeComponent();
+  }
+
+  initializeComponent() {
     this.ranking = [
       { pos: 1, name: 'Beach ball', score: 4, id: '1' },
       { pos: 2, name: 'Towel', score: 5, id: '2' },
@@ -185,14 +188,14 @@ export class RankingComponent {
 
   updateUserView(id: string) {
     // update selector indicators
-    const selectorActive = document.querySelectorAll('.active');
+    const selectorActive = document.querySelectorAll('.selectors > .active');
     selectorActive.forEach(function (selected) {
       selected.classList.remove('active');
     });
 
-    let selector = document.querySelector('.selectors>div:first-child');
-    if (selector) {
-      selector.classList.add('active');
+    let selectors = document.querySelectorAll('.selectors>div');
+    if (selectors.length > 0) {
+      selectors[0].classList.add('active');
     }
 
     //call API to get data
@@ -204,7 +207,7 @@ export class RankingComponent {
         }
       },
       error: (error) => {
-        console.error('Error getting user', error);
+        // console.error('Error getting user', error);
       },
     });
 
@@ -235,6 +238,7 @@ export class RankingComponent {
       selected.classList.remove('active');
     });
 
+    console.log('Value: ' + value);
     let selector = document.getElementById(value);
     selector?.classList.add('active');
 
