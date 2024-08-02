@@ -1,13 +1,17 @@
 import { Component } from '@angular/core';
 import {
   FormControl,
-  Validators,
+  FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
+import { AuthService } from '../../utils/auth/auth.service';
+
 @Component({
   selector: 'app-sign-up',
   standalone: true,
@@ -31,10 +35,51 @@ export class SignUpComponent {
     Validators.pattern('(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}'),
   ]);
 
-  hide = true;
+  private formGroup!: FormGroup;
 
-  onSubmit() {
-    // Register new user
-    console.log('Form submitted');
+  public hide!: boolean;
+
+  ngOnInit() {
+    this.hide = true;
+    this.formGroup = new FormGroup({
+      email: this.emailFormControl,
+      password: this.passwordFormControl,
+    });
+  }
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  async onSubmit() {
+    if (this.formGroup.valid) {
+      // Register new user
+      const email = this.emailFormControl.getRawValue();
+      const password = this.passwordFormControl.getRawValue();
+
+      if (email !== null && password !== null) {
+        (
+          await this.authService.signUpWithEmailAndPassword({ email, password })
+        ).subscribe({
+          next: (response) => {
+            console.log('Sign up successful');
+            this.router.navigate(['/dashboard']);
+          },
+          error: (error) => {
+            console.error('Error signing up', error);
+          },
+        });
+      }
+    }
+  }
+
+  async submitWithGoogle() {
+    (await this.authService.signUpWithGoogle()).subscribe({
+      next: (response) => {
+        console.log('Sign up successful');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Error signing up', error);
+      },
+    });
   }
 }

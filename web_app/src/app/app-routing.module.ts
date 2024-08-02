@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { authGuard } from './utils/auth-guard/auth.guard';
+import { loginGuard } from './utils/login-guard/login.guard';
 
 export const routes: Routes = [
   {
@@ -13,6 +15,7 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./pages/login/login.component').then((c) => c.LoginComponent),
+    canActivate: [loginGuard],
   },
   {
     path: 'signup',
@@ -20,6 +23,7 @@ export const routes: Routes = [
       import('./pages/sign-up/sign-up.component').then(
         (c) => c.SignUpComponent
       ),
+    canActivate: [loginGuard],
   },
   {
     path: 'ranking',
@@ -27,6 +31,7 @@ export const routes: Routes = [
       import('./pages/ranking/ranking.component').then(
         (c) => c.RankingComponent
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'dashboard',
@@ -34,11 +39,13 @@ export const routes: Routes = [
       import('./pages/dashboard/dashboard.component').then(
         (c) => c.DashboardComponent
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'asset/:assetName',
     loadComponent: () =>
       import('./pages/asset/asset.component').then((c) => c.AssetComponent),
+    canActivate: [authGuard],
   },
 ];
 

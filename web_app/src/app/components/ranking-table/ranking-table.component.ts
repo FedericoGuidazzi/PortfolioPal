@@ -6,6 +6,7 @@ export interface User {
   pos: number;
   name: string;
   score: number;
+  id: string;
 }
 
 @Component({

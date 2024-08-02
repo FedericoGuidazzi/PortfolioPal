@@ -8,14 +8,13 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mysqldb:
+      transactiondb:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/mydatabase
+      - SPRING_DATASOURCE_URL=jdbc:mysql://transactiondb:3306/transaction?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=rootpassword
       - SPRING_RABBITMQ_HOST=rabbitmq
-      - PORT=8080
     networks:
       - springboot-mysql-network
       - springboot-rabbitmq-network
@@ -34,12 +33,12 @@ services:
       retries: 5
       start_period: 10s
 
-  mysqldb:
+  transactiondb:
     image: mysql:8.0.33
     ports:
       - 3306:3306
     environment:
-      - MYSQL_DATABASE=mydatabase
+      - MYSQL_DATABASE=transaction
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
       - mysql-data:/var/lib/mysql

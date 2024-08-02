@@ -8,9 +8,26 @@ nav {
   background-color: white;
 }
 
+.nav-link.active {
+  font-weight: bold;
+}
+
 .dropdown-menu {
   width: 250px;
   border-radius: 16px;
+}
+
+.dropdown-item:not(.logout):active {
+  color: inherit;
+  background-color: inherit;
+}
+
+.dropdown-item:not(.logout):hover {
+  background-color: inherit;
+}
+
+.dropdown-item.logout:hover {
+  background-color: red;
 }
 
 .option {
@@ -18,9 +35,9 @@ nav {
 }
 
 .logout {
-  background-color: red;
+  background-color: #d23131;
   color: white;
   font-weight: 700;
   font-size: 20px;
-  border-radius: 1rem;
+  border-radius: 16px;
 }

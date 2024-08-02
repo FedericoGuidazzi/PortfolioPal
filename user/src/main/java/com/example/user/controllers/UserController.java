@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.user.PublicEndpoint;
 import com.example.user.models.User;
 import com.example.user.models.bin.PutUserCurrencyBin;
 import com.example.user.models.bin.PutUserPrivacyBin;
@@ -28,19 +31,26 @@ public class UserController {
     private UserService userService;
 
     @SneakyThrows
-    @GetMapping("/create/{id}")
-    public ResponseEntity<User> create(@PathVariable String id) {
+    @PostMapping("/create")
+    public ResponseEntity<User> create(@RequestHeader("X-Authenticated-UserId") String id) {
         return ResponseEntity.ok(userService.addUser(id));
     }
 
+    @PublicEndpoint
     @SneakyThrows
-    @GetMapping("/get/{id}")
-    public ResponseEntity<User> getUser(@PathVariable String id) {
+    @GetMapping("/get-name/{id}")
+    public ResponseEntity<String> getUserById(@PathVariable String id) {
+        return ResponseEntity.ok(userService.getUser(id).getName());
+    }
+
+    @SneakyThrows
+    @GetMapping("/get")
+    public ResponseEntity<User> getUser(@RequestHeader("X-Authenticated-UserId") String id) {
         return ResponseEntity.ok(userService.getUser(id));
     }
 
-    @PutMapping("/update_privacy/{id}")
-    public void updateUserPrivacy(@PathVariable String id, @RequestBody boolean sharePortfolio) {
+    @PutMapping("/update-privacy")
+    public void updateUserPrivacy(@RequestHeader("X-Authenticated-UserId") String id, @RequestBody boolean sharePortfolio) {
         PutUserPrivacyBin privacyBin = PutUserPrivacyBin.builder()
                 .userID(id)
                 .sharePortfolio(sharePortfolio)
@@ -49,8 +59,8 @@ public class UserController {
     }
 
     @SneakyThrows
-    @PutMapping("/update_currency/{id}")
-    public ResponseEntity<User> updateCurrency(@PathVariable String id, @RequestBody String currency) {
+    @PutMapping("/update-currency")
+    public ResponseEntity<User> updateCurrency(@RequestHeader("X-Authenticated-UserId") String id, @RequestBody String currency) {
         PutUserCurrencyBin currencyBin = PutUserCurrencyBin.builder()
                 .userID(id)
                 .currency(currency)

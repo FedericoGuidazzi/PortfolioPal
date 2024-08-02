@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import {
   FormControl,
+  FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
@@ -8,6 +9,9 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
+import { AuthService } from '../../utils/auth/auth.service';
+import { GoogleSsoDirective } from '../../utils/google-directive/google-sso.directive';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +22,7 @@ import { MatInputModule } from '@angular/material/input';
     MatInputModule,
     ReactiveFormsModule,
     MatIconModule,
+    GoogleSsoDirective,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
@@ -32,10 +37,38 @@ export class LoginComponent {
     Validators.pattern('(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}'),
   ]);
 
-  hide = true;
+  private formGroup!: FormGroup;
+
+  public hide!: boolean;
+
+  ngOnInit() {
+    this.hide = true;
+    this.formGroup = new FormGroup({
+      email: this.emailFormControl,
+      password: this.passwordFormControl,
+    });
+  }
+
+  constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
-    // Login user
-    console.log('Form submitted');
+    if (this.formGroup.valid) {
+      const email = this.emailFormControl.getRawValue();
+      const password = this.passwordFormControl.getRawValue();
+
+      if (email !== null && password !== null) {
+        this.authService
+          .loginWithEmailAndPassword({ email, password })
+          .subscribe({
+            next: (response) => {
+              console.log('Login successful');
+              this.router.navigate(['/dashboard']);
+            },
+            error: (error) => {
+              console.error('Error login', error);
+            },
+          });
+      }
+    }
   }
 }

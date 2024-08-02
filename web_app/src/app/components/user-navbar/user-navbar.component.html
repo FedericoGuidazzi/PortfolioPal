@@ -17,13 +17,15 @@
         <li class="nav-item">
           <a
             class="nav-link"
-            [routerLink]=""
-            [class.active]="this.location.path() == ''"
+            [routerLink]="'dashboard'"
+            routerLinkActive="active"
             >Home</a
           >
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled" aria-disabled="true">Ranking</a>
+          <a class="nav-link" [routerLink]="'ranking'" routerLinkActive="active"
+            >Ranking</a
+          >
         </li>
       </ul>
       <div class="dropdown text-end">
@@ -45,47 +47,65 @@
           class="dropdown-menu mx-0 mt-2 shadow dropdown-menu-end"
           data-bs-theme="light"
         >
-          @for (s of settings; track $index) {
+          @for (item of settings | keyvalue; track item.key) {
           <li class="mb-3">
             <div class="dropdown-item d-flex gap-3 align-items-center">
-              <img src="{{ s.icon_loc }}" alt="" />
-              {{ s.name }}
+              <img src="{{ item.value.icon_loc }}" alt="" />
+              {{ item.value.name }}
               <div class="option">
-                @switch (s.type) { @case ('toggle') {
+                @switch (item.value.type) { @case ('toggle') {
                 <mat-slide-toggle
-                  [checked]="s.value"
-                  (change)="onToggle($index)"
+                  [checked]="item.value.value"
+                  (change)="onToggle(item.key)"
+                  [disabled]="item.value.disabled"
                 ></mat-slide-toggle>
-                } @case ('select') {
+                } @case ('select') { @switch (item.key) { @case ('language') {
                 <select
                   class="form-select form-select-sm"
-                  aria-label="Small select example"
+                  [disabled]="item.value.disabled"
                   #language
-                  (change)="onSelected()"
+                  (change)="onSelectedLanguage()"
                 >
                   @for (language of supportedLanguages; track $index) {
                   <option
-                    selected
                     value="{{ language }}"
-                    [selected]="language == s.value"
+                    [selected]="language == item.value.value"
                   >
                     {{ language }}
                   </option>
                   }
                 </select>
-                } }
+                } @case ('currency') {
+                <select
+                  class="form-select form-select-sm"
+                  [disabled]="item.value.disabled"
+                  #currency
+                  (change)="onSelectedCurrency()"
+                  [value]="item.value.value"
+                >
+                  @for (currency of supportedCurrencies; track $index) {
+                  <option
+                    value="{{ currency }}"
+                    [selected]="currency == item.value.value"
+                  >
+                    {{ currency }}
+                  </option>
+                  }
+                </select>
+                } } } }
               </div>
             </div>
           </li>
           }
           <li><hr class="dropdown-divider mb-2" /></li>
           <li class="px-2">
-            <div
-              class="dropdown-item logout py-3 d-flex gap-3 align-items-center"
+            <button
+              class="dropdown-item logout p-2 d-flex gap-3 align-items-center"
+              (click)="onLogout()"
             >
               <img src="assets/icons/ic-logout.svg" alt="" />
               Sign out
-            </div>
+            </button>
           </li>
         </ul>
       </div>

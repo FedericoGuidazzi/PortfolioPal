@@ -176,6 +176,7 @@ export class AssetComponent {
           },
         },
         maintainAspectRatio: false,
+        cutout: '70%',
       },
     };
 
@@ -255,13 +256,13 @@ export class AssetComponent {
 
   updateData(value: string) {
     //gestire cambio di dati richiamando API
-    const selectorSelected = document.querySelectorAll('.selectorSelected');
-    selectorSelected.forEach(function (selected) {
-      selected.classList.remove('selectorSelected');
+    const selectorActive = document.querySelectorAll('.active');
+    selectorActive.forEach(function (selected) {
+      selected.classList.remove('active');
     });
 
     let selector = document.getElementById(value);
-    selector?.classList.add('selectorSelected');
+    selector?.classList.add('active');
 
     switch (value) {
       case '1S':

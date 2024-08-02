@@ -59,9 +59,14 @@ export class DashboardComponent {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+    this.createLineChart();
+    this.createDoughnutChart();
   }
 
-  constructor() {
+  constructor() {}
+
+  ngOnInit(): void {
+    this.createPaginator();
     //use API to get data regarding transactions
     this.transactions = !this.hideHistory
       ? [
@@ -148,12 +153,6 @@ export class DashboardComponent {
     };
   }
 
-  ngOnInit(): void {
-    this.createLineChart();
-    this.createDoughnutChart();
-    this.createPaginator();
-  }
-
   createPaginator() {
     //call API to get data
     this.dataSource.data = [
@@ -197,6 +196,7 @@ export class DashboardComponent {
           },
         },
         maintainAspectRatio: false,
+        cutout: '75%',
       },
     };
 
@@ -262,13 +262,13 @@ export class DashboardComponent {
 
   updateData(value: string) {
     //gestire cambio di dati richiamando API
-    const selectorSelected = document.querySelectorAll('.selectorSelected');
-    selectorSelected.forEach(function (selected) {
-      selected.classList.remove('selectorSelected');
+    const selectorActive = document.querySelectorAll('.active');
+    selectorActive.forEach(function (selected) {
+      selected.classList.remove('active');
     });
 
     let selector = document.getElementById(value);
-    selector?.classList.add('selectorSelected');
+    selector?.classList.add('active');
 
     switch (value) {
       case '1S':

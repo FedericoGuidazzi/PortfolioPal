@@ -18,7 +18,7 @@ public interface TransactionService {
 
     Transaction updateTransaction(PutTransactionBin transactionBin) throws CustomException;
 
-    void deleteTransaction(long id);
+    Transaction deleteTransaction(long id, String uid);
 
     List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException;
 
