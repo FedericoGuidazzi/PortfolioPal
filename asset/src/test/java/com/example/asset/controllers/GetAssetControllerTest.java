@@ -36,7 +36,23 @@ public class GetAssetControllerTest {
         String symbol = "AAPL";
         String duration = "1S";
         boolean mock = false;
-        Asset response = assetController.getAsset(symbol, mock, duration);
+        Asset response = assetController.getAsset(symbol, mock, duration, null);
+
+        // Assertions
+        assertEquals(expectedAsset, response);
+    }
+
+    @Test
+    void test_getAssetWithStartDate() {
+        // Mocking the service response
+        Asset expectedAsset = mockAsset("AAPL");
+        when(assetService.getAsset(any())).thenReturn(expectedAsset);
+
+        // Invoking the controller method
+        String symbol = "AAPL";
+        String duration = "1S";
+        boolean mock = false;
+        Asset response = assetController.getAsset(symbol, mock, duration, LocalDate.now());
 
         // Assertions
         assertEquals(expectedAsset, response);

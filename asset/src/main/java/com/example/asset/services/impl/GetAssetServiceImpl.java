@@ -32,8 +32,14 @@ public class GetAssetServiceImpl implements GetAssetService {
     public Asset getAsset(GetAssetBin assetBin) {
 
         //call Yahoo Finance API to get data regarding the asset
-        int range = RangeUtils.rangeMap.getOrDefault(assetBin.getDuration().getValue(), 7);
-        LocalDate startDate = LocalDate.now().minusDays(range);
+        LocalDate startDate;
+        if (assetBin.getStartDate() == null) {
+            int range = RangeUtils.rangeMap.getOrDefault(assetBin.getDuration().getValue(), 7);
+            startDate = LocalDate.now().minusDays(range);
+        } else {
+            startDate = assetBin.getStartDate();
+        }
+
 
         String url = "https://query2.finance.yahoo.com/v8/finance/chart/" +
                 assetBin.getSymbol() +

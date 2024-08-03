@@ -23,7 +23,8 @@ public class GetAssetController {
     public Asset getAsset(
             @PathVariable String symbol,
             @RequestParam(required = false, defaultValue = "false") boolean mock,
-            @RequestParam(required = false, defaultValue = "1S") String duration
+            @RequestParam(required = false, defaultValue = "1S") String duration,
+            @RequestParam(required = false) LocalDate startDate
     ) {
         if (mock) {
             return mockAsset(symbol);
@@ -31,6 +32,7 @@ public class GetAssetController {
         GetAssetBin assetBin = GetAssetBin.builder()
                 .symbol(symbol)
                 .duration(DurationIntervalEnum.fromValue(duration))
+                .startDate(startDate)
                 .build();
         return getAssetService.getAsset(assetBin);
     }
