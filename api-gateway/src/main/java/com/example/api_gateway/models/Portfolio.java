@@ -1,4 +1,4 @@
-package com.example.transaction.models;
+package com.example.api_gateway.models;
 
 import lombok.Builder;
 import lombok.Data;

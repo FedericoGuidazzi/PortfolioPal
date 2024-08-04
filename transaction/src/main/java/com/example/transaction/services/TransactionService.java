@@ -45,10 +45,9 @@ public interface TransactionService {
      * Deletes a transaction.
      *
      * @param id  the ID of the transaction to delete
-     * @param uid the user ID associated with the transaction
      * @return the deleted transaction
      */
-    Transaction deleteTransaction(long id, String uid);
+    Transaction deleteTransaction(long id);
 
     /**
      * Saves transactions from a CSV file.

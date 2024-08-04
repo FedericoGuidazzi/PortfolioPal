@@ -92,7 +92,7 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Override
-	public Transaction deleteTransaction(long id, String uid) {
+	public Transaction deleteTransaction(long id) {
 		Transaction deletedTransaction;
 		try {
 			deletedTransaction = this.getTransactionById(id);

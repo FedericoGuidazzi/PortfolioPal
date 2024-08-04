@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,7 +46,6 @@ public class TransactionController {
 	@SneakyThrows
 	@PutMapping("update/{id}")
 	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id,
-			@RequestHeader("X-Authenticated-UserId") String uid,
 			@RequestBody PutTransactionDto entity) {
 
 		Transaction transaction = transactionService.updateTransaction(
@@ -66,9 +64,8 @@ public class TransactionController {
 
 	@SneakyThrows
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id,
-			@RequestHeader("X-Authenticated-UserId") String uid) {
-		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id, uid))
+	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id) {
+		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id))
 				.orElseThrow(() -> new CustomException("Transaction not found"));
 		this.sender
 				.send(PostTransactionBin.builder()
@@ -83,7 +80,6 @@ public class TransactionController {
 	@PostMapping("/upload/{portfolioId}")
 	public ResponseEntity<List<Transaction>> uploadFile(
 			@PathVariable long portfolioId,
-			@RequestHeader("X-Authenticated-UserId") String uid,
 			@RequestParam(value = "file", required = true) MultipartFile file) {
 		if (file.isEmpty() || Optional.ofNullable(file.getOriginalFilename()).orElse("").endsWith(".csv") == false) {
 			throw new CustomException("Please upload a valid CSV file.");
