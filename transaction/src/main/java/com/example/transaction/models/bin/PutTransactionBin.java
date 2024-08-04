@@ -11,8 +11,6 @@ public class PutTransactionBin {
 
     private long id;
 
-    private String userId;
-
     private PutTransactionDto transaction;
 
 }

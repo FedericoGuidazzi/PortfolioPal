@@ -13,6 +13,4 @@ public class UploadBin {
 
     InputStream inputStream;
 
-    String userId;
-
 }

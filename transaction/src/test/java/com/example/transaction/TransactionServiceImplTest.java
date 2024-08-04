@@ -28,7 +28,8 @@ import org.mockito.MockitoAnnotations;
 
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
-import com.example.transaction.models.bin.GetTransactionAfterDateBin;
+import com.example.transaction.models.bin.GetAssetQtyOutputBin;
+import com.example.transaction.models.bin.GetTransactionByDateBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.dtos.PutTransactionDto;
@@ -153,16 +154,6 @@ class TransactionServiceImplTest {
 	@Test
 	void testUpdateTransaction() throws CustomException {
 
-		Transaction transaction = Transaction.builder()
-				.id(1L)
-				.type(TransactionType.BUY.getPersistedValue())
-				.date(LocalDate.parse("2022-01-01"))
-				.amount(10)
-				.price(BigDecimal.valueOf(100))
-				.symbolId("AAPL")
-				.currency("USD")
-				.build();
-
 		PutTransactionBin transactionBin = PutTransactionBin.builder()
 				.id(1L)
 				.transaction(
@@ -188,7 +179,7 @@ class TransactionServiceImplTest {
 				.currency("USD")
 				.build();
 
-		when(transactionRepository.existsById(transaction.getId())).thenReturn(true);
+		when(transactionRepository.existsById(transactionBin.getId())).thenReturn(true);
 
 		when(transactionRepository.save(any(TransactionEntity.class))).thenReturn(savedEntity);
 
@@ -197,15 +188,15 @@ class TransactionServiceImplTest {
 
 		// Assert
 		assertNotNull(updatedTransaction);
-		assertEquals(transaction.getId(), updatedTransaction.getId());
-		assertEquals(transaction.getType(), updatedTransaction.getType());
-		assertEquals(transaction.getDate(), updatedTransaction.getDate());
-		assertEquals(transaction.getAmount(), updatedTransaction.getAmount());
-		assertEquals(transaction.getPrice(), updatedTransaction.getPrice());
-		assertEquals(transaction.getSymbolId(), updatedTransaction.getSymbolId());
-		assertEquals(transaction.getCurrency(), updatedTransaction.getCurrency());
+		assertEquals(transactionBin.getId(), updatedTransaction.getId());
+		assertEquals(transactionBin.getTransaction().getType(), updatedTransaction.getType());
+		assertEquals(transactionBin.getTransaction().getDate(), updatedTransaction.getDate());
+		assertEquals(transactionBin.getTransaction().getAmount(), updatedTransaction.getAmount());
+		assertEquals(transactionBin.getTransaction().getPrice(), updatedTransaction.getPrice());
+		assertEquals(transactionBin.getTransaction().getSymbolId(), updatedTransaction.getSymbolId());
+		assertEquals(transactionBin.getTransaction().getCurrency(), updatedTransaction.getCurrency());
 
-		verify(transactionRepository, times(1)).existsById(transaction.getId());
+		verify(transactionRepository, times(1)).existsById(transactionBin.getId());
 
 		verify(transactionRepository, times(1)).save(any(TransactionEntity.class));
 
@@ -286,7 +277,7 @@ class TransactionServiceImplTest {
 	}
 
 	@Test
-	void testGetTransactionsByPortfolioIdAndDate() {
+	void testGetTransactionsByPortfolioIdAfterDate() {
 		// Mock the repository call
 		TransactionEntity transactionEntity1 = TransactionEntity.builder()
 				.id(1L)
@@ -312,8 +303,8 @@ class TransactionServiceImplTest {
 				.thenReturn(Arrays.asList(transactionEntity1, transactionEntity2));
 
 		// Call the service method
-		List<Transaction> transactions = transactionService.getTransactionsByPortfolioIdAndDate(
-				GetTransactionAfterDateBin.builder()
+		List<Transaction> transactions = transactionService.getTransactionsByPortfolioIdAfterDate(
+				GetTransactionByDateBin.builder()
 						.portfolioId(1L)
 						.date(LocalDate.of(2021, 1, 1))
 						.build());
@@ -338,6 +329,64 @@ class TransactionServiceImplTest {
 		assertEquals(BigDecimal.valueOf(60.0), transaction2.getPrice());
 		assertEquals("GOOGL", transaction2.getSymbolId());
 		assertEquals("USD", transaction2.getCurrency());
+	}
+
+	@Test
+	void testGetAssetsQtyByPortfolioIdAndDate() {
+		// Mock the repository call
+		GetAssetQtyOutputBin assetQty1 = GetAssetQtyOutputBin.builder()
+				.symbolId("AAPL")
+				.amount(100)
+				.build();
+
+		GetAssetQtyOutputBin assetQty2 = GetAssetQtyOutputBin.builder()
+				.symbolId("GOOGL")
+				.amount(50)
+				.build();
+
+		when(transactionRepository.findAssetsQtyByPortfolioIdAndDate(anyLong(), any(LocalDate.class)))
+				.thenReturn(Arrays.asList(assetQty1, assetQty2));
+
+		// Call the method to test
+		List<GetAssetQtyOutputBin> result = transactionService.getAssetsQtyByPortfolioIdAndDate(
+				GetTransactionByDateBin.builder()
+						.portfolioId(1L)
+						.date(LocalDate.of(2021, 1, 1))
+						.build());
+
+		// Verify the results
+		assertEquals(2, result.size());
+		assertEquals("AAPL", result.get(0).getSymbolId());
+		assertEquals(100, result.get(0).getAmount());
+		assertEquals("GOOGL", result.get(1).getSymbolId());
+		assertEquals(50, result.get(1).getAmount());
+	}
+
+	@Test
+	void testGetAssetsQtyByPortfolioId() {
+		// Mock the repository call
+		GetAssetQtyOutputBin assetQty1 = GetAssetQtyOutputBin.builder()
+				.symbolId("AAPL")
+				.amount(100)
+				.build();
+
+		GetAssetQtyOutputBin assetQty2 = GetAssetQtyOutputBin.builder()
+				.symbolId("GOOGL")
+				.amount(50)
+				.build();
+
+		when(transactionRepository.findAssetsQtyByPortfolioIdAndDate(anyLong(), any(LocalDate.class)))
+				.thenReturn(Arrays.asList(assetQty1, assetQty2));
+
+		// Call the method to test
+		List<GetAssetQtyOutputBin> result = transactionService.getAssetsQtyByPortfolioId(1L);
+
+		// Verify the results
+		assertEquals(2, result.size());
+		assertEquals("AAPL", result.get(0).getSymbolId());
+		assertEquals(100, result.get(0).getAmount());
+		assertEquals("GOOGL", result.get(1).getSymbolId());
+		assertEquals(50, result.get(1).getAmount());
 	}
 
 }
