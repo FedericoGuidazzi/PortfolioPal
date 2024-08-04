@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.example.api_gateway.enums.AuthBoolean;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -45,7 +44,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
 
                 ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                         .header("X-Authenticated-UserId", uid)
-                        .header("X-Is-Authenticated", AuthBoolean.TRUE.getValue())
+                        .header("X-Is-Authenticated", "TRUE")
                         .build();
 
                 return chain.filter(exchange.mutate().request(modifiedRequest).build());
@@ -55,7 +54,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
         }
 
         ServerHttpRequest modifiedRequest = request.mutate()
-                .header("X-Is-Authenticated", AuthBoolean.FALSE.getValue())
+                .header("X-Is-Authenticated", "FALSE")
                 .build();
 
         return chain.filter(exchange.mutate().request(modifiedRequest).build());

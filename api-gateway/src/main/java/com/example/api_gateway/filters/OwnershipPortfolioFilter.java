@@ -16,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.example.api_gateway.enums.AuthBoolean;
 import com.example.api_gateway.models.Portfolio;
 
 import reactor.core.publisher.Mono;
@@ -30,9 +29,11 @@ public class OwnershipPortfolioFilter implements GatewayFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String uid = request.getHeaders().getFirst("X-Authenticated-UserId");
-        boolean isAuth = AuthBoolean.fromValue(request.getHeaders().getFirst("X-Is-Authenticated"));
+        String isAuth = Optional.ofNullable(request.getHeaders().getFirst("X-Is-Authenticated"))
+                .orElse("")
+                .toUpperCase();
 
-        if (!isAuth) {
+        if ("FALSE".equals(isAuth)) {
             return chain.filter(exchange);
         }
 
@@ -47,8 +48,6 @@ public class OwnershipPortfolioFilter implements GatewayFilter {
             // Check if user is owner of the portfolio
             if (this.isOwner(portfolioId, uid)) {
                 return chain.filter(exchange);
-            } else {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User unauthorized");
             }
 
         }
