@@ -1,9 +1,9 @@
 package com.example.transaction;
 
-import java.util.Optional;
-
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.example.transaction.models.enums.AuthBoolean;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +18,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             PublicEndpoint publicEndpoint = handlerMethod.getMethodAnnotation(PublicEndpoint.class);
 
             if (publicEndpoint == null) {
-                boolean isAuthenticated = AuthToBoolean.getBoolFromValue(request.getHeader("X-Is-Authenticated"));
+                boolean isAuthenticated = AuthBoolean.fromValue(request.getHeader("X-Is-Authenticated"));
                 if (isAuthenticated) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
                     return false;

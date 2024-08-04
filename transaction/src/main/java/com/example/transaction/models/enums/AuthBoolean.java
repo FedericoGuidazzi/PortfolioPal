@@ -1,13 +1,13 @@
-package com.example.transaction;
+package com.example.transaction.models.enums;
 
-public enum AuthToBoolean {
+public enum AuthBoolean {
     
     TRUE("true"),
     FALSE("false");
 
     private final String value;
 
-    AuthToBoolean(String value) {
+    AuthBoolean(String value) {
         this.value = value;
     }
 
@@ -15,8 +15,8 @@ public enum AuthToBoolean {
         return value;
     }
 
-    public static boolean getBoolFromValue(String value) {
-        for (AuthToBoolean authToBoolean : AuthToBoolean.values()) {
+    public static boolean fromValue(String value) {
+        for (AuthBoolean authToBoolean : AuthBoolean.values()) {
             if (authToBoolean.getValue().toLowerCase().equals(value)) {
                 return true;
             }

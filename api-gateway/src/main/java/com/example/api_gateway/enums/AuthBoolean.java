@@ -1,13 +1,13 @@
 package com.example.api_gateway.enums;
 
-public enum AuthToBoolean {
+public enum AuthBoolean {
     
     TRUE("true"),
     FALSE("false");
 
     private final String value;
 
-    AuthToBoolean(String value) {
+    AuthBoolean(String value) {
         this.value = value;
     }
 
@@ -15,9 +15,9 @@ public enum AuthToBoolean {
         return value;
     }
 
-    public static boolean getBoolFromValue(String value) {
-        for (AuthToBoolean authToBoolean : AuthToBoolean.values()) {
-            if (authToBoolean.getValue().toLowerCase().equals(value)) {
+    public static boolean fromValue(String value) {
+        for (AuthBoolean authBoolean : AuthBoolean.values()) {
+            if (authBoolean.getValue().toLowerCase().equals(value)) {
                 return true;
             }
         }
