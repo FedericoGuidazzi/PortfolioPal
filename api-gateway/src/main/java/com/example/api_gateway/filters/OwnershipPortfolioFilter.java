@@ -57,7 +57,7 @@ public class OwnershipPortfolioFilter implements GatewayFilter {
     }
 
     private boolean isOwner(long portfolioId, String uid) {
-        String url = discoveryClient.getInstances("portfolio-service").stream().findAny()
+        String uri = discoveryClient.getInstances("portfolio-service").stream().findAny()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "Portfolio service not found"))
                 .getUri().toString();
@@ -65,7 +65,7 @@ public class OwnershipPortfolioFilter implements GatewayFilter {
         RestTemplate restTemplate = new RestTemplate();
         try {
             ResponseEntity<List<Portfolio>> responseEntity = restTemplate.exchange(
-                    url + "/get/user/" + uid,
+                    uri + "/api/v1/portfolio/get/user/" + uid,
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<List<Portfolio>>() {
