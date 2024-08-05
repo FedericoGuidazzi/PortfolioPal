@@ -33,7 +33,7 @@ public class OwnershipPortfolioFilter implements GatewayFilter {
                 .orElse("")
                 .toUpperCase();
 
-        if ("FALSE".equals(isAuth)) {
+        if (!"TRUE".equals(isAuth)) {
             return chain.filter(exchange);
         }
 
