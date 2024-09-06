@@ -44,7 +44,7 @@ public class TransactionController {
 	private RabbitMqSender sender;
 
 	@SneakyThrows
-	@PutMapping("update/{id}")
+	@PutMapping("/update/{id}")
 	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id,
 			@RequestBody PutTransactionDto entity) {
 
