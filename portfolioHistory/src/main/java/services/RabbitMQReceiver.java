@@ -1,7 +1,7 @@
 package services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import models.IntradayMovementBin;
+import models.MovementBin;
 import models.UpdatePortfolioInfoBin;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,7 +18,7 @@ public class RabbitMQReceiver {
 
     @RabbitListener(queues = "privacyUpdates")
     public void updatePrivacy(String msg) {
-        System.out.println("\n\n[R] Received < " + msg + " >");
+        System.out.println("\n\n[R] Received privacyUpdates < " + msg + " >");
 
         try {
             UpdatePortfolioInfoBin privacyBin = objectMapper.readValue(msg, UpdatePortfolioInfoBin.class);
@@ -30,11 +30,23 @@ public class RabbitMQReceiver {
 
     @RabbitListener(queues = "intradayMovements")
     public void addIntradayMovement(String msg) {
-        System.out.println("\n\n[R] Received < " + msg + " >");
+        System.out.println("\n\n[R] Received intradayMovements < " + msg + " >");
 
         try {
-            IntradayMovementBin intradayMovementBin = objectMapper.readValue(msg, IntradayMovementBin.class);
-            this.portfolioService.insertIntradayMovement(intradayMovementBin);
+            MovementBin movementBin = objectMapper.readValue(msg, MovementBin.class);
+            this.portfolioService.insertIntradayMovement(movementBin);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    @RabbitListener(queues = "updateOldMovements")
+    public void updateOldMovements(String msg) {
+        System.out.println("\n\n[R] Received updateOldMovements < " + msg + " >");
+
+        try {
+            MovementBin movementBin = objectMapper.readValue(msg, MovementBin.class);
+            this.portfolioService.updateOldMovements(movementBin);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }

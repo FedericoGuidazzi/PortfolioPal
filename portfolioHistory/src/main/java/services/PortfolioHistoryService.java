@@ -1,14 +1,16 @@
 package services;
 
 import models.GetPortfolioHistoryBin;
-import models.IntradayMovementBin;
+import models.MovementBin;
 import models.PortfolioHistory;
 import models.UpdatePortfolioInfoBin;
 
 import java.util.List;
 
 public interface PortfolioHistoryService {
-    void insertIntradayMovement(IntradayMovementBin intradayMovementBin);
+    void insertIntradayMovement(MovementBin movementBin);
+
+    void updateOldMovements(MovementBin movementBin);
 
     void insertNewDay();
 

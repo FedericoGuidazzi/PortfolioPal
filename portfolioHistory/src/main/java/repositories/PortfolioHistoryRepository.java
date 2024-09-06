@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface PortfolioHistoryRepository extends JpaRepository<PortfolioHistoryEntity, Long> {
     List<PortfolioHistoryEntity> findByPortfolioIDAndDateAfter(long portfolioID, LocalDate date);
 
+    PortfolioHistoryEntity findByPortfolioIDAndDate(long portfolioID, LocalDate date);
+
     @Query("SELECT * FROM PortfolioHistoryEntity p " +
             "WHERE p.date = CURDATE() - INTERVAL 1 DAY AND p.portfolioID in (SELECT portfolioID FROM PortfolioPrivacyInfoEntity WHERE isSharable = true) " +
             "ORDER BY p.percentageValue DESC")
@@ -28,4 +30,9 @@ public interface PortfolioHistoryRepository extends JpaRepository<PortfolioHisto
     @Transactional
     @Query("DELETE FROM PortfolioHistoryEntity p WHERE p.portfolioID = :portfolioID")
     void deleteByPortfolioID(@Param("portfolioID") long portfolioID);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PortfolioHistoryEntity p WHERE p.portfolioID = :portfolioId AND p.date = :date")
+    void deleteByPortfolioIdAndDate(@Param("portfolioId") long portfolioId, @Param("date") LocalDate date);
 }

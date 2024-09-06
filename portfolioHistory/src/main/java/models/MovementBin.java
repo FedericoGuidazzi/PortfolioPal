@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class IntradayMovementBin {
+public class MovementBin {
     private TransactionTypeEnum type;
     private LocalDate date;
     private double amount;
