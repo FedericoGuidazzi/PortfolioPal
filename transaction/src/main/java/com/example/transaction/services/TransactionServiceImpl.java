@@ -1,27 +1,20 @@
 package com.example.transaction.services;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.CsvPortfolioReader;
-import com.example.transaction.models.Portfolio;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetAssetQtyOutputBin;
-import com.example.transaction.models.bin.GetTransactionAfterDateBin;
+import com.example.transaction.models.bin.GetTransactionByDateBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.entities.TransactionEntity;
@@ -33,9 +26,6 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Autowired
 	private TransactionRepository transactionRepository;
-
-	@Autowired
-	private DiscoveryClient discoveryClient;
 
 	@Override
 	public List<Transaction> getAllTransactionsByPortfolioId(long portfolioId) {
@@ -77,11 +67,6 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new CustomException("Transaction not found");
 		}
 
-		// Check if current user is the owner of the portfolio
-		if (!isOwner(transactionBin.getTransaction().getPortfolioId(), transactionBin.getUserId())) {
-			throw new CustomException("User is not the owner of the portfolio");
-		}
-
 		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
 				.id(transactionBin.getId())
 				.type(Optional.ofNullable(
@@ -107,18 +92,12 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Override
-	public Transaction deleteTransaction(long id, String uid) {
+	public Transaction deleteTransaction(long id) {
 		Transaction deletedTransaction;
 		try {
 			deletedTransaction = this.getTransactionById(id);
 		} catch (CustomException e) {
 			return null;
-		}
-
-		// Check if current user is the owner of the portfolio
-		if (!isOwner(deletedTransaction.getPortfolioId(), uid)) {
-			return null;
-
 		}
 
 		transactionRepository.delete(TransactionEntity.builder().id(id).build());
@@ -127,10 +106,6 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException {
-		// Check if current user is the owner of the portfolio
-		if (!isOwner(bin.getPortfolioId(), bin.getUserId())) {
-			throw new CustomException("User is not the owner of the portfolio");
-		}
 
 		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream());
 		Map<String, Double> assetsQty = this.getAssetsQtyByPortfolioId(bin.getPortfolioId()).stream().collect(
@@ -164,7 +139,7 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Override
-	public List<Transaction> getTransactionsByPortfolioIdAndDate(GetTransactionAfterDateBin bin) {
+	public List<Transaction> getTransactionsByPortfolioIdAfterDate(GetTransactionByDateBin bin) {
 		List<TransactionEntity> list = transactionRepository.findAllByPortfolioIdAndDateAfter(bin.getPortfolioId(),
 				bin.getDate());
 
@@ -183,37 +158,12 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioId(long portfolioId) {
-		return this.transactionRepository.findAssetsQtyByPortfolioId(portfolioId);
+		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(portfolioId, LocalDate.now());
 	}
 
-	private boolean isOwner(long portfolioId, String uid) {
-		List<ServiceInstance> instances = discoveryClient.getInstances("portfolio-service");
-
-		if (instances != null && !instances.isEmpty()) {
-
-			// Get a random instance
-			String url = instances.get(new Random().nextInt(instances.size())).getUri().toString();
-			RestTemplate restTemplate = new RestTemplate();
-			try {
-				ResponseEntity<List<Portfolio>> responseEntity = restTemplate.exchange(
-						url + "/get/user/" + uid,
-						HttpMethod.GET,
-						null,
-						new ParameterizedTypeReference<List<Portfolio>>() {
-						});
-
-				List<Portfolio> portfolios = Optional.ofNullable(responseEntity.getBody()).orElse(List.of());
-
-				return portfolios.stream()
-						.anyMatch(portfolio -> portfolio.getId() == portfolioId);
-
-			} catch (Exception e) {
-				// throw new CustomException("Portfolio service is not available");
-			}
-
-		}
-
-		return false;
+	@Override
+	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin bin) {
+		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(bin.getPortfolioId(), bin.getDate());
 	}
 
 }

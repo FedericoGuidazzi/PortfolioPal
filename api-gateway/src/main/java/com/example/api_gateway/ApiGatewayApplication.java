@@ -9,6 +9,7 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 
 import com.example.api_gateway.filters.FireBaseTokenFilter;
+import com.example.api_gateway.filters.OwnershipPortfolioFilter;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -16,6 +17,9 @@ public class ApiGatewayApplication {
 
 	@Autowired
 	private FireBaseTokenFilter auTokenFilter;
+
+	@Autowired
+	private OwnershipPortfolioFilter ownershipPortfolioFilter;
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiGatewayApplication.class, args);
@@ -32,6 +36,7 @@ public class ApiGatewayApplication {
 				.route(r -> r.path("/transaction/**")
 						.filters(f -> f
 								.filter(auTokenFilter)
+								.filter(ownershipPortfolioFilter)
 								.rewritePath("/transaction/(?<segment>.*)", "/api/v1/transaction/${segment}"))
 						.uri("lb://transaction"))
 				.build();

@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class GetTransactionAfterDateBin {
+public class GetTransactionByDateBin {
 
     private LocalDate date;
 

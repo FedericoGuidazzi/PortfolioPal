@@ -44,7 +44,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
 
                 ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                         .header("X-Authenticated-UserId", uid)
-                        .header("X-Is-Authenticated", "true")
+                        .header("X-Is-Authenticated", "TRUE")
                         .build();
 
                 return chain.filter(exchange.mutate().request(modifiedRequest).build());
@@ -54,7 +54,7 @@ public class FireBaseTokenFilter implements GatewayFilter {
         }
 
         ServerHttpRequest modifiedRequest = request.mutate()
-                .header("X-Is-Authenticated", "false")
+                .header("X-Is-Authenticated", "FALSE")
                 .build();
 
         return chain.filter(exchange.mutate().request(modifiedRequest).build());

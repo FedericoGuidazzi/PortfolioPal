@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +22,7 @@ import com.example.transaction.PublicEndpoint;
 import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetAssetQtyOutputBin;
-import com.example.transaction.models.bin.GetTransactionAfterDateBin;
+import com.example.transaction.models.bin.GetTransactionByDateBin;
 import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.bin.UploadBin;
@@ -45,14 +44,13 @@ public class TransactionController {
 	private RabbitMqSender sender;
 
 	@SneakyThrows
-	@PutMapping("update/{id}")
-	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id, @RequestHeader("X-Authenticated-UserId") String uid,
+	@PutMapping("/update/{id}")
+	public ResponseEntity<Transaction> updateTransaction(@PathVariable long id,
 			@RequestBody PutTransactionDto entity) {
 
 		Transaction transaction = transactionService.updateTransaction(
 				PutTransactionBin.builder()
 						.id(id)
-						.userId(uid)
 						.transaction(entity)
 						.build());
 
@@ -66,13 +64,14 @@ public class TransactionController {
 
 	@SneakyThrows
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id, @RequestHeader("X-Authenticated-UserId") String uid) {
-		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id, uid)).orElseThrow(() -> new CustomException("Transaction not found"));
-			this.sender
-					.send(PostTransactionBin.builder()
-							.date(deletedTransaction.getDate())
-							.portfolioId(portfolioId)
-							.build());
+	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id) {
+		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id))
+				.orElseThrow(() -> new CustomException("Transaction not found"));
+		this.sender
+				.send(PostTransactionBin.builder()
+						.date(deletedTransaction.getDate())
+						.portfolioId(portfolioId)
+						.build());
 
 		return ResponseEntity.ok().build();
 	}
@@ -81,15 +80,13 @@ public class TransactionController {
 	@PostMapping("/upload/{portfolioId}")
 	public ResponseEntity<List<Transaction>> uploadFile(
 			@PathVariable long portfolioId,
-			@RequestHeader("X-Authenticated-UserId") String uid,
 			@RequestParam(value = "file", required = true) MultipartFile file) {
-		if (file.isEmpty() || !file.getOriginalFilename().endsWith(".csv")) {
+		if (file.isEmpty() || Optional.ofNullable(file.getOriginalFilename()).orElse("").endsWith(".csv") == false) {
 			throw new CustomException("Please upload a valid CSV file.");
 		}
 		List<Transaction> list = transactionService.saveTransactionsFromCsv(UploadBin.builder()
 				.portfolioId(portfolioId)
 				.inputStream(file.getInputStream())
-				.userId(uid)
 				.build());
 		list.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
 		this.sender.send(PostTransactionBin.builder()
@@ -148,7 +145,7 @@ public class TransactionController {
 
 		LocalDate localDate = LocalDate.parse(date);
 		List<Transaction> transactions = transactionService
-				.getTransactionsByPortfolioIdAndDate(GetTransactionAfterDateBin.builder()
+				.getTransactionsByPortfolioIdAfterDate(GetTransactionByDateBin.builder()
 						.portfolioId(portfolioId)
 						.date(localDate)
 						.build());
@@ -158,6 +155,7 @@ public class TransactionController {
 	@PublicEndpoint
 	@GetMapping("/get-by-portfolio/{portfolioId}/assets-qty")
 	public ResponseEntity<List<GetAssetQtyOutputBin>> getAssetsQtyByPortfolioId(@PathVariable long portfolioId,
+			@RequestParam(required = false) String date,
 			@RequestParam(defaultValue = "false") boolean mock) {
 		if (mock) {
 			return ResponseEntity.ok(List.of(GetAssetQtyOutputBin.builder()
@@ -165,6 +163,12 @@ public class TransactionController {
 					.amount(100)
 					.build()));
 		}
-		return ResponseEntity.ok(transactionService.getAssetsQtyByPortfolioId(portfolioId));
+		return date == null || date.isBlank()
+				? ResponseEntity.ok(transactionService.getAssetsQtyByPortfolioId(portfolioId))
+				: ResponseEntity
+						.ok(transactionService.getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin.builder()
+								.portfolioId(portfolioId)
+								.date(LocalDate.parse(date))
+								.build()));
 	}
 }
