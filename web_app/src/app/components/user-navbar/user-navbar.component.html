@@ -1,0 +1,114 @@
+<nav class="navbar navbar-expand-md navbar-light sticky-top">
+  <div class="container-fluid">
+    <div class="navbar-brand me-3">PortfolioPal</div>
+    <button
+      class="navbar-toggler collapsed"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarCollapse"
+      aria-controls="navbarCollapse"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="navbar-collapse collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [routerLink]="'dashboard'"
+            routerLinkActive="active"
+            >Home</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="'ranking'" routerLinkActive="active"
+            >Ranking</a
+          >
+        </li>
+      </ul>
+      <div class="dropdown text-end">
+        <div
+          class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          data-bs-auto-close="outside"
+        >
+          <img
+            src="https://github.com/mdo.png"
+            alt="mdo"
+            width="32"
+            height="32"
+            class="rounded-circle"
+          />
+        </div>
+        <ul
+          class="dropdown-menu mx-0 mt-2 shadow dropdown-menu-end"
+          data-bs-theme="light"
+        >
+          @for (item of settings | keyvalue; track item.key) {
+          <li class="mb-3">
+            <div class="dropdown-item d-flex gap-3 align-items-center">
+              <img src="{{ item.value.icon_loc }}" alt="" />
+              {{ item.value.name }}
+              <div class="option">
+                @switch (item.value.type) { @case ('toggle') {
+                <mat-slide-toggle
+                  [checked]="item.value.value"
+                  (change)="onToggle(item.key)"
+                  [disabled]="item.value.disabled"
+                ></mat-slide-toggle>
+                } @case ('select') { @switch (item.key) { @case ('language') {
+                <select
+                  class="form-select form-select-sm"
+                  [disabled]="item.value.disabled"
+                  #language
+                  (change)="onSelectedLanguage()"
+                >
+                  @for (language of supportedLanguages; track $index) {
+                  <option
+                    value="{{ language }}"
+                    [selected]="language == item.value.value"
+                  >
+                    {{ language }}
+                  </option>
+                  }
+                </select>
+                } @case ('currency') {
+                <select
+                  class="form-select form-select-sm"
+                  [disabled]="item.value.disabled"
+                  #currency
+                  (change)="onSelectedCurrency()"
+                  [value]="item.value.value"
+                >
+                  @for (currency of supportedCurrencies; track $index) {
+                  <option
+                    value="{{ currency }}"
+                    [selected]="currency == item.value.value"
+                  >
+                    {{ currency }}
+                  </option>
+                  }
+                </select>
+                } } } }
+              </div>
+            </div>
+          </li>
+          }
+          <li><hr class="dropdown-divider mb-2" /></li>
+          <li class="px-2">
+            <button
+              class="dropdown-item logout p-2 d-flex gap-3 align-items-center"
+              (click)="onLogout()"
+            >
+              <img src="assets/icons/ic-logout.svg" alt="" />
+              Sign out
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
