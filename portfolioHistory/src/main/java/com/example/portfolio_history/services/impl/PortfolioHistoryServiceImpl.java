@@ -277,10 +277,10 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
                     });
 
                     PortfolioPrivacyInfoEntity portfolioPrivacyInfoEntity = new PortfolioPrivacyInfoEntity();
-                    portfolioPrivacyInfoEntity.setPortfolioID(movementBin.getPortfolioId());
-                    PortfolioHistoryEntity lastPortfolioRecord = repository.findTopByPortfolioIDOrderByDateDesc(movementBin.getPortfolioId()).orElse(new PortfolioHistoryEntity());
+                    portfolioPrivacyInfoEntity.setPortfolioId(movementBin.getPortfolioId());
+                    PortfolioHistoryEntity lastPortfolioRecord = repository.findTopByPortfolioIdOrderByDateDesc(movementBin.getPortfolioId()).orElse(new PortfolioHistoryEntity());
                     PortfolioHistoryEntity portfolioHistory = new PortfolioHistoryEntity();
-                    portfolioHistory.setPortfolioID(movementBin.getPortfolioId());
+                    portfolioHistory.setPortfolioId(movementBin.getPortfolioId());
                     portfolioHistory.setDate(movementBin.getDate());
                     portfolioHistory.setAmount(Optional.ofNullable(lastPortfolioRecord.getAmount())
                             .map(e -> {
@@ -457,10 +457,10 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
                 });
 
                 PortfolioPrivacyInfoEntity portfolioPrivacyInfoEntity = new PortfolioPrivacyInfoEntity();
-                portfolioPrivacyInfoEntity.setPortfolioID(portfolioID);
-                PortfolioHistoryEntity lastPortfolioRecord = repository.findTopByPortfolioIDOrderByDateDesc(portfolioID).orElse(new PortfolioHistoryEntity());
+                portfolioPrivacyInfoEntity.setPortfolioId(portfolioID);
+                PortfolioHistoryEntity lastPortfolioRecord = repository.findTopByPortfolioIdOrderByDateDesc(portfolioID).orElse(new PortfolioHistoryEntity());
                 PortfolioHistoryEntity portfolioHistory = new PortfolioHistoryEntity();
-                portfolioHistory.setPortfolioID(portfolioID);
+                portfolioHistory.setPortfolioId(portfolioID);
                 portfolioHistory.setDate(LocalDate.now());
                 portfolioHistory.setAmount(Optional.ofNullable(lastPortfolioRecord.getAmount())
                         .map(e -> {
@@ -484,7 +484,7 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
     @Override
     public void insertNewPortfolio(Long id) {
         PortfolioPrivacyInfoEntity portfolioPrivacyInfoEntity = new PortfolioPrivacyInfoEntity();
-        portfolioPrivacyInfoEntity.setPortfolioID(id);
+        portfolioPrivacyInfoEntity.setPortfolioId(id);
         portfolioPrivacyInfoEntity.setSharable(true);
         portfolioInfoRepository.save(portfolioPrivacyInfoEntity);
     }
@@ -494,9 +494,9 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
      */
     @Override
     public void deletePortfolio(Long id) {
-        repository.deleteByPortfolioID(id);
+        repository.deleteByPortfolioId(id);
         intradayMovementsRepository.deleteByPortfolioId(id);
-        portfolioInfoRepository.deleteByPortfolioID(id);
+        portfolioInfoRepository.deleteByPortfolioId(id);
     }
 
     /**
@@ -504,7 +504,7 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
      */
     @Override
     public List<PortfolioHistory> getPortfolioHistory(GetPortfolioHistoryBin getPortfolioHistoryBin) {
-        List<PortfolioHistoryEntity> records = repository.findByPortfolioIDAndDateAfter(getPortfolioHistoryBin.getPortfolioId(),
+        List<PortfolioHistoryEntity> records = repository.findByPortfolioIdAndDateAfter(getPortfolioHistoryBin.getPortfolioId(),
                 DurationIntervalEnum.getDateFromNow(getPortfolioHistoryBin.getDurationIntervalEnum()));
         return records.stream().map(this::fromEntityToObject).toList();
     }
@@ -528,7 +528,7 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 
     private PortfolioHistory fromEntityToObject(PortfolioHistoryEntity entity) {
         return PortfolioHistory.builder()
-                .portfolioID(entity.getPortfolioID())
+                .portfolioID(entity.getPortfolioId())
                 .id(entity.getId())
                 .date(entity.getDate())
                 .amount(entity.getAmount())

@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class PortfolioPrivacyInfoEntity {
     @Id
-    private long portfolioID;
+    private long portfolioId;
     @Column
     private boolean isSharable;
 }

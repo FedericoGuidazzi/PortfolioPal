@@ -15,7 +15,7 @@ public class PortfolioHistoryEntity {
     private long id;
 
     @Column(name = "portfolio_id", nullable = false)
-    private long portfolioID;
+    private long portfolioId;
 
     @Column(name = "date", nullable = false)
     private LocalDate date;
