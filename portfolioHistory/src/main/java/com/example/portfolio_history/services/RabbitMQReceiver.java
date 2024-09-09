@@ -1,7 +1,7 @@
 package com.example.portfolio_history.services;
 
 import com.example.portfolio_history.models.MovementBin;
-import com.example.portfolio_history.models.UpdatePortfolioInfoBin;
+import com.example.portfolio_history.models.bin.PutUserPrivacyBin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -15,15 +15,18 @@ public class RabbitMQReceiver {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private PortfolioHistoryService portfolioService;
+    private PortfolioService portfolioService;
+
+    @Autowired
+    private PortfolioHistoryService portfolioHistoryService;
 
     @RabbitListener(queues = "privacyUpdates")
     public void updatePrivacy(String msg) {
         System.out.println("\n\n[R] Received privacyUpdates < " + msg + " >");
 
         try {
-            UpdatePortfolioInfoBin privacyBin = objectMapper.readValue(msg, UpdatePortfolioInfoBin.class);
-            this.portfolioService.updatePrivacySetting(privacyBin);
+            PutUserPrivacyBin privacyBin = objectMapper.readValue(msg, PutUserPrivacyBin.class);
+            this.portfolioService.updatePortfolioPrivacy(privacyBin);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -35,19 +38,19 @@ public class RabbitMQReceiver {
 
         try {
             MovementBin movementBin = objectMapper.readValue(msg, MovementBin.class);
-            this.portfolioService.insertIntradayMovement(movementBin);
+            this.portfolioHistoryService.insertIntradayMovement(movementBin);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
 
-    @RabbitListener(queues = "updateOldMovements")
+    @RabbitListener(queues = "transactionUpdates")
     public void updateOldMovements(String msg) {
-        System.out.println("\n\n[R] Received updateOldMovements < " + msg + " >");
+        System.out.println("\n\n[R] Received transactionUpdates < " + msg + " >");
 
         try {
             MovementBin movementBin = objectMapper.readValue(msg, MovementBin.class);
-            this.portfolioService.updateOldMovements(movementBin);
+            this.portfolioHistoryService.updateOldMovements(movementBin);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }

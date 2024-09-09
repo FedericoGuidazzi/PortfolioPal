@@ -1,4 +1,4 @@
-package com.example.portfolio.models.entities;
+package com.example.portfolio_history.models.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,5 +30,5 @@ public class PortfolioEntity {
     private String userId;
 
     @Column(nullable = false)
-    private boolean sharePortfolio;
+    private boolean isSherable;
 }

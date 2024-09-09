@@ -1,4 +1,4 @@
-package com.example.portfolio.custom_exceptions;
+package com.example.portfolio_history.custom_exceptions;
 
 public class CustomException extends Exception{
     public CustomException(String message) {

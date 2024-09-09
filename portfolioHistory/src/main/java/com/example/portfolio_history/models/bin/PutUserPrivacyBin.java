@@ -1,4 +1,4 @@
-package com.example.portfolio.models.bin;
+package com.example.portfolio_history.models.bin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PutUserPrivacyBin {
     private String userID;
-    private boolean sharePortfolio;
+    private boolean isSherable;
 }

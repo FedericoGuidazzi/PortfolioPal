@@ -1,17 +1,21 @@
-package com.example.portfolio.services;
+package com.example.portfolio_history.services.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.portfolio.custom_exceptions.CustomException;
-import com.example.portfolio.models.Portfolio;
-import com.example.portfolio.models.bin.PostPortfolioBin;
-import com.example.portfolio.models.bin.PutPortfolioNameBin;
-import com.example.portfolio.models.bin.PutUserPrivacyBin;
-import com.example.portfolio.models.entities.PortfolioEntity;
-import com.example.portfolio.repositories.PortfolioRepository;
+import com.example.portfolio_history.custom_exceptions.CustomException;
+import com.example.portfolio_history.models.Portfolio;
+import com.example.portfolio_history.models.PortfolioHistory;
+import com.example.portfolio_history.models.bin.PostPortfolioBin;
+import com.example.portfolio_history.models.bin.PutPortfolioNameBin;
+import com.example.portfolio_history.models.bin.PutUserPrivacyBin;
+import com.example.portfolio_history.models.entities.PortfolioEntity;
+import com.example.portfolio_history.models.entities.PortfolioHistoryEntity;
+import com.example.portfolio_history.repositories.PortfolioRepository;
+import com.example.portfolio_history.services.PortfolioService;
 
 @Service
 public class PortfolioServiceImpl implements PortfolioService {
@@ -35,11 +39,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .build();
         portfolioRepository.save(portfolioEntity);
 
-        return Portfolio.builder()
-                .id(portfolioEntity.getId())
-                .name(portfolioEntity.getName())
-                .userId(portfolioEntity.getUserId())
-                .build();
+        return this.fromEntityToObject(portfolioEntity);
     }
 
     @Override
@@ -50,11 +50,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         portfolioEntity.setName(putPortfolioNameBin.getName());
         portfolioRepository.save(portfolioEntity);
 
-        return Portfolio.builder()
-                .id(portfolioEntity.getId())
-                .name(portfolioEntity.getName())
-                .userId(portfolioEntity.getUserId())
-                .build();
+        return this.fromEntityToObject(portfolioEntity);
     }
 
     @Override
@@ -66,11 +62,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         }
 
         return portfolioList.stream()
-                .map(portfolioEntity -> Portfolio.builder()
-                        .id(portfolioEntity.getId())
-                        .name(portfolioEntity.getName())
-                        .userId(portfolioEntity.getUserId())
-                        .build())
+                .map(this::fromEntityToObject)
                 .toList();
     }
 
@@ -84,15 +76,15 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public Portfolio getPortfolio(long id) throws CustomException {
+    public Portfolio getPortfolio(long id, boolean isRequesterOwner) throws CustomException {
         PortfolioEntity portfolioEntity = portfolioRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Portfolio not found"));
+        if (isRequesterOwner || portfolioEntity.isSherable()) {
+            return this.fromEntityToObject(portfolioEntity);
+        } else {
+            throw new CustomException("Portfolio is not sharable");
+        }
 
-        return Portfolio.builder()
-                .id(portfolioEntity.getId())
-                .name(portfolioEntity.getName())
-                .userId(portfolioEntity.getUserId())
-                .build();
     }
 
     @Override
@@ -100,7 +92,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         PortfolioEntity portfolioEntity = PortfolioEntity.builder()
                 .id(id)
                 .build();
-            portfolioRepository.delete(portfolioEntity);
+        portfolioRepository.delete(portfolioEntity);
 
     }
 
@@ -109,9 +101,40 @@ public class PortfolioServiceImpl implements PortfolioService {
         List<PortfolioEntity> portfolioList = portfolioRepository.findAllByUserId(putUserPrivacyBin.getUserID());
 
         for (PortfolioEntity portfolioEntity : portfolioList) {
-            portfolioEntity.setSharePortfolio(putUserPrivacyBin.isSharePortfolio());
+            portfolioEntity.setSherable(putUserPrivacyBin.isSherable());
             portfolioRepository.save(portfolioEntity);
         }
+    }
+
+    @Override
+    public List<Portfolio> getRanking() {
+        // Get all portfolios order by percentageValue
+        // List<PortfolioEntity> allPortfolios =
+        // repository.findAllOrderByPercentageValueDesc();
+
+        // Remove all the portfolios that are not sharable and select the top 10
+        // return allPortfolios.stream()
+        // .filter(this::isPortfolioSharable)
+        // .limit(10)
+        // .map(this::fromEntityToObject)
+        // .collect(Collectors.toList());
+        return List.of();
+
+    }
+
+    private boolean isPortfolioSharable(PortfolioHistoryEntity item) {
+        return portfolioRepository.findById(item.getId())
+                .map(PortfolioEntity::isSherable)
+                .orElse(false);
+    }
+
+    private Portfolio fromEntityToObject(PortfolioEntity entity) {
+        return Portfolio.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .isSherable(entity.isSherable())
+                .userId(entity.getUserId())
+                .build();
     }
 
 }

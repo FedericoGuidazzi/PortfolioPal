@@ -1,4 +1,4 @@
-package com.example.portfolio.models;
+package com.example.portfolio_history.models;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,5 +10,5 @@ public class Portfolio {
     private long id;
     private String name;
     private String userId;
-    private boolean sharePortfolio;
+    private boolean isSherable;
 }

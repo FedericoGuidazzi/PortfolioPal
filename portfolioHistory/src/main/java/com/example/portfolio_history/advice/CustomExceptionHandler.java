@@ -1,11 +1,11 @@
-package com.example.portfolio.advice;
+package com.example.portfolio_history.advice;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.example.portfolio.custom_exceptions.CustomException;
+import com.example.portfolio_history.custom_exceptions.CustomException;
 
 import java.util.HashMap;
 import java.util.Map;

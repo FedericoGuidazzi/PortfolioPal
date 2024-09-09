@@ -19,6 +19,6 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue updateOldMovementsQueue() {
-        return new Queue("updateOldMovements", true);
+        return new Queue("transactionUpdates", true);
     }
 }

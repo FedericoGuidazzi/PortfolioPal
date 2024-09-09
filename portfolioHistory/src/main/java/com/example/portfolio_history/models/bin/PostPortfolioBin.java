@@ -1,4 +1,4 @@
-package com.example.portfolio.models.bin;
+package com.example.portfolio_history.models.bin;
 
 import lombok.Builder;
 import lombok.Data;
