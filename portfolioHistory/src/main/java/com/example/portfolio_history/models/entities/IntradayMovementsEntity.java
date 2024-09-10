@@ -2,7 +2,10 @@ package com.example.portfolio_history.models.entities;
 
 import com.example.portfolio_history.models.enums.TransactionTypeEnum;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -10,6 +13,9 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "intraday_movement")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class IntradayMovementsEntity {
 
     @Id

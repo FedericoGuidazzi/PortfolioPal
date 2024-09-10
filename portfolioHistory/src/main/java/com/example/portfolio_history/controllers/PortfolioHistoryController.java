@@ -15,35 +15,16 @@ public class PortfolioHistoryController {
     @Autowired
     private PortfolioHistoryService portfolioHistoryService;
 
-    @GetMapping("/{portfolioID}")
+    @GetMapping("/{portfolioId}")
     public List<PortfolioHistory> getPortfolioHistory(
-            @PathVariable long portfolioID,
-            @RequestParam(required = false, defaultValue = "1S") String duration
-    ) {
+            @PathVariable long portfolioId,
+            @RequestParam(required = false, defaultValue = "1S") String duration) {
+
         GetPortfolioHistoryBin bin = GetPortfolioHistoryBin.builder()
-                .portfolioId(portfolioID)
+                .portfolioId(portfolioId)
                 .durationIntervalEnum(DurationIntervalEnum.fromValue(duration))
                 .build();
         return portfolioHistoryService.getPortfolioHistory(bin);
     }
 
-    @GetMapping("/ranking")
-    public List<PortfolioHistory> getRanking(
-    ) {
-        return portfolioHistoryService.getRanking();
-    }
-
-    @PostMapping("/insertPortfolio")
-    public void insertPortfolioInfo(
-            @RequestParam(required = true) Long id
-    ) {
-        portfolioHistoryService.insertNewPortfolio(id);
-    }
-
-    @PostMapping("/deletePortfolio")
-    public void deletePortfolioInfo(
-            @RequestParam(required = true) Long id
-    ) {
-        portfolioHistoryService.deletePortfolio(id);
-    }
 }

@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Builder
 public class PortfolioHistory {
     private long id;
-    private long portfolioID;
+    private long portfolioId;
     private LocalDate date;
     private BigDecimal amount;
     private BigDecimal countervail;
