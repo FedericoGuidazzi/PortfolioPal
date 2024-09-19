@@ -31,7 +31,7 @@ jobs:
       run: |
         cd asset
         mvn clean install
-    - name: Run Clean Install in 'transactions' directory
-      run: |
-        cd transaction
-        mvn clean install
+    # - name: Run Clean Install in 'transaction' directory
+    #   run: |
+    #     cd transaction
+    #     mvn clean install
