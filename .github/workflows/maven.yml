@@ -27,6 +27,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
-      run: cd asset
-          mvn -B package --file pom.xml
+    - name: Run Clean Install in 'asset' directory
+      run: |
+        cd asset
+        mvn clean install
+    - name: Run Clean Install in 'transactions' directory
+      run: |
+        cd transaction
+        mvn clean install
