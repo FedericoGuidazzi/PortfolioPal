@@ -3,20 +3,19 @@ package com.example.portfolio_history.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.portfolio_history.models.PortfolioInfo;
-import com.example.portfolio_history.repositories.PortfolioHistoryRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.portfolio_history.custom_exceptions.CustomException;
 import com.example.portfolio_history.models.Portfolio;
-import com.example.portfolio_history.models.PortfolioHistory;
+import com.example.portfolio_history.models.PortfolioInfo;
 import com.example.portfolio_history.models.bin.PostPortfolioBin;
 import com.example.portfolio_history.models.bin.PutPortfolioNameBin;
 import com.example.portfolio_history.models.bin.PutUserPrivacyBin;
 import com.example.portfolio_history.models.entities.PortfolioEntity;
 import com.example.portfolio_history.models.entities.PortfolioHistoryEntity;
+import com.example.portfolio_history.repositories.PortfolioHistoryRepository;
 import com.example.portfolio_history.repositories.PortfolioRepository;
 import com.example.portfolio_history.services.PortfolioService;
 
