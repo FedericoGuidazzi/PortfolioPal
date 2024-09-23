@@ -93,7 +93,7 @@ services:
       - MYSQL_DATABASE=transaction
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
-      - transaction-data:/var/lib/transaction/mysql
+      - transaction-data:/var/lib/mysql
     networks:
       - transaction-network
     healthcheck:
@@ -133,7 +133,7 @@ services:
       - MYSQL_DATABASE=history
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
-      - history-data:/var/lib/history/mysql
+      - history-data:/var/lib/mysql
     networks:
       - history-network
     healthcheck:

@@ -9,7 +9,6 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 
 import com.example.api_gateway.filters.FireBaseTokenFilter;
-import com.example.api_gateway.filters.OwnershipPortfolioFilter;
 
 @SpringBootApplication
 @EnableDiscoveryClient
