@@ -299,7 +299,7 @@ class TransactionServiceImplTest {
 				.currency("USD")
 				.build();
 
-		when(transactionRepository.findAllByPortfolioIdAndDateAfter(anyLong(), any(LocalDate.class)))
+		when(transactionRepository.findAllByPortfolioIdAndAfterDate(anyLong(), any(LocalDate.class)))
 				.thenReturn(Arrays.asList(transactionEntity1, transactionEntity2));
 
 		// Call the service method

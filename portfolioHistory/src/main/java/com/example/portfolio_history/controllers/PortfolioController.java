@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.portfolio_history.models.Portfolio;
 import com.example.portfolio_history.models.PortfolioInfo;
-import com.example.portfolio_history.models.PortfolioHistory;
 import com.example.portfolio_history.models.bin.PostPortfolioBin;
 import com.example.portfolio_history.models.bin.PutPortfolioNameBin;
-import com.example.portfolio_history.services.PortfolioHistoryService;
 import com.example.portfolio_history.services.PortfolioService;
 
 import lombok.SneakyThrows;
@@ -27,9 +25,6 @@ public class PortfolioController {
 
     @Autowired
     private PortfolioService portfolioService;
-
-    @Autowired
-    private PortfolioHistoryService portfolioHistoryService;
 
     @SneakyThrows
     @PostMapping("/create/{userId}")

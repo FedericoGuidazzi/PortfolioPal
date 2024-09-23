@@ -24,16 +24,14 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.portfolio_history.models.Asset;
 import com.example.portfolio_history.models.Currency;
-import com.example.portfolio_history.models.GetAssetQuantityBin;
-import com.example.portfolio_history.models.GetPortfolioAssetAllocationBin;
-import com.example.portfolio_history.models.GetPortfolioHistoryBin;
-import com.example.portfolio_history.models.MovementBin;
 import com.example.portfolio_history.models.PortfolioHistory;
-import com.example.portfolio_history.models.entities.IntradayMovementsEntity;
+import com.example.portfolio_history.models.bin.GetAssetQuantityBin;
+import com.example.portfolio_history.models.bin.GetPortfolioHistoryBin;
+import com.example.portfolio_history.models.bin.MovementBin;
+import com.example.portfolio_history.models.bin.RabbitTransactionBin;
 import com.example.portfolio_history.models.entities.PortfolioHistoryEntity;
 import com.example.portfolio_history.models.enums.DurationIntervalEnum;
 import com.example.portfolio_history.models.enums.TransactionTypeEnum;
-import com.example.portfolio_history.repositories.IntradayMovementsRepository;
 import com.example.portfolio_history.repositories.PortfolioHistoryRepository;
 import com.example.portfolio_history.repositories.PortfolioRepository;
 import com.example.portfolio_history.services.PortfolioHistoryService;
@@ -41,562 +39,354 @@ import com.example.portfolio_history.services.PortfolioHistoryService;
 @Service
 public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 
-    @Autowired
-    private PortfolioHistoryRepository repository;
+	@Autowired
+	private PortfolioHistoryRepository repository;
 
-    @Autowired
-    private IntradayMovementsRepository intradayMovementsRepository;
+	@Autowired
+	private PortfolioRepository portfolioInfoRepository;
 
-    @Autowired
-    private PortfolioRepository portfolioInfoRepository;
+	@Autowired
+	private DiscoveryClient discoveryClient;
 
-    @Autowired
-    private DiscoveryClient discoveryClient;
+	/**
+	 * Method to update old movement, this means that starting from the initial
+	 * modifying date all the portfolio records will be modified
+	 *
+	 * @param movementBin
+	 */
+	@Override
+	public void updateOldMovements(RabbitTransactionBin movementBin) {
 
-    /**
-     * Method to update a portfolio, this method is called each time there is a new
-     * transaction in the portfolio history, the input will be from RabbitMQ
-     */
-    @Override
-    public void insertIntradayMovement(MovementBin movementBin) {
-        IntradayMovementsEntity entity = IntradayMovementsEntity.builder()
-                .portfolioId(movementBin.getPortfolioId())
-                .currency(movementBin.getCurrency())
-                .price(movementBin.getPrice())
-                .date(movementBin.getDate())
-                .amount(movementBin.getAmount())
-                .type(movementBin.getType())
-                .symbolId(movementBin.getSymbolId())
-                .build();
+		try {
+			this.update(Map.of(
+					movementBin.getPortfolioId(), Pair.of(movementBin.getDate(), true)));
 
-        intradayMovementsRepository.save(entity);
-    }
+		} catch (Exception e) {
+			throw new RuntimeException("There was an error while updating old movements: " + e);
+		}
 
-    /**
-     * Method to update old movement, this means that starting from the initial
-     * modifying date all the portfolio records will be modified
-     *
-     * @param movementBin
-     */
-    @Override
-    public void updateOldMovements(MovementBin movementBin) {
-        // STEP1 retrieve initial date
-        LocalDate startDate = movementBin.getDate();
-        // step2 call the API to get all the transaction starting from initial date
-        RestTemplate restTemplate = new RestTemplate();
-        try {
-            String transactionUrl = this.getRandomInstanceUrl("transaction");
-            // Request all the transactions of a portfolio starting from the initial date
-            ResponseEntity<List<MovementBin>> responseEntity = restTemplate.exchange(
-                    transactionUrl + "/api/v1/transaction/get-by-portfolio/" + movementBin.getPortfolioId()
-                            + "/after-date?date=" + startDate.toString(),
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<List<MovementBin>>() {
-                    });
+	}
 
-            List<MovementBin> movements = Optional.ofNullable(responseEntity.getBody()).orElse(List.of());
 
-            // Request all the assets of a portfolio starting from the initial date
-            ResponseEntity<List<GetAssetQuantityBin>> assetResponseEntityList = restTemplate.exchange(
-                    transactionUrl + "/api/v1/transaction/get-by-portfolio/" + movementBin.getPortfolioId()
-                            +
-                            "/assets-qty?date=" + startDate.toString(),
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<List<GetAssetQuantityBin>>() {
-                    });
-            List<GetAssetQuantityBin> assetAllocation = Optional.ofNullable(assetResponseEntityList.getBody())
-                    .orElse(List.of());
+	/**
+	 * Method to insert a new record for each portfolio, this method should be
+	 * called automatically each day at midnight
+	 */
+	@Override
+	public void insertNewDay() {
+		List<Long> portfolioIDs = Optional.ofNullable(portfolioInfoRepository.findAllPortfolioIds()).orElse(List.of());
 
-            // This map will contain all the information regarding asset price in the
-            // selected period
-            Map<String, Asset> assetMap = new HashMap<>();
-            Map<String, Currency> currenciesMap = new HashMap<>();
+		try {
+			portfolioIDs.forEach(portfolioID -> {
+				this.update(Map.of(
+						portfolioID,
+						Pair.of(LocalDate.now().minusDays(1), false)));
+			});
+		} catch (Exception e) {
+			throw new RuntimeException("There was an error while inserting new day, " + e.getMessage());
+		}
+	}
 
-            // this set will contain all the asset in a portfolio to get the evaluation day
-            // by day
-            Set<String> assetsInPortfolio = movements.stream().map(MovementBin::getSymbolId)
-                    .collect(Collectors.toSet());
+	/**
+	 * Methods that returns data for a specific portfolio
+	 */
+	@Override
+	public List<PortfolioHistory> getPortfolioHistory(GetPortfolioHistoryBin getPortfolioHistoryBin) {
+		List<PortfolioHistoryEntity> records;
+		if (getPortfolioHistoryBin.getDurationIntervalEnum() == null ||
+				getPortfolioHistoryBin.getDurationIntervalEnum().equals(DurationIntervalEnum.MAX)) {
+			records = repository
+					.findByPortfolioId(getPortfolioHistoryBin.getPortfolioId());
+		} else {
+			records = repository.findByPortfolioIdAndDateAfter(
+					getPortfolioHistoryBin.getPortfolioId(),
+					DurationIntervalEnum.getDateFromNow(getPortfolioHistoryBin.getDurationIntervalEnum()));
+		}
+		return records.stream().map(this::fromEntityToObject).toList();
+	}
 
-            assetsInPortfolio.addAll(
-                    assetAllocation.stream().map(GetAssetQuantityBin::getSymbolId).collect(Collectors.toSet()));
+	/**
+	 * Converts a PortfolioHistoryEntity object to a PortfolioHistory object.
+	 *
+	 * @param entity the PortfolioHistoryEntity to be converted
+	 * @return a PortfolioHistory object containing the data from the entity
+	 */
+	private PortfolioHistory fromEntityToObject(PortfolioHistoryEntity entity) {
+		return PortfolioHistory.builder()
+				.portfolioId(entity.getPortfolioId())
+				.id(entity.getId())
+				.date(entity.getDate())
+				.investedAmount(entity.getInvestedAmount())
+				.countervail(entity.getCountervail())
+				.percentageValue(entity.getPercentageValue())
+				.withdrawnAmount(entity.getWithdrawnAmount())
+				.build();
+	}
 
-            // step3 call asset to get data for each asset
-            String assetUrl = this.getRandomInstanceUrl("asset");
-            assetsInPortfolio.forEach(asset -> {
-                if (!assetMap.containsKey(asset)) {
-                    ResponseEntity<Asset> assetResponseEntity = restTemplate.exchange(
-                            assetUrl + "/api/v1/asset/" + asset + "?startDate=" + startDate.toString(),
-                            HttpMethod.GET,
-                            null,
-                            new ParameterizedTypeReference<Asset>() {
-                            });
-                    assetMap.put(asset, assetResponseEntity.getBody());
-                }
-            });
+	/**
+	 * Retrieves a random instance URL for a given service ID.
+	 *
+	 * @param serviceId the ID of the service for which to retrieve an instance URL
+	 * @return a randomly selected instance URL as a String
+	 * @throws RuntimeException if no instances of the service are found
+	 */
+	private String getRandomInstanceUrl(String serviceId) {
+		List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
+		if (instances == null || instances.isEmpty()) {
+			throw new RuntimeException("Service " + serviceId + " not found");
+		}
 
-            Set<String> currencies = assetMap.values().stream().map(Asset::getCurrency)
-                    .collect(Collectors.toSet());
-            currencies.forEach(currency -> {
-                if (!currenciesMap.containsKey(currency)) {
-                    ResponseEntity<Currency> currencyResponseEntity = restTemplate.exchange(
-                            assetUrl + "/api/v1/currency/" + currency + "/EUR",
-                            HttpMethod.GET,
-                            null,
-                            new ParameterizedTypeReference<Currency>() {
-                            });
-                    currenciesMap.put(currency, currencyResponseEntity.getBody());
-                }
-            });
+		return instances.get(new Random().nextInt(instances.size())).getUri().toString();
+	}
 
-            LocalDate currentDate = startDate;
-            List<LocalDate> dates = new ArrayList<>();
-            while (currentDate.isBefore(LocalDate.now())) {
-                dates.add(currentDate);
-                currentDate = currentDate.plusDays(1);
-            }
-            // create a map to store all the infos required to calculate the portfolio value
-            // (store date-[asset-price])
-            Map<LocalDate, List<Pair<String, BigDecimal>>> assetDayByDay = new HashMap<>();
-            Map<LocalDate, List<Pair<String, BigDecimal>>> currenciesDayByDay = new HashMap<>();
-            Map<LocalDate, List<GetAssetQuantityBin>> portfolioDayByDay = new HashMap<>();
-            portfolioDayByDay.put(movementBin.getDate(), assetAllocation);
-            List<GetAssetQuantityBin> finalAssetAllocation = assetAllocation;
-            dates.forEach(date -> {
-                List<Pair<String, BigDecimal>> assetList = new ArrayList<>();
-                List<Pair<String, BigDecimal>> currenciesList = new ArrayList<>();
-                assetMap.keySet().forEach(assetName -> {
-                    int index = assetMap.get(assetName).getDates().indexOf(date);
-                    BigDecimal price = BigDecimal.ONE;
-                    if (index != -1) {
-                        price = assetMap.get(assetName).getPrices().get(index);
-                    } else {
-                        if (assetDayByDay.containsKey(date.minusDays(1))) {
-                            List<Pair<String, BigDecimal>> pairList = assetDayByDay.get(date.minusDays(1));
-                            for (Pair<String, BigDecimal> pair : pairList) {
-                                if (pair.getFirst().equals(assetName)) {
-                                    price = pair.getSecond();
-                                }
-                            }
-                        }
-                    }
-                    assetList.add(Pair.of(assetName, price));
-                });
-                currenciesMap.keySet().forEach(currency -> {
-                    int index = currenciesMap.get(currency).getDateList().indexOf(date);
-                    BigDecimal price = BigDecimal.ONE;
-                    if (index != -1) {
-                        price = currenciesMap.get(currency).getPriceList().get(index);
-                    } else {
-                        if (currenciesDayByDay.containsKey(date.minusDays(1))) {
-                            List<Pair<String, BigDecimal>> pairList = currenciesDayByDay.get(date.minusDays(1));
-                            for (Pair<String, BigDecimal> pair : pairList) {
-                                if (pair.getFirst().equals(currency)) {
-                                    price = pair.getSecond();
-                                }
-                            }
-                        }
-                    }
-                    currenciesList.add(Pair.of(currency, price));
-                });
-                assetDayByDay.put(date, assetList);
-                currenciesDayByDay.put(date, currenciesList);
+	/**
+	 * Updates the portfolio history records for the given portfolios.
+	 *
+	 * @param portfoliosMap a map containing the portfolio IDs as keys and pairs of
+	 *                      the initial date and a boolean indicating whether the
+	 *                      operation is an update operation as values
+	 */
+	private void update(Map<Long, Pair<LocalDate, Boolean>> portfoliosMap) {
+		portfoliosMap.forEach((id, pair) -> {
+			LocalDate startDate = pair.getFirst();
+			boolean isUpdateOperation = Optional.ofNullable(pair.getSecond())
+					.orElse(false);
 
-                // This part is used to calculate the asset allocation day by day for all the
-                // time that needs to be updated
-                List<GetAssetQuantityBin> dailyAssetAllocation = Optional
-                        .ofNullable(portfolioDayByDay.get(date.minusDays(1))).orElse(List.of());
-                List<MovementBin> dailyMovements = movements.stream().filter(e -> date.equals(e.getDate()))
-                        .toList();
-                List<BigDecimal> intradayMovementTotal = new ArrayList<>(List.of(BigDecimal.ZERO));
-                List<BigDecimal> removedMoney = new ArrayList<>(List.of(BigDecimal.ZERO));
-                List<BigDecimal> portfolioValue = new ArrayList<>(List.of(BigDecimal.ZERO));
-                dailyMovements.forEach(dailyMovement -> {
-                    if (!dailyAssetAllocation.stream()
-                            .filter(e -> e.getSymbolId().equals(dailyMovement.getSymbolId())).toList().isEmpty()) {
-                        int index = -1;
-                        for (int i = 0; i < dailyAssetAllocation.size(); i++) {
-                            if (dailyAssetAllocation.get(i).getSymbolId().equals(dailyMovement.getSymbolId())) {
-                                index = i;
-                                break;
-                            }
-                        }
+			List<LocalDate> dates = startDate.datesUntil(LocalDate.now()).toList();
 
-                        if (TransactionTypeEnum.BUY.equals(dailyMovement.getType())) {
-                            dailyAssetAllocation.set(index,
-                                    new GetAssetQuantityBin(dailyAssetAllocation.get(index).getSymbolId(),
-                                            dailyAssetAllocation.get(index).getAmount()
-                                                    + dailyMovement.getAmount()));
-                        } else {
-                            dailyAssetAllocation.set(index,
-                                    new GetAssetQuantityBin(dailyAssetAllocation.get(index).getSymbolId(),
-                                            dailyAssetAllocation.get(index).getAmount()
-                                                    - dailyMovement.getAmount()));
-                        }
+			RestTemplate restTemplate = new RestTemplate();
+			// STEP1 get all the transactions of a portfolio starting from the initial date
+			String transactionUrl = this.getRandomInstanceUrl("transaction");
+			// Request all the transactions of a portfolio starting from the initial date
+			ResponseEntity<List<MovementBin>> responseEntity = restTemplate.exchange(
+					transactionUrl + "/api/v1/transaction/get-by-portfolio/"
+							+ id
+							+ "?date=" + startDate.toString(),
+					HttpMethod.GET,
+					null,
+					new ParameterizedTypeReference<List<MovementBin>>() {
+					});
+			List<MovementBin> movements = Optional.ofNullable(responseEntity.getBody()).orElse(List.of());
 
-                    } else {
-                        dailyAssetAllocation.add(
-                                new GetAssetQuantityBin(dailyMovement.getSymbolId(), dailyMovement.getAmount()));
-                    }
+			// Request all the assets of a portfolio starting from the initial date
+			ResponseEntity<List<GetAssetQuantityBin>> assetResponseEntityList = restTemplate.exchange(
+					transactionUrl + "/api/v1/transaction/get-by-portfolio/"
+							+ id
+							+ "/assets-qty?date=" + startDate.toString(),
+					HttpMethod.GET,
+					null,
+					new ParameterizedTypeReference<List<GetAssetQuantityBin>>() {
+					});
+			List<GetAssetQuantityBin> assetResponseList = Optional.ofNullable(assetResponseEntityList.getBody())
+					.orElse(List.of());
+			Map<String, Double> assetAllocation = assetResponseList.isEmpty()
+					? new HashMap<>()
+					: assetResponseList.stream()
+							.collect(
+									Collectors.toMap(GetAssetQuantityBin::getSymbolId, GetAssetQuantityBin::getAmount));
 
-                    if (TransactionTypeEnum.BUY.equals(dailyMovement.getType())) {
-                        // case BUY
-                        Optional<GetAssetQuantityBin> asset = finalAssetAllocation.stream()
-                                .filter(e -> dailyMovement.getSymbolId().equals(e.getSymbolId())).findFirst();
-                        if (asset.isPresent()) {
-                            finalAssetAllocation.get(finalAssetAllocation.indexOf(asset.get()))
-                                    .setAmount(asset.get().getAmount() + dailyMovement.getAmount());
-                        } else {
-                            GetAssetQuantityBin newAsset = GetAssetQuantityBin.builder()
-                                    .symbolId(dailyMovement.getSymbolId()).amount(dailyMovement.getAmount())
-                                    .build();
-                            finalAssetAllocation.add(newAsset);
-                        }
-                        if (!"EUR".equals(dailyMovement.getCurrency())) {
-                            // asset price not in EUR, make the coversion before adding to the list
-                            intradayMovementTotal.set(0,
-                                    intradayMovementTotal.get(0).add(dailyMovement.getPrice())
-                                            .multiply(BigDecimal.valueOf(dailyMovement.getAmount()))
-                                            .multiply(currenciesDayByDay.get(date).stream()
-                                                    .filter(x -> x.getFirst().equals(dailyMovement.getCurrency()))
-                                                    .findFirst().orElseThrow().getSecond()));
+			// This map will contain all the information regarding asset price in the
+			// selected period
+			Map<String, Asset> assetMap = new HashMap<>();
+			// This map will contain all the information regarding currency price in the
+			// selected period
+			Map<String, Currency> currenciesMap = new HashMap<>();
 
-                        } else {
-                            // asset price in EUR
-                            intradayMovementTotal.add(0, intradayMovementTotal.get(0).add(dailyMovement.getPrice()
-                                    .multiply(BigDecimal.valueOf(dailyMovement.getAmount()))));
-                        }
-                    } else {
-                        // case SELL
-                        Optional<GetAssetQuantityBin> asset = finalAssetAllocation.stream()
-                                .filter(e -> dailyMovement.getSymbolId().equals(e.getSymbolId())).findFirst();
-                        if (asset.isPresent()) {
-                            if ((asset.get().getAmount() - dailyMovement.getAmount()) >= 0) {
-                                finalAssetAllocation.get(finalAssetAllocation.indexOf(asset.get()))
-                                        .setAmount(asset.get().getAmount() - dailyMovement.getAmount());
-                                BigDecimal amount;
-                                if (!"EUR".equals(dailyMovement.getCurrency())) {
-                                    amount = intradayMovementTotal.get(0).add(dailyMovement.getPrice())
-                                            .multiply(BigDecimal.valueOf(dailyMovement.getAmount()))
-                                            .multiply(currenciesDayByDay.get(date).stream()
-                                                    .filter(x -> x.getFirst().equals(dailyMovement.getCurrency()))
-                                                    .findFirst().orElseThrow().getSecond());
+			// This set will contain all the asset in a portfolio and in the transactions
+			Set<String> assetsIdsInPortfolio = movements.stream()
+					.map(MovementBin::getSymbolId)
+					.collect(Collectors.toSet());
+			assetsIdsInPortfolio.addAll(assetAllocation.keySet());
 
-                                } else {
-                                    amount = intradayMovementTotal.get(0).subtract(dailyMovement.getPrice()
-                                            .multiply(BigDecimal.valueOf(dailyMovement.getAmount())));
-                                }
-                                intradayMovementTotal.add(0, amount);
-                                removedMoney.add(0, amount);
-                            } else {
-                                throw new RuntimeException(
-                                        "Error while updating portfolioValue: Cannot sell more then what you have in portfolio");
-                            }
-                        } else {
-                            throw new RuntimeException(
-                                    "Error while updating portfolioValue: Cannot sell asset not present in portfolio");
-                        }
-                    }
-                });
+			String assetUrl = this.getRandomInstanceUrl("asset");
+			assetsIdsInPortfolio.forEach(asset -> {
+				ResponseEntity<Asset> assetResponseEntity = restTemplate.exchange(
+						assetUrl + "/api/v1/asset/" + asset + "?startDate="
+								+ startDate.toString(),
+						HttpMethod.GET,
+						null,
+						new ParameterizedTypeReference<Asset>() {
+						});
 
-                // delete the record for the date in analysis
-                repository.deleteByPortfolioIdAndDate(movementBin.getPortfolioId(), date);
-                // calcolare la percentuale di guadagno/perdita (tenere in considerazione che
-                // non si può andare sottozero
-                // con i soldi inseriti e che bisogna aggiornare il counter dei soldi ritirati
-                // dall'investimento)
-                finalAssetAllocation.forEach(asset -> {
-                    BigDecimal assetPrice = assetDayByDay.get(date).stream()
-                            .filter(e -> e.getFirst().equals(asset.getSymbolId())).findFirst().orElseThrow()
-                            .getSecond();
+				assetMap.put(asset, assetResponseEntity.getBody());
+			});
 
-                    portfolioValue.add(0,
-                            portfolioValue.get(0).add(assetPrice.multiply(BigDecimal.valueOf(asset.getAmount()))));
-                });
+			assetMap.values()
+					.stream()
+					.map(Asset::getCurrency)
+					.distinct()
+					.filter(currencyName -> !"EUR".equals(currencyName))
+					.forEach(currencyName -> {
+						ResponseEntity<Currency> currencyResponseEntity = restTemplate.exchange(
+								assetUrl + "/api/v1/currency/" + currencyName + "/EUR?startDate="
+										+ startDate.toString(),
+								HttpMethod.GET,
+								null,
+								new ParameterizedTypeReference<Currency>() {
+								});
 
-                // PortfolioPrivacyInfoEntity portfolioPrivacyInfoEntity = new
-                // PortfolioPrivacyInfoEntity();
-                // portfolioPrivacyInfoEntity.setPortfolioId(movementBin.getPortfolioId());
-                PortfolioHistoryEntity lastPortfolioRecord = repository
-                        .findTopByPortfolioIdOrderByDateDesc(movementBin.getPortfolioId())
-                        .orElse(new PortfolioHistoryEntity());
+						currenciesMap.put(currencyName, currencyResponseEntity.getBody());
+					});
 
-                PortfolioHistoryEntity portfolioHistory = PortfolioHistoryEntity
-                        .builder()
-                        .portfolioId(movementBin.getPortfolioId())
-                        .date(movementBin.getDate())
-                        .amount(Optional.ofNullable(lastPortfolioRecord.getAmount())
-                                .map(e -> {
-                                    if (lastPortfolioRecord.getAmount()
-                                            .add(Optional.ofNullable(intradayMovementTotal.get(0))
-                                                    .orElse(BigDecimal.ZERO))
-                                            .compareTo(BigDecimal.ZERO) < 1) {
-                                        return BigDecimal.ONE;
-                                    }
-                                    return lastPortfolioRecord.getAmount().add(intradayMovementTotal.get(0));
-                                })
-                                .orElse(intradayMovementTotal.get(0)))
-                        .extra_value(Optional.ofNullable(removedMoney.get(0)).orElse(BigDecimal.ZERO)
-                                .multiply(BigDecimal.valueOf(-1)))
-                        .countervail(portfolioValue.get(0))
-                        .build();
+			// create a map to store all the infos required to calculate the portfolio value
+			// (date, [(assetId, price)])
+			Map<LocalDate, List<Pair<String, BigDecimal>>> assetDayByDay = new HashMap<>();
+			// (date, [(currencyId, price)])
+			Map<LocalDate, List<Pair<String, BigDecimal>>> currenciesDayByDay = new HashMap<>();
 
-                // andamento percentuale
-                portfolioHistory
-                        .setPercentageValue(portfolioHistory.getCountervail().subtract(portfolioHistory.getAmount())
-                                .divide(portfolioHistory.getAmount(), 4, RoundingMode.HALF_UP).doubleValue() * 100);
+			dates.forEach(date -> {
+				List<Pair<String, BigDecimal>> assetList = new ArrayList<>();
+				List<Pair<String, BigDecimal>> currenciesList = new ArrayList<>();
+				// Insert asset and currency price for the days that doesn't have it
+				assetMap.forEach((assetName, asset) -> {
+					// If the asset is present in assetMap, take the price of the day otherwise take
+					// the price of the day before
+					int index = asset.getDates().indexOf(date);
+					BigDecimal price = BigDecimal.ONE;
+					if (index != -1) {
+						price = asset.getPrices().get(index);
+					} else {
+						if (assetDayByDay.containsKey(date.minusDays(1))) {
+							List<Pair<String, BigDecimal>> pairList = assetDayByDay
+									.get(date.minusDays(1));
+							price = pairList.stream()
+									.filter(e -> e.getFirst().equals(assetName))
+									.map(Pair::getSecond)
+									.findFirst()
+									.orElse(BigDecimal.ONE);
+						}
+					}
+					assetList.add(Pair.of(assetName, price));
+				});
+				assetDayByDay.put(date, assetList);
 
-                repository.save(portfolioHistory);
-            });
+				currenciesMap.forEach((currencyName, currency) -> {
+					// If the currency is present in currencyMap, take the price of the day
+					// otherwise take the price of the day before
+					int index = currency.getDateList().indexOf(date);
+					BigDecimal price = BigDecimal.ONE;
+					if (index != -1) {
+						price = currency.getPriceList().get(index);
+					} else {
+						if (currenciesDayByDay.containsKey(date.minusDays(1))) {
+							List<Pair<String, BigDecimal>> pairList = currenciesDayByDay
+									.get(date.minusDays(1));
+							price = pairList.stream()
+									.filter(e -> e.getFirst().equals(currencyName))
+									.map(Pair::getSecond)
+									.findFirst()
+									.orElse(BigDecimal.ONE);
+						}
+					}
+					currenciesList.add(Pair.of(currencyName, price));
+				});
+				currenciesDayByDay.put(date, currenciesList);
 
-        } catch (Exception e) {
-            throw new RuntimeException("There was an error while updating old movements, " + e);
-        }
+				// Amount of money invested in the portfolio daily
+				BigDecimal dailyInvestedAmount = BigDecimal.ZERO;
+				// Amount of money removed from the portfolio daily
+				BigDecimal dailyWithdrawnAmount = BigDecimal.ZERO;
+				// Portfolio value daily
+				BigDecimal dailyPortfolioValue = BigDecimal.ZERO;
 
-    }
+				// Get all the transactions for the date in analysis
+				List<MovementBin> dailyMovements = movements.stream()
+						.filter(e -> date.equals(e.getDate()))
+						.toList();
 
-    /**
-     * Method to insert a new record for each portfolio, this method should be
-     * called automatically each day at midnight
-     */
-    @Override
-    public void insertNewDay() {
-        Map<String, BigDecimal> prices = new HashMap<>();
-        List<Long> portfolioIDs = portfolioInfoRepository.findAllPortfolioIds();
+				for (MovementBin dailyMovement : dailyMovements) {
+					// Update the asset allocation based on the transaction of the day in analysis
 
-        // prendere tutte le transazioni per vedere quanto di ogni asset si ha
-        String transactionUrl = this.getRandomInstanceUrl("transaction");
-        RestTemplate restTemplate = new RestTemplate();
-        Optional.ofNullable(portfolioIDs).ifPresent(x -> x.forEach(portfolioID -> {
-            ResponseEntity<GetPortfolioAssetAllocationBin> responsePortfolioComposition = restTemplate.exchange(
-                    transactionUrl + "/get-by-portfolio/" + portfolioID.toString() + "/assets-qty",
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<GetPortfolioAssetAllocationBin>() {
-                    });
-            GetPortfolioAssetAllocationBin assetAllocationBin = responsePortfolioComposition.getBody();
-            // fare più o meno degli asset in base alla tabella dei movimenti del giorno
-            List<IntradayMovementsEntity> intradayMovements = intradayMovementsRepository
-                    .findByPortfolioId(portfolioID);
-            // lista per avere la quantità di soldi movimentati nella giornata che poi
-            // andranno a modificare il valore della colonna amount
-            List<BigDecimal> intradayMovementTotal = new ArrayList<>(List.of(BigDecimal.ZERO));
-            List<BigDecimal> removedMoney = new ArrayList<>(List.of(BigDecimal.ZERO));
-            List<BigDecimal> portfolioValue = new ArrayList<>(List.of(BigDecimal.ZERO));
-            List<GetAssetQuantityBin> assets = Optional.ofNullable(assetAllocationBin)
-                    .map(GetPortfolioAssetAllocationBin::getAssetAllocation).orElse(List.of());
-            intradayMovements.forEach(movement -> {
-                // aggiungere o rimuovere l'asset dal totale
-                if (TransactionTypeEnum.BUY.equals(movement.getType())) {
-                    // case BUY
-                    Optional<GetAssetQuantityBin> asset = assets.stream()
-                            .filter(e -> movement.getSymbolId().equals(e.getSymbolId())).findFirst();
-                    if (asset.isPresent()) {
-                        assets.get(assets.indexOf(asset.get()))
-                                .setAmount(asset.get().getAmount() + movement.getAmount());
-                    } else {
-                        GetAssetQuantityBin newAsset = GetAssetQuantityBin.builder()
-                                .symbolId(movement.getSymbolId()).amount(movement.getAmount()).build();
-                        assets.add(newAsset);
-                    }
-                    if (!"EUR".equals(movement.getCurrency())) {
-                        // asset price not in EUR, make the conversion before adding to the list
-                        if (prices.containsKey(movement.getCurrency())) {
-                            intradayMovementTotal.add(0,
-                                    intradayMovementTotal.get(0)
-                                            .add(movement.getPrice()
-                                                    .multiply(BigDecimal.valueOf(movement.getAmount()))
-                                                    .multiply(prices.get(movement.getCurrency()))));
-                        } else {
-                            try {
-                                String assetUrl = this.getRandomInstanceUrl("asset");
-                                Currency currencyConversion = restTemplate.exchange(
-                                        assetUrl + "/api/v1/currency/" + movement.getCurrency() + "/EUR",
-                                        HttpMethod.GET,
-                                        null,
-                                        new ParameterizedTypeReference<Currency>() {
-                                        }).getBody();
-                                BigDecimal currencyConversionAmount = Optional.ofNullable(currencyConversion)
-                                        .map(Currency::getPriceList).flatMap(el -> el.stream().findFirst())
-                                        .orElse(BigDecimal.ONE);
+					int multiplyCoef = TransactionTypeEnum.BUY
+							.equals(TransactionTypeEnum.fromValue(dailyMovement.getType())) ? 1 : -1;
 
-                                prices.put(movement.getCurrency(), currencyConversionAmount);
-                                intradayMovementTotal.add(0,
-                                        intradayMovementTotal.get(0)
-                                                .add(movement.getPrice()
-                                                        .multiply(BigDecimal.valueOf(movement.getAmount()))
-                                                        .multiply(currencyConversionAmount)));
-                            } catch (Exception e) {
-                                prices.put(movement.getCurrency(), BigDecimal.ONE);
-                                intradayMovementTotal.add(0,
-                                        intradayMovementTotal.get(0)
-                                                .add(movement.getPrice()
-                                                        .multiply(BigDecimal.valueOf(movement.getAmount()))
-                                                        .multiply(BigDecimal.ONE)));
-                            }
-                        }
-                    } else {
-                        // asset price in EUR
-                        intradayMovementTotal.add(0, intradayMovementTotal.get(0)
-                                .add(movement.getPrice().multiply(BigDecimal.valueOf(movement.getAmount()))));
-                    }
-                } else {
-                    // case SELL
-                    Optional<GetAssetQuantityBin> asset = assets.stream()
-                            .filter(e -> movement.getSymbolId().equals(e.getSymbolId())).findFirst();
-                    if (asset.isPresent()) {
-                        if ((asset.get().getAmount() - movement.getAmount()) >= 0) {
-                            assets.get(assets.indexOf(asset.get()))
-                                    .setAmount(asset.get().getAmount() - movement.getAmount());
-                            if (!"EUR".equals(movement.getCurrency())) {
-                                if (prices.containsKey(movement.getCurrency())) {
-                                    BigDecimal amount = intradayMovementTotal.get(0)
-                                            .subtract(movement.getPrice()
-                                                    .multiply(BigDecimal.valueOf(movement.getAmount()))
-                                                    .multiply(prices.get(movement.getCurrency())));
-                                    intradayMovementTotal.add(0, amount);
-                                    removedMoney.add(0, amount);
-                                } else {
+					assetAllocation.put(
+							dailyMovement.getSymbolId(),
+							assetAllocation.getOrDefault(dailyMovement.getSymbolId(), 0.0)
+									+ multiplyCoef * dailyMovement.getAmount());
 
-                                    try {
-                                        String assetUrl = this.getRandomInstanceUrl("asset");
+					// Update the amount of money invested in the portfolio
+					BigDecimal amount = dailyMovement.getPrice()
+							.multiply(BigDecimal.valueOf(dailyMovement.getAmount()));
+					// asset price not in EUR make the coversion
+					if (!"EUR".equals(dailyMovement.getCurrency())) {
+						amount = amount.multiply(currenciesDayByDay
+								.get(date)
+								.stream()
+								.filter(x -> x.getFirst()
+										.equals(dailyMovement
+												.getCurrency()))
+								.findFirst()
+								.orElseThrow()
+								.getSecond());
+					}
+					if (multiplyCoef < 0) {
+						dailyWithdrawnAmount = dailyWithdrawnAmount.add(amount);
+					} else {
+						dailyInvestedAmount = dailyInvestedAmount.add(amount);
+					}
+				}
 
-                                        Currency currencyConversion = restTemplate.exchange(
-                                                assetUrl + "/api/v1/currency/" + movement.getCurrency() + "/EUR",
-                                                HttpMethod.GET,
-                                                null,
-                                                new ParameterizedTypeReference<Currency>() {
-                                                }).getBody();
-                                        BigDecimal currencyConversionAmount = Optional
-                                                .ofNullable(currencyConversion).map(Currency::getPriceList)
-                                                .flatMap(el -> el.stream().findFirst()).orElse(BigDecimal.ONE);
-                                        prices.put(movement.getCurrency(), currencyConversionAmount);
-                                        BigDecimal amount = intradayMovementTotal.get(0)
-                                                .subtract(movement.getPrice()
-                                                        .multiply(BigDecimal.valueOf(movement.getAmount()))
-                                                        .multiply(currencyConversionAmount));
-                                        intradayMovementTotal.add(0, amount);
-                                        removedMoney.add(0, amount);
+				if (isUpdateOperation) {
+					// delete the record for the date in analysis
+					repository.findByPortfolioIdAndDate(id, date).ifPresent(e -> {
+						repository.delete(e);
+					});
+				}
 
-                                    } catch (Exception e) {
-                                        prices.put(movement.getCurrency(), BigDecimal.ONE);
-                                        BigDecimal amount = intradayMovementTotal.get(0)
-                                                .subtract(movement.getPrice()
-                                                        .multiply(BigDecimal.valueOf(movement.getAmount()))
-                                                        .multiply(BigDecimal.ONE));
-                                        intradayMovementTotal.add(0, amount);
-                                        removedMoney.add(0, amount);
-                                    }
+				// Update the portfolio value
+				for (String assetId : assetAllocation.keySet()) {
+					BigDecimal assetPrice = assetDayByDay.get(date).stream()
+							.filter(e -> e.getFirst().equals(assetId))
+							.findFirst().orElseThrow()
+							.getSecond();
+					dailyPortfolioValue = dailyPortfolioValue.add(assetPrice.multiply(
+							BigDecimal.valueOf(assetAllocation.get(assetId))));
+				}
 
-                                }
-                            } else {
-                                BigDecimal amount = intradayMovementTotal.get(0).subtract(
-                                        movement.getPrice().multiply(BigDecimal.valueOf(movement.getAmount())));
-                                intradayMovementTotal.add(0, amount);
-                                removedMoney.add(0, amount);
-                            }
-                        } else {
-                            throw new RuntimeException(
-                                    "Error while updating portfolioValue: Cannot sell more then what you have in portfolio");
-                        }
-                    } else {
-                        throw new RuntimeException(
-                                "Error while updating portfolioValue: Cannot sell asset not present in portfolio");
-                    }
-                }
-            });
+				// Update the amount of money invested, the amount of money removed and the
+				// value of the portfolio in the repository
+				PortfolioHistoryEntity lastPortfolioRecord = repository
+						.findByPortfolioIdAndDate(id, date.minusDays(1))
+						.orElse(new PortfolioHistoryEntity());
+				PortfolioHistoryEntity newHistoryRecord = PortfolioHistoryEntity
+						.builder()
+						.portfolioId(id)
+						.date(date)
+						.investedAmount(Optional.ofNullable(lastPortfolioRecord.getInvestedAmount())
+								.orElse(BigDecimal.ZERO)
+								.add(dailyInvestedAmount))
+						.withdrawnAmount(Optional.ofNullable(lastPortfolioRecord.getWithdrawnAmount())
+								.orElse(BigDecimal.ZERO)
+								.add(dailyWithdrawnAmount))
+						.countervail(dailyPortfolioValue)
+						.build();
 
-            // calcolare la percentuale di guadagno/perdita (tenere in considerazione che
-            // non si può andare sottozero
-            // con i soldi inseriti e che bisogna aggiornare il counter dei soldi ritirati
-            // dall'investimento)
-            assets.forEach(asset -> {
-                BigDecimal assetPrice;
-                if (prices.containsKey(asset.getSymbolId())) {
-                    assetPrice = prices.get(asset.getSymbolId());
-                } else {
-                    // calcolare il valore totale degli asset (chiamata api al servizio asset,
-                    // inserire il prezzo dell'asset in una mappa così da non rifare le stesse
-                    // chiamate)
-                    String assetUrl = this.getRandomInstanceUrl("asset");
-                    Asset assetInfo = restTemplate.exchange(
-                            assetUrl + "/api/v1/asset/" + asset.getSymbolId(),
-                            HttpMethod.GET,
-                            null,
-                            new ParameterizedTypeReference<Asset>() {
-                            }).getBody();
-                    assetPrice = Optional.ofNullable(assetInfo).map(Asset::getPrices)
-                            .flatMap(e -> e.stream().findFirst()).orElse(BigDecimal.ZERO);
-                    prices.put(asset.getSymbolId(), assetPrice);
+				// Set the percentage value of the portfolio
+				if (newHistoryRecord.getCountervail().compareTo(BigDecimal.ZERO) == 0) {
+					newHistoryRecord.setPercentageValue(0.0);
+				} else {
+					BigDecimal difference = newHistoryRecord.getCountervail()
+							.add(newHistoryRecord.getWithdrawnAmount())
+							.subtract(newHistoryRecord.getInvestedAmount());
+					BigDecimal ratio = difference.divide(newHistoryRecord.getInvestedAmount(), 4, RoundingMode.HALF_UP);
+					newHistoryRecord.setPercentageValue(ratio.doubleValue() * 100);
+				}
 
-                }
+				repository.save(newHistoryRecord);
+			});
+		});
 
-                portfolioValue.add(0,
-                        portfolioValue.get(0).add(assetPrice.multiply(BigDecimal.valueOf(asset.getAmount()))));
-            });
+	}
 
-            // PortfolioPrivacyInfoEntity portfolioPrivacyInfoEntity = new
-            // PortfolioPrivacyInfoEntity();
-            // portfolioPrivacyInfoEntity.setPortfolioId(portfolioID);
-            PortfolioHistoryEntity lastPortfolioRecord = repository.findTopByPortfolioIdOrderByDateDesc(portfolioID)
-                    .orElse(new PortfolioHistoryEntity());
-            PortfolioHistoryEntity portfolioHistory = new PortfolioHistoryEntity();
-            portfolioHistory.setPortfolioId(portfolioID);
-            portfolioHistory.setDate(LocalDate.now());
-            portfolioHistory.setAmount(Optional.ofNullable(lastPortfolioRecord.getAmount())
-                    .map(e -> {
-                        if (lastPortfolioRecord.getAmount()
-                                .add(Optional.ofNullable(intradayMovementTotal.get(0)).orElse(BigDecimal.ZERO))
-                                .compareTo(BigDecimal.ZERO) < 1) {
-                            return BigDecimal.ONE;
-                        }
-                        return lastPortfolioRecord.getAmount().add(intradayMovementTotal.get(0));
-                    })
-                    .orElse(intradayMovementTotal.get(0)));
-            portfolioHistory.setExtra_value(Optional.ofNullable(removedMoney.get(0)).orElse(BigDecimal.ZERO)
-                    .multiply(BigDecimal.valueOf(-1)));
-            portfolioHistory.setCountervail(portfolioValue.get(0));
-            // andamento percentuale
-            portfolioHistory
-                    .setPercentageValue(portfolioHistory.getCountervail().subtract(portfolioHistory.getAmount())
-                            .divide(portfolioHistory.getAmount(), 4, RoundingMode.HALF_UP).doubleValue() * 100);
-            repository.save(portfolioHistory);
-        }));
+	@Override
+	public String test(String serviceId) {
+		return discoveryClient.getInstances(serviceId).stream().map(e -> e.getUri().toString()).toString();
+	}
 
-        intradayMovementsRepository.deleteAll();
-    }
-
-    /**
-     * Methods that returns data for a specific portfolio
-     */
-    @Override
-    public List<PortfolioHistory> getPortfolioHistory(GetPortfolioHistoryBin getPortfolioHistoryBin) {
-        List<PortfolioHistoryEntity> records = repository.findByPortfolioIdAndDateAfter(
-                getPortfolioHistoryBin.getPortfolioId(),
-                DurationIntervalEnum.getDateFromNow(getPortfolioHistoryBin.getDurationIntervalEnum()));
-        return records.stream().map(this::fromEntityToObject).toList();
-    }
-
-    private PortfolioHistory fromEntityToObject(PortfolioHistoryEntity entity) {
-        return PortfolioHistory.builder()
-                .portfolioId(entity.getPortfolioId())
-                .id(entity.getId())
-                .date(entity.getDate())
-                .amount(entity.getAmount())
-                .countervail(entity.getCountervail())
-                .percentageValue(entity.getPercentageValue())
-                .extraValue(entity.getExtra_value())
-                .build();
-    }
-
-    private String getRandomInstanceUrl(String serviceId) {
-        List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
-        if (instances == null || instances.isEmpty()) {
-            throw new RuntimeException("Service " + serviceId + " not found");
-        }
-
-        return instances.get(new Random().nextInt(instances.size())).getUri().toString();
-    }
+	@Override
+	public String getServices() {
+		return discoveryClient.getServices().toString();
+	}
 
 }

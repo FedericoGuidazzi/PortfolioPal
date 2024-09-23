@@ -14,19 +14,16 @@ import com.example.portfolio_history.models.entities.PortfolioHistoryEntity;
 @Repository
 public interface PortfolioHistoryRepository extends JpaRepository<PortfolioHistoryEntity, Long> {
 
+    List<PortfolioHistoryEntity> findByPortfolioId(long portfolioId);
+
+    @Query("SELECT p FROM PortfolioHistoryEntity p WHERE p.portfolioId = :portfolioId AND p.date >= :date")
     List<PortfolioHistoryEntity> findByPortfolioIdAndDateAfter(long portfolioId, LocalDate date);
 
-    PortfolioHistoryEntity findByPortfolioIdAndDate(long portfolioId, LocalDate date);
+    Optional<PortfolioHistoryEntity> findByPortfolioIdAndDate(long portfolioId, LocalDate date);
 
     @Query("SELECT p FROM PortfolioHistoryEntity p ORDER BY p.percentageValue DESC")
     List<PortfolioHistoryEntity> findAllOrderByPercentageValueDesc();
 
-    @Query("SELECT p FROM PortfolioHistoryEntity p WHERE p.portfolioId = :portfolioID ORDER BY p.date DESC")
-    Optional<PortfolioHistoryEntity> findTopByPortfolioIdOrderByDateDesc(@Param("portfolioId") long portfolioID);
-
     @Query("DELETE FROM PortfolioHistoryEntity p WHERE p.portfolioId = :portfolioId")
     void deleteByPortfolioId(@Param("portfolioId") long portfolioId);
-
-    @Query("DELETE FROM PortfolioHistoryEntity p WHERE p.portfolioId = :portfolioId AND p.date = :date")
-    void deleteByPortfolioIdAndDate(@Param("portfolioId") long portfolioId, @Param("date") LocalDate date);
 }

@@ -1,20 +1,21 @@
 package com.example.portfolio_history.services;
 
-
-
-import com.example.portfolio_history.models.GetPortfolioHistoryBin;
-import com.example.portfolio_history.models.MovementBin;
-import com.example.portfolio_history.models.PortfolioHistory;
-
 import java.util.List;
 
-public interface PortfolioHistoryService {
-    void insertIntradayMovement(MovementBin movementBin);
+import com.example.portfolio_history.models.PortfolioHistory;
+import com.example.portfolio_history.models.bin.GetPortfolioHistoryBin;
+import com.example.portfolio_history.models.bin.RabbitTransactionBin;
 
-    void updateOldMovements(MovementBin movementBin);
+public interface PortfolioHistoryService {
+
+    void updateOldMovements(RabbitTransactionBin movementBin);
 
     void insertNewDay();
 
     List<PortfolioHistory> getPortfolioHistory(GetPortfolioHistoryBin getPortfolioHistoryBin);
+
+    String test(String serviceId);
+
+    String getServices();
 
 }

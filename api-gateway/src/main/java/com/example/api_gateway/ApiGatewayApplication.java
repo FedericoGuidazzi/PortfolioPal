@@ -18,8 +18,8 @@ public class ApiGatewayApplication {
 	@Autowired
 	private FireBaseTokenFilter auTokenFilter;
 
-	@Autowired
-	private OwnershipPortfolioFilter ownershipPortfolioFilter;
+	// @Autowired
+	// private OwnershipPortfolioFilter ownershipPortfolioFilter;
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiGatewayApplication.class, args);
@@ -35,10 +35,24 @@ public class ApiGatewayApplication {
 						.uri("lb://user"))
 				.route(r -> r.path("/transaction/**")
 						.filters(f -> f
-								.filter(auTokenFilter)
-								.filter(ownershipPortfolioFilter)
 								.rewritePath("/transaction/(?<segment>.*)", "/api/v1/transaction/${segment}"))
 						.uri("lb://transaction"))
+				.route(r -> r.path("/portfolio/**")
+						.filters(f -> f
+								.rewritePath("/portfolio/(?<segment>.*)", "/api/v1/portfolio/${segment}"))
+						.uri("lb://portfolio-history"))
+				.route(r -> r.path("/portfolio-history/**")
+						.filters(f -> f
+								.rewritePath("/portfolio-history/(?<segment>.*)", "/api/v1/portfolio-history/${segment}"))
+						.uri("lb://portfolio-history"))
+				.route(r -> r.path("/asset/**")
+						.filters(f -> f
+								.rewritePath("/asset/(?<segment>.*)", "/api/v1/asset/${segment}"))
+						.uri("lb://asset"))
+				.route(r -> r.path("/currency/**")
+						.filters(f -> f
+								.rewritePath("/currency/(?<segment>.*)", "/api/v1/currency/${segment}"))
+						.uri("lb://asset"))
 				.build();
 	}
 

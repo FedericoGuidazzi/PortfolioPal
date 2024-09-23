@@ -23,17 +23,19 @@ public class GetCurrencyController {
             @PathVariable String currencyFrom,
             @PathVariable String currencyTo,
             @RequestParam(required = false, defaultValue = "false") boolean mock,
-            @RequestParam(required = false, defaultValue = "1S") String duration
+            @RequestParam(required = false, defaultValue = "1S") String duration,
+            @RequestParam(required = false) LocalDate startDate
     ) {
         if (mock) {
             return mockCurrency(currencyFrom, currencyTo);
         }
-        GetCurrencyBin assetBin = GetCurrencyBin.builder()
+        GetCurrencyBin currencyBin = GetCurrencyBin.builder()
                 .currencyFrom(currencyFrom)
                 .currencyTo(currencyTo)
                 .duration(DurationIntervalEnum.fromValue(duration))
+                .startDate(startDate)
                 .build();
-        return getCurrencyService.getCurrency(assetBin);
+        return getCurrencyService.getCurrency(currencyBin);
     }
 
     private Currency mockCurrency(String currencyFrom, String currencyTo) {

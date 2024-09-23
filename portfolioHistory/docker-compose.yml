@@ -33,6 +33,20 @@ services:
       retries: 5
       start_period: 10s
 
+  asset-service:
+    build:
+      context: ../asset/
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8080
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+    networks:
+      - pal-network
+
   transaction-service:
     build:
       context: ../transaction/
@@ -62,7 +76,7 @@ services:
       - MYSQL_DATABASE=transaction
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
-      - transaction-data:/var/lib/transaction/mysql
+      - transaction-data:/var/lib/mysql
     networks:
       - transaction-network
     healthcheck:
@@ -93,6 +107,8 @@ services:
         condition: service_healthy
       transaction-service:
         condition: service_started
+      asset-service:
+        condition: service_started
 
   historydb:
     image: mysql:8.0.33
@@ -100,7 +116,7 @@ services:
       - MYSQL_DATABASE=history
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
-      - history-data:/var/lib/history/mysql
+      - history-data:/var/lib/mysql
     networks:
       - history-network
     healthcheck:

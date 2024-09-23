@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.transaction.custom_exceptions.CustomException;
-import com.example.transaction.models.CsvPortfolioReader;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetAssetQtyOutputBin;
 import com.example.transaction.models.bin.GetTransactionByDateBin;
+import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.entities.TransactionEntity;
@@ -26,6 +26,36 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Autowired
 	private TransactionRepository transactionRepository;
+
+	@Override
+	public Transaction insertTransaction(PostTransactionBin transactionBin) throws CustomException {
+
+		TransactionEntity newTransaction = TransactionEntity.builder()
+				.type(Optional.ofNullable(
+						TransactionType.fromValue(transactionBin.getType()))
+						.orElseThrow(() -> new CustomException("Invalid transaction type")))
+				.date(transactionBin.getDate())
+				.amount(transactionBin.getAmount())
+				.price(transactionBin.getPrice())
+				.symbolId(transactionBin.getSymbolId())
+				.portfolioId(transactionBin.getPortfolioId())
+				.currency(transactionBin.getCurrency())
+				.build();
+
+		this.checkAssetQty(List.of(newTransaction));
+
+		TransactionEntity entity = transactionRepository.save(newTransaction);
+
+		return Transaction.builder()
+				.id(entity.getId())
+				.type(transactionBin.getType())
+				.date(entity.getDate())
+				.amount(entity.getAmount())
+				.price(entity.getPrice())
+				.symbolId(entity.getSymbolId())
+				.currency(entity.getCurrency())
+				.build();
+	}
 
 	@Override
 	public List<Transaction> getAllTransactionsByPortfolioId(long portfolioId) {
@@ -40,6 +70,7 @@ public class TransactionServiceImpl implements TransactionService {
 						.price(entity.getPrice())
 						.symbolId(entity.getSymbolId())
 						.currency(entity.getCurrency())
+						.portfolioId(entity.getPortfolioId())
 						.build())
 				.toList();
 	}
@@ -57,6 +88,7 @@ public class TransactionServiceImpl implements TransactionService {
 				.price(entity.getPrice())
 				.symbolId(entity.getSymbolId())
 				.currency(entity.getCurrency())
+				.portfolioId(entity.getPortfolioId())
 				.build();
 	}
 
@@ -67,7 +99,7 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new CustomException("Transaction not found");
 		}
 
-		TransactionEntity entity = transactionRepository.save(TransactionEntity.builder()
+		TransactionEntity entity = TransactionEntity.builder()
 				.id(transactionBin.getId())
 				.type(Optional.ofNullable(
 						TransactionType.fromValue(transactionBin.getTransaction().getType()))
@@ -78,7 +110,11 @@ public class TransactionServiceImpl implements TransactionService {
 				.symbolId(transactionBin.getTransaction().getSymbolId())
 				.portfolioId(transactionBin.getTransaction().getPortfolioId())
 				.currency(transactionBin.getTransaction().getCurrency())
-				.build());
+				.build();
+
+		this.checkAssetQty(List.of(entity));
+
+		entity = transactionRepository.save(entity);
 
 		return Transaction.builder()
 				.id(entity.getId())
@@ -88,6 +124,7 @@ public class TransactionServiceImpl implements TransactionService {
 				.price(entity.getPrice())
 				.symbolId(entity.getSymbolId())
 				.currency(entity.getCurrency())
+				.portfolioId(entity.getPortfolioId())
 				.build();
 	}
 
@@ -108,20 +145,20 @@ public class TransactionServiceImpl implements TransactionService {
 	public List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException {
 
 		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream());
-		Map<String, Double> assetsQty = this.getAssetsQtyByPortfolioId(bin.getPortfolioId()).stream().collect(
-				Collectors.toMap(GetAssetQtyOutputBin::getSymbolId, GetAssetQtyOutputBin::getAmount));
-		for (Transaction transaction : transactions) {
-			if (TransactionType.fromValue(transaction.getType()) == TransactionType.SELL) {
-				if (assetsQty.getOrDefault(transaction.getSymbolId(), 0.0) < transaction.getAmount()) {
-					throw new CustomException("Not enough assets to sell");
-				}
-				assetsQty.put(transaction.getSymbolId(),
-						assetsQty.get(transaction.getSymbolId()) - transaction.getAmount());
-			} else {
-				assetsQty.put(transaction.getSymbolId(),
-						assetsQty.getOrDefault(transaction.getSymbolId(), 0.0) + transaction.getAmount());
-			}
-		}
+
+		this.checkAssetQty(transactions.stream()
+				.map(entity -> TransactionEntity.builder()
+						.id(entity.getId())
+						.type(TransactionType.fromValue(entity.getType()))
+						.date(entity.getDate())
+						.amount(entity.getAmount())
+						.price(entity.getPrice())
+						.symbolId(entity.getSymbolId())
+						.portfolioId(bin.getPortfolioId())
+						.currency(entity.getCurrency())
+						.build())
+				.toList());
+
 		transactionRepository.saveAll(transactions.stream()
 				.map(entity -> TransactionEntity.builder()
 						.id(entity.getId())
@@ -140,7 +177,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<Transaction> getTransactionsByPortfolioIdAfterDate(GetTransactionByDateBin bin) {
-		List<TransactionEntity> list = transactionRepository.findAllByPortfolioIdAndDateAfter(bin.getPortfolioId(),
+		List<TransactionEntity> list = transactionRepository.findAllByPortfolioIdAndAfterDate(bin.getPortfolioId(),
 				bin.getDate());
 
 		return list.stream()
@@ -152,6 +189,7 @@ public class TransactionServiceImpl implements TransactionService {
 						.price(entity.getPrice())
 						.symbolId(entity.getSymbolId())
 						.currency(entity.getCurrency())
+						.portfolioId(entity.getPortfolioId())
 						.build())
 				.toList();
 	}
@@ -164,6 +202,72 @@ public class TransactionServiceImpl implements TransactionService {
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin bin) {
 		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(bin.getPortfolioId(), bin.getDate());
+	}
+
+	/**
+	 * Finds the minimum date from a list of TransactionEntity objects.
+	 *
+	 * @param transactions the list of TransactionEntity objects to search through
+	 * @return an Optional containing the minimum LocalDate if present, otherwise an
+	 *         empty Optional
+	 */
+	private static Optional<LocalDate> findMinDate(List<TransactionEntity> transactions) {
+		return transactions.stream()
+				.map(TransactionEntity::getDate)
+				.min(LocalDate::compareTo);
+	}
+
+	/**
+	 * Checks the quantity of assets for a given list of new transactions.
+	 * 
+	 * This method verifies if there are enough assets to perform the transactions
+	 * by calculating the asset quantities from the minimum transaction date to the
+	 * current date.
+	 * If a sell transaction is found and there are not enough assets to sell, a
+	 * CustomException is thrown.
+	 * 
+	 * @param newTransactions the list of new transactions to be checked
+	 * @throws CustomException if there are not enough assets to sell for any
+	 *                         transaction
+	 */
+	private void checkAssetQty(List<TransactionEntity> newTransactions) throws CustomException {
+		Optional<LocalDate> minDate = findMinDate(newTransactions);
+
+		if (minDate.isEmpty()) {
+			return;
+		}
+
+		Map<String, Double> assetsQty = this
+				.getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin.builder()
+						.portfolioId(newTransactions.get(0).getPortfolioId())
+						.date(minDate.get())
+						.build())
+				.stream()
+				.collect(Collectors.toMap(GetAssetQtyOutputBin::getSymbolId,
+						GetAssetQtyOutputBin::getAmount));
+
+		List<TransactionEntity> transactions = this.transactionRepository
+				.findAllByPortfolioIdAndAfterDate(newTransactions.get(0).getPortfolioId(),
+						minDate.get());
+		transactions.addAll(newTransactions);
+
+		for (var date : minDate.get().datesUntil(LocalDate.now()).toList()) {
+			Map<String, Double> dailyAssetAllocationMap = transactions.stream()
+					.filter(t -> t.getDate().equals(date))
+					.collect(Collectors.groupingBy(TransactionEntity::getSymbolId,
+							Collectors.summingDouble(t -> {
+								return t.getType() == TransactionType.SELL ? -t.getAmount() : t.getAmount();
+							})));
+
+			dailyAssetAllocationMap.forEach((asset, amount) -> {
+				if (assetsQty.getOrDefault(asset, 0.0) + amount < 0) {
+					throw new CustomException("Not enough assets to sell, asset: " + asset);
+				}
+				assetsQty.put(asset, assetsQty.getOrDefault(asset, 0.0) + amount);
+			});
+
+		}
+
 	}
 
 }

@@ -27,14 +27,14 @@ public class PortfolioHistoryEntity {
     @Column(name = "date", nullable = false)
     private LocalDate date;
 
-    @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
+    @Column(name = "invested_amount", nullable = false)
+    private BigDecimal investedAmount;
 
     @Column(name = "countervail", nullable = false)
     private BigDecimal countervail;
 
-    @Column(name = "extra_value", nullable = false)
-    private BigDecimal extra_value;
+    @Column(name = "withdrawn_amount", nullable = false)
+    private BigDecimal withdrawnAmount;
 
     @Column(name = "percentage_value", nullable = false)
     private double percentageValue;

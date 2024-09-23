@@ -53,10 +53,12 @@ public class TransactionController {
 						.transaction(entity)
 						.build());
 
-		this.sender.send(PostTransactionBin.builder()
-				.date(entity.getDate())
-				.portfolioId(entity.getPortfolioId())
-				.build());
+		if (entity.getDate().isBefore(LocalDate.now())) {
+			this.sender.sendTransactionUpdate(GetTransactionByDateBin.builder()
+					.date(entity.getDate())
+					.portfolioId(entity.getPortfolioId())
+					.build());
+		}
 
 		return ResponseEntity.ok(transaction);
 	}
@@ -66,13 +68,32 @@ public class TransactionController {
 	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id) {
 		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id))
 				.orElseThrow(() -> new CustomException("Transaction not found"));
-		this.sender
-				.send(PostTransactionBin.builder()
-						.date(deletedTransaction.getDate())
-						.portfolioId(portfolioId)
-						.build());
+
+		if (deletedTransaction.getDate().isBefore(LocalDate.now())) {
+			this.sender
+					.sendTransactionUpdate(GetTransactionByDateBin.builder()
+							.date(deletedTransaction.getDate())
+							.portfolioId(portfolioId)
+							.build());
+		}
 
 		return ResponseEntity.ok().build();
+	}
+
+	// insert new transaction
+	@SneakyThrows
+	@PostMapping("/insert")
+	public ResponseEntity<Transaction> insertTransaction(@RequestBody PostTransactionBin entity) {
+		Transaction transaction = transactionService.insertTransaction(entity);
+
+		if (transaction.getDate().isBefore(LocalDate.now())) {
+			this.sender.sendTransactionUpdate(GetTransactionByDateBin.builder()
+					.date(transaction.getDate())
+					.portfolioId(entity.getPortfolioId())
+					.build());
+		}
+
+		return ResponseEntity.ok(transaction);
 	}
 
 	@SneakyThrows
@@ -87,17 +108,21 @@ public class TransactionController {
 				.portfolioId(portfolioId)
 				.inputStream(file.getInputStream())
 				.build());
-		list.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
-		this.sender.send(PostTransactionBin.builder()
-				.date(list.get(list.size() - 1).getDate())
+
+		List<Transaction> oldTransactions = list.stream().filter(e -> !e.getDate().isEqual(LocalDate.now())).toList();
+		oldTransactions.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
+		this.sender.sendTransactionUpdate(GetTransactionByDateBin.builder()
+				.date(oldTransactions.get(oldTransactions.size() - 1).getDate())
 				.portfolioId(portfolioId)
 				.build());
+
 		return ResponseEntity.ok(list);
 	}
 
 	@GetMapping("/get-by-portfolio/{portfolioId}")
 	public ResponseEntity<List<Transaction>> getAllTransactionsByPortfolioId(@PathVariable long portfolioId,
-			@RequestParam(defaultValue = "false") boolean mock) {
+			@RequestParam(defaultValue = "false") boolean mock,
+			@RequestParam(required = false) LocalDate date) {
 		if (mock) {
 			return ResponseEntity.ok(List.of(
 					Transaction.builder()
@@ -108,6 +133,7 @@ public class TransactionController {
 							.price(BigDecimal.valueOf(100))
 							.symbolId("AAPL")
 							.currency("USD")
+							.portfolioId(portfolioId)
 							.build(),
 					Transaction.builder()
 							.id(2)
@@ -117,41 +143,23 @@ public class TransactionController {
 							.price(BigDecimal.valueOf(100))
 							.symbolId("AAPL")
 							.currency("USD")
+							.portfolioId(portfolioId)
 							.build()));
 
 		}
-		return ResponseEntity.ok(transactionService.getAllTransactionsByPortfolioId(portfolioId));
-	}
 
-	@GetMapping("/get-by-portfolio/{portfolioId}/after-date")
-	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndDate(
-			@PathVariable long portfolioId,
-			@RequestParam String date, @RequestParam(defaultValue = "false") boolean mock) {
-
-		if (mock) {
-			return ResponseEntity.ok(List.of(Transaction.builder()
-					.id(1)
-					.type(TransactionType.BUY.getPersistedValue())
-					.date(LocalDate.now())
-					.amount(100)
-					.price(BigDecimal.valueOf(100))
-					.symbolId("AAPL")
-					.currency("USD")
-					.build()));
-		}
-
-		LocalDate localDate = LocalDate.parse(date);
-		List<Transaction> transactions = transactionService
-				.getTransactionsByPortfolioIdAfterDate(GetTransactionByDateBin.builder()
-						.portfolioId(portfolioId)
-						.date(localDate)
-						.build());
-		return ResponseEntity.ok(transactions);
+		return date == null
+				? ResponseEntity.ok(transactionService.getAllTransactionsByPortfolioId(portfolioId))
+				: ResponseEntity
+						.ok(transactionService.getTransactionsByPortfolioIdAfterDate(GetTransactionByDateBin.builder()
+								.portfolioId(portfolioId)
+								.date(date)
+								.build()));
 	}
 
 	@GetMapping("/get-by-portfolio/{portfolioId}/assets-qty")
 	public ResponseEntity<List<GetAssetQtyOutputBin>> getAssetsQtyByPortfolioId(@PathVariable long portfolioId,
-			@RequestParam(required = false) String date,
+			@RequestParam(required = false) LocalDate date,
 			@RequestParam(defaultValue = "false") boolean mock) {
 		if (mock) {
 			return ResponseEntity.ok(List.of(GetAssetQtyOutputBin.builder()
@@ -159,12 +167,12 @@ public class TransactionController {
 					.amount(100)
 					.build()));
 		}
-		return date == null || date.isBlank()
+		return date == null
 				? ResponseEntity.ok(transactionService.getAssetsQtyByPortfolioId(portfolioId))
 				: ResponseEntity
 						.ok(transactionService.getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin.builder()
 								.portfolioId(portfolioId)
-								.date(LocalDate.parse(date))
+								.date(date)
 								.build()));
 	}
 }

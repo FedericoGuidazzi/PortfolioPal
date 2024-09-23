@@ -1,4 +1,4 @@
-package com.example.transaction.models;
+package com.example.transaction.services;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +17,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import com.example.transaction.custom_exceptions.CustomException;
+import com.example.transaction.models.Transaction;
 import com.example.transaction.models.enums.TransactionType;
 
 public class CsvPortfolioReader {

@@ -18,7 +18,7 @@ services:
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
     networks:
       - pal-network
-    
+
   rabbitmq:
     image: rabbitmq:3.9-management
     ports:
@@ -32,7 +32,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
-    
+
   user-service:
     build:
       context: ../user/
@@ -48,6 +48,20 @@ services:
       - pal-network
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+
+  asset-service:
+    build:
+      context: ../asset/
+      dockerfile: Dockerfile
+    ports:
+      - 8084:8080
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+    networks:
+      - pal-network
+    environment:
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
 
   transaction-service:
@@ -75,15 +89,53 @@ services:
 
   transactiondb:
     image: mysql:8.0.33
-    ports:
-      - 3306:3306
     environment:
       - MYSQL_DATABASE=transaction
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
-      - mysql-data:/var/lib/mysql
+      - transaction-data:/var/lib/transaction/mysql
     networks:
       - transaction-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 10
+      interval: 3s
+      timeout: 30s
+
+  history-service:
+    build:
+      context: ../portfolioHistory/
+      dockerfile: Dockerfile
+    ports:
+      - 8083:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://historydb:3306/history?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+    networks:
+      - history-network
+      - pal-network
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      historydb:
+        condition: service_healthy
+      transaction-service:
+        condition: service_started
+      asset-service:
+        condition: service_started
+
+  historydb:
+    image: mysql:8.0.33
+    environment:
+      - MYSQL_DATABASE=history
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - history-data:/var/lib/history/mysql
+    networks:
+      - history-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       retries: 10
@@ -104,17 +156,24 @@ services:
         condition: service_healthy
       user-service:
         condition: service_started
+      asset-service:
+        condition: service_started
+      history-service:
+        condition: service_started
       transaction-service:
         condition: service_started
     networks:
       - pal-network
 
 volumes:
-  mysql-data:
+  history-data:
+  transaction-data:
 
 networks:
   transaction-network:
     name: transaction-network
+  history-network:
+    name: history-network
   pal-network:
     name: pal-network
     driver: bridge

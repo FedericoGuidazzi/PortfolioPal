@@ -1,20 +1,19 @@
-package com.example.portfolio_history.models;
+package com.example.portfolio_history.models.bin;
 
-import com.example.portfolio_history.models.enums.TransactionTypeEnum;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class MovementBin {
-    private TransactionTypeEnum type;
+    private String type;
     private LocalDate date;
     private double amount;
     private String symbolId;

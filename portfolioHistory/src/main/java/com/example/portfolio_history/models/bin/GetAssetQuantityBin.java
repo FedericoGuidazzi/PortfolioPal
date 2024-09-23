@@ -1,4 +1,4 @@
-package com.example.portfolio_history.models;
+package com.example.portfolio_history.models.bin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,4 +14,3 @@ public class GetAssetQuantityBin {
 
     private double amount;
 }
-

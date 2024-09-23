@@ -12,8 +12,8 @@ public class PortfolioHistory {
     private long id;
     private long portfolioId;
     private LocalDate date;
-    private BigDecimal amount;
+    private BigDecimal investedAmount;
     private BigDecimal countervail;
-    private BigDecimal extraValue;
+    private BigDecimal withdrawnAmount;
     private double percentageValue;
 }

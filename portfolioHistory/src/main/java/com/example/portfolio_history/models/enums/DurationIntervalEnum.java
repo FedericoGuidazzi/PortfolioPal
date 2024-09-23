@@ -1,4 +1,5 @@
 package com.example.portfolio_history.models.enums;
+
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ public enum DurationIntervalEnum {
         this.value = value;
     }
 
-    public static LocalDate getDateFromNow(DurationIntervalEnum interval){
+    public static LocalDate getDateFromNow(DurationIntervalEnum interval) {
         return switch (interval.getValue()) {
             case "1S" -> LocalDate.now().minusWeeks(1);
             case "1A" -> LocalDate.now().minusYears(1);

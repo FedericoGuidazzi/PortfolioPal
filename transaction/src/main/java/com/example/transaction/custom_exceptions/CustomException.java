@@ -1,6 +1,6 @@
 package com.example.transaction.custom_exceptions;
 
-public class CustomException extends Exception {
+public class CustomException extends RuntimeException {
     public CustomException(String message) {
         super(message);
     }
