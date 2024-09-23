@@ -7,6 +7,7 @@ import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetAssetQtyOutputBin;
 import com.example.transaction.models.bin.GetTransactionByDateBin;
+import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.bin.UploadBin;
 
@@ -14,6 +15,15 @@ import com.example.transaction.models.bin.UploadBin;
  * The TransactionService interface provides methods for managing transactions.
  */
 public interface TransactionService {
+
+    /**
+     * Insert a new transaction.
+     *
+     * @param transactionBin the transaction data to save
+     * @return the saved transaction
+     * @throws CustomException if an error occurs while saving the transaction
+     */
+    Transaction insertTransaction(PostTransactionBin transactionBin) throws CustomException;
 
     /**
      * Retrieves a transaction by its ID.

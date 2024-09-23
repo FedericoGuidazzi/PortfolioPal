@@ -41,7 +41,7 @@ services:
       - MYSQL_DATABASE=transaction
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
-      - mysql-data:/var/lib/mysql
+      - transaction-data:/var/lib/transaction/mysql
     networks:
       - springboot-mysql-network
     healthcheck:
@@ -51,7 +51,7 @@ services:
       timeout: 30s
 
 volumes:
-  mysql-data:
+  transaction-data:
 networks:
   springboot-mysql-network:
     name: springboot-mysql-network

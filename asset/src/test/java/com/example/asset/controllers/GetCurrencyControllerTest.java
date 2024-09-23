@@ -37,7 +37,7 @@ class GetCurrencyControllerTest {
         String currencyTo = "EUR";
         String duration = "1S";
         boolean mock = false;
-        Currency response = currencyController.getCurrency(currencyFrom, currencyTo, mock, duration);
+        Currency response = currencyController.getCurrency(currencyFrom, currencyTo, mock, duration, null);
 
         // Assertions
         assertEquals(expectedCurrency, response);

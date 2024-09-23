@@ -1,4 +1,13 @@
-FROM openjdk:17-jdk
-COPY target/asset.jar .
+# Use a base image with Java 17
+FROM openjdk:17
+
+# Copy the JAR package into the image
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "asset.jar"]
+
+ENV PORT=8080
+
+# Run the App
+ENTRYPOINT ["java", "-jar", "/app.jar"]

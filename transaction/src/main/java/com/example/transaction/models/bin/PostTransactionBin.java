@@ -3,8 +3,6 @@ package com.example.transaction.models.bin;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.example.transaction.models.enums.TransactionType;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,7 +10,7 @@ import lombok.Data;
 @Builder
 public class PostTransactionBin {
 
-    private TransactionType type;
+    private String type;
 
     private LocalDate date;
 

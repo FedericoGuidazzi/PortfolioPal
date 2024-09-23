@@ -28,8 +28,7 @@ public class GetCurrencyServiceImpl implements GetCurrencyService {
     public Currency getCurrency(GetCurrencyBin currencyBin) {
         //call Yahoo Finance API to get data regarding the asset
         int range = RangeUtils.rangeMap.getOrDefault(currencyBin.getDuration().getValue(), 7);
-        LocalDate startDate = LocalDate.now().minusDays(range);
-
+        LocalDate startDate = Optional.ofNullable(currencyBin.getStartDate()).orElse(LocalDate.now().minusDays(range));
 
         String url = "https://query1.finance.yahoo.com/v8/finance/chart/" +
                 currencyBin.getCurrencyFrom() +

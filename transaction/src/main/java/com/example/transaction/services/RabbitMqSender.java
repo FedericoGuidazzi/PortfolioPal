@@ -5,9 +5,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.example.transaction.models.bin.PostTransactionBin;
+import com.example.transaction.models.bin.GetTransactionByDateBin;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Component
 public class RabbitMqSender {
@@ -21,9 +20,9 @@ public class RabbitMqSender {
         this.transactionQueue = transactionQueue;
     }
 
-    public void send(PostTransactionBin transactionBin) {
+    public void sendTransactionUpdate(GetTransactionByDateBin transactionBin) {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.findAndRegisterModules();
 
         try {
             String jsonUser = objectMapper.writeValueAsString(transactionBin);
