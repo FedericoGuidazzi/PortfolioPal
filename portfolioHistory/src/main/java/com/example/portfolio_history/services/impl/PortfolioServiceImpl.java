@@ -77,6 +77,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         for (PortfolioEntity portfolioEntity : portfolioList) {
             portfolioRepository.delete(portfolioEntity);
+
+            historyRepository.deleteByPortfolioId(portfolioEntity.getId());
         }
     }
 
@@ -99,6 +101,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .build();
         portfolioRepository.delete(portfolioEntity);
 
+        historyRepository.deleteByPortfolioId(id);
     }
 
     @Override
