@@ -83,9 +83,9 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
         // STEP1 retrieve initial date
         LocalDate startDate = movementBin.getDate();
         // step2 call the API to get all the transaction starting from initial date
-        String transactionUrl = this.getRandomInstanceUrl("transaction");
         RestTemplate restTemplate = new RestTemplate();
         try {
+            String transactionUrl = this.getRandomInstanceUrl("transaction");
             // Request all the transactions of a portfolio starting from the initial date
             ResponseEntity<List<MovementBin>> responseEntity = restTemplate.exchange(
                     transactionUrl + "/api/v1/transaction/get-by-portfolio/" + movementBin.getPortfolioId()

@@ -3,6 +3,9 @@ package com.example.portfolio_history.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.portfolio_history.models.PortfolioInfo;
+import com.example.portfolio_history.repositories.PortfolioHistoryRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,9 @@ import com.example.portfolio_history.services.PortfolioService;
 public class PortfolioServiceImpl implements PortfolioService {
     @Autowired
     private PortfolioRepository portfolioRepository;
+
+    @Autowired
+    private PortfolioHistoryRepository historyRepository;
 
     @Override
     public Portfolio createPortfolio(PostPortfolioBin postPortfolioBin) throws CustomException {
@@ -107,19 +113,20 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public List<Portfolio> getRanking() {
+    public List<PortfolioInfo> getRanking() {
         // Get all portfolios order by percentageValue
-        // List<PortfolioEntity> allPortfolios =
-        // repository.findAllOrderByPercentageValueDesc();
+        List<PortfolioHistoryEntity> allPortfolios = historyRepository.findAllOrderByPercentageValueDesc();
 
         // Remove all the portfolios that are not sharable and select the top 10
-        // return allPortfolios.stream()
-        // .filter(this::isPortfolioSharable)
-        // .limit(10)
-        // .map(this::fromEntityToObject)
-        // .collect(Collectors.toList());
-        return List.of();
-
+        return allPortfolios.stream()
+         .filter(this::isPortfolioSharable)
+         .limit(10)
+         .map(e-> PortfolioInfo.builder()
+                 .idPortfolio(e.getPortfolioId())
+                 .portfolioName(portfolioRepository.findById(e.getPortfolioId())
+                 .map(PortfolioEntity::getName).orElse(Strings.EMPTY))
+                 .percentageValue(e.getPercentageValue()).build())
+         .collect(Collectors.toList());
     }
 
     private boolean isPortfolioSharable(PortfolioHistoryEntity item) {

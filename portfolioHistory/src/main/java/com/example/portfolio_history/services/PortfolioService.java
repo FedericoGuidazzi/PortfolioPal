@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.portfolio_history.custom_exceptions.CustomException;
 import com.example.portfolio_history.models.Portfolio;
+import com.example.portfolio_history.models.PortfolioInfo;
 import com.example.portfolio_history.models.bin.PostPortfolioBin;
 import com.example.portfolio_history.models.bin.PutPortfolioNameBin;
 import com.example.portfolio_history.models.bin.PutUserPrivacyBin;
@@ -25,6 +26,6 @@ public interface PortfolioService {
 
     void deletePortfolioByUserId(String userId);
 
-    List<Portfolio> getRanking();
+    List<PortfolioInfo> getRanking();
 
 }

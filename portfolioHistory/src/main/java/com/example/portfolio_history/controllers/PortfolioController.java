@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.portfolio_history.models.Portfolio;
+import com.example.portfolio_history.models.PortfolioInfo;
 import com.example.portfolio_history.models.PortfolioHistory;
 import com.example.portfolio_history.models.bin.PostPortfolioBin;
 import com.example.portfolio_history.models.bin.PutPortfolioNameBin;
@@ -73,7 +74,7 @@ public class PortfolioController {
     }
 
     @GetMapping("/ranking")
-    public List<Portfolio> getRanking() {
+    public List<PortfolioInfo> getRanking() {
         return portfolioService.getRanking();
     }
 
