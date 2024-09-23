@@ -14,8 +14,4 @@ public interface PortfolioHistoryService {
 
     List<PortfolioHistory> getPortfolioHistory(GetPortfolioHistoryBin getPortfolioHistoryBin);
 
-    String test(String serviceId);
-
-    String getServices();
-
 }

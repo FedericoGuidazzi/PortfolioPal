@@ -37,14 +37,4 @@ public class PortfolioHistoryController {
         return portfolioHistoryService.getPortfolioHistory(bin);
     }
 
-    @GetMapping("/services")
-    public String getServices() {
-        return portfolioHistoryService.getServices();
-    }
-
-    @GetMapping("/test/{serviceId}")
-    public String test(@PathVariable String serviceId) {
-        return portfolioHistoryService.test(serviceId);
-    }
-
 }

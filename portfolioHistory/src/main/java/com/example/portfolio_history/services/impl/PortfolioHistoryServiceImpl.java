@@ -379,14 +379,4 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 
 	}
 
-	@Override
-	public String test(String serviceId) {
-		return discoveryClient.getInstances(serviceId).stream().map(e -> e.getUri().toString()).toString();
-	}
-
-	@Override
-	public String getServices() {
-		return discoveryClient.getServices().toString();
-	}
-
 }
