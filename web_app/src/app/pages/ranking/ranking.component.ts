@@ -4,7 +4,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  RouterLink,
+} from '@angular/router';
 import { Chart } from 'chart.js';
 import {
   CardPortfolioValutationComponent,
@@ -19,6 +24,7 @@ import { HistoryItem, PortfolioAssets } from '../dashboard/dashboard.component';
 import { PortfolioService } from '../../utils/api/portfolio/portfolio.service';
 import { TransactionService } from '../../utils/api/transaction/transaction.service';
 import { HistoryService } from '../../utils/api/portfolio/history.service';
+import { Location } from '@angular/common';
 
 interface AssetQty {
   symbolId: string;
@@ -60,24 +66,41 @@ export class RankingComponent {
   assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
   @ViewChild(MatPaginator) assetPaginator!: MatPaginator;
 
-  @Input() assetRowDisabled: boolean = false;
+  @ViewChild('portfolioContainer') portfolioContainer!: ElementRef;
+  @ViewChild('noPortfolioContainer') noPortfolioContainer!: ElementRef;
+
+  assetRowDisabled: boolean = true;
 
   noElementSelected = true;
+  portfolioId!: any;
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private transactionService: TransactionService,
-    private historyService: HistoryService
+    private historyService: HistoryService,
+    private portfolioService: PortfolioService,
+    private location: Location
   ) {}
+
+  ngOnInit() {
+    this.route.paramMap.subscribe(
+      (params) => (this.portfolioId = params.get('portfolioId'))
+    );
+
+    if (this.portfolioId) {
+      this.noElementSelected = false;
+    }
+  }
 
   ngAfterViewInit() {
     this.assetDataSource.paginator = this.assetPaginator;
+    if (this.portfolioId) {
+      this.updatePortfolioView(this.portfolioId, '');
+    }
   }
 
-  initializeComponent() {}
-
   @ViewChild('userDoughnutChart') assetDoughnutContainer!: ElementRef;
-
   createDoughnutChart(): void {
     const data = {
       labels: this.assetDataSource.data.map((item) => item.symbolId + '%'),
@@ -188,9 +211,14 @@ export class RankingComponent {
       selectors[0].classList.add('active');
     }
 
-    const userName = document.getElementById('userName');
-    if (userName) {
-      userName.textContent = name;
+    const portfolioName = document.getElementById('portfolio_name');
+    if (portfolioName) {
+      portfolioName.textContent = name == '' ? 'Anonymous' : name;
+    }
+
+    if (this.portfolioContainer.nativeElement.classList.contains('d-none')) {
+      this.noPortfolioContainer.nativeElement.classList.add('d-none');
+      this.portfolioContainer.nativeElement.classList.remove('d-none');
     }
 
     // Request asset allocation
@@ -271,8 +299,7 @@ export class RankingComponent {
   }
 
   onElementSelection(rank: RankElement) {
-    console.log('User selected: ' + rank.name);
-    console.log('User id: ' + rank.id);
-    // this.updatePortfolioView(rank.id, rank.name);
+    this.location.go(`/ranking/${rank.id}`);
+    this.updatePortfolioView(rank.id, rank.name);
   }
 }

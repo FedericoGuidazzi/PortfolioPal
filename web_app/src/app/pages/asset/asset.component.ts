@@ -43,7 +43,7 @@ interface AssetHistory {
   selector: 'app-asset',
   standalone: true,
   imports: [
-    /*LineChartComponent,*/ HistoryComponent,
+    HistoryComponent,
     CardPortfolioValutationComponent,
     MatFormFieldModule,
     MatTableModule,

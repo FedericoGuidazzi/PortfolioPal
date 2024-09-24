@@ -34,6 +34,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'ranking/:portfolioId',
+    loadComponent: () =>
+      import('./pages/ranking/ranking.component').then(
+        (c) => c.RankingComponent
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard.component').then(
