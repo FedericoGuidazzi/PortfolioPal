@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -11,11 +11,19 @@ import {
   PortfolioAmount,
 } from '../../components/card-portfolio-valutation/card-portfolio-valutation.component';
 import {
+  RankElement,
   RankingTableComponent,
-  User,
 } from '../../components/ranking-table/ranking-table.component';
 import { UserService } from '../../utils/api/user/user.service';
-import { PortfolioAssets } from '../dashboard/dashboard.component';
+import { HistoryItem, PortfolioAssets } from '../dashboard/dashboard.component';
+import { PortfolioService } from '../../utils/api/portfolio/portfolio.service';
+import { TransactionService } from '../../utils/api/transaction/transaction.service';
+import { HistoryService } from '../../utils/api/portfolio/history.service';
+
+interface AssetQty {
+  symbolId: string;
+  amount: number;
+}
 
 @Component({
   selector: 'app-ranking',
@@ -36,74 +44,46 @@ import { PortfolioAssets } from '../dashboard/dashboard.component';
   styleUrl: './ranking.component.css',
 })
 export class RankingComponent {
-  displayedColumns: string[] = ['symbol', 'portfolioPercentage', 'percentage'];
-  dataSource = new MatTableDataSource<PortfolioAssets>([]);
   duration: string[] = ['1A', '5A', 'Max'];
   lineChart: any;
+  doughnutChart: any;
+
   portfolioInfo!: PortfolioAmount;
-  ranking: User[] = [];
-  currentUser!: User;
+  currentUser!: RankElement;
+
+  assets: PortfolioAssets[] = [];
+  assetDisplayedColumns: string[] = [
+    'symbol',
+    'portfolioPercentage',
+    'percentage',
+  ];
+  assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
+  @ViewChild(MatPaginator) assetPaginator!: MatPaginator;
 
   @Input() assetRowDisabled: boolean = false;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  noElementSelected = true;
+
+  constructor(
+    private router: Router,
+    private transactionService: TransactionService,
+    private historyService: HistoryService
+  ) {}
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.createLineChart();
-    this.createDoughnutChart();
+    this.assetDataSource.paginator = this.assetPaginator;
   }
 
-  constructor(private userService: UserService, private router: Router) {}
+  initializeComponent() {}
 
-  ngOnInit() {
-    this.initializeComponent();
-  }
-
-  initializeComponent() {
-    this.ranking = [
-      { pos: 1, name: 'Beach ball', score: 4, id: '1' },
-      { pos: 2, name: 'Towel', score: 5, id: '2' },
-      { pos: 3, name: 'Frisbee', score: 2, id: '3' },
-      { pos: 4, name: 'Sunscreen', score: 4, id: '4' },
-      { pos: 5, name: 'Cooler', score: 25, id: '5' },
-    ];
-
-    this.currentUser = this.ranking[3];
-
-    // call portfolio API to get data
-    this.portfolioInfo = {
-      assetName: null,
-      currency: 'EUR',
-      amount: 3,
-      percentage: 45,
-    };
-
-    //call API to get data
-    this.dataSource.data = [
-      { symbol: 'AAPL', percPortfolio: 3, percentage: 3 },
-      { symbol: 'GOOGL', percPortfolio: 3, percentage: 5 },
-      { symbol: 'AAPL', percPortfolio: 3, percentage: 3 },
-      { symbol: 'GOOGL', percPortfolio: 3, percentage: 5 },
-      { symbol: 'AAPL', percPortfolio: 3, percentage: 3 },
-      { symbol: 'GOOGL', percPortfolio: 3, percentage: 5 },
-      { symbol: 'AAPL', percPortfolio: 3, percentage: 3 },
-      { symbol: 'GOOGL', percPortfolio: 3, percentage: 5 },
-    ];
-  }
+  @ViewChild('userDoughnutChart') assetDoughnutContainer!: ElementRef;
 
   createDoughnutChart(): void {
-    //call API to get data
     const data = {
-      labels: ['Red', 'Blue', 'Yellow'],
+      labels: this.assetDataSource.data.map((item) => item.symbolId + '%'),
       datasets: [
         {
-          label: 'My First Dataset',
-          data: [300, 50, 100],
-          backgroundColor: [
-            'rgb(255, 99, 132)',
-            'rgb(54, 162, 235)',
-            'rgb(255, 205, 86)',
-          ],
+          data: this.assetDataSource.data.map((item) => item.percPortfolio),
           hoverOffset: 4,
         },
       ],
@@ -124,33 +104,37 @@ export class RankingComponent {
       },
     };
 
+    this.assetDoughnutContainer.nativeElement.innerHTML =
+      '<canvas class="h-100 w-100" id="userDoughnutChart"></canvas>';
     const canvas = document.getElementById(
       'userDoughnutChart'
     ) as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      new Chart(ctx, config);
+    if (!canvas) {
+      return;
     }
+    if (this.doughnutChart) {
+      this.doughnutChart.destroy();
+    }
+    this.doughnutChart = new Chart(canvas, config);
   }
 
-  createLineChart(): void {
-    const portfolioGrowth = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: [
-        {
-          label: 'Valore Portfolio',
-          data: [100, 120, 130, 110, 150, 160, 140],
-        },
-        {
-          label: 'Liquidità Inserita',
-          data: [50, 50, 50, 50, 50, 50, 50],
-        },
-      ],
-    };
-
+  @ViewChild('userHistoryGraphContainer') historyGraphContainer!: ElementRef;
+  createLineChart(labels: any, countervails: any, investedAmounts: any): void {
     const config: any = {
       type: 'line',
-      data: portfolioGrowth,
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Valore Portfolio',
+            data: countervails,
+          },
+          {
+            label: 'Liquidità Inserita',
+            data: investedAmounts,
+          },
+        ],
+      },
       options: {
         scales: {
           x: {
@@ -177,16 +161,22 @@ export class RankingComponent {
       },
     };
 
+    this.historyGraphContainer.nativeElement.innerHTML =
+      '<canvas class="h-100 w-100" id="userHistoryLineChart"></canvas>';
     const canvas = document.getElementById(
-      'userLineChart'
+      'userHistoryLineChart'
     ) as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      this.lineChart = new Chart(ctx, config);
+    if (!canvas) {
+      return;
     }
+
+    if (this.lineChart) {
+      this.lineChart.destroy();
+    }
+    this.lineChart = new Chart(canvas, config);
   }
 
-  updateUserView(id: string) {
+  updatePortfolioView(id: number, name: string) {
     // update selector indicators
     const selectorActive = document.querySelectorAll('.selectors > .active');
     selectorActive.forEach(function (selected) {
@@ -198,77 +188,91 @@ export class RankingComponent {
       selectors[0].classList.add('active');
     }
 
-    //call API to get data
-    this.userService.getUserById(id).subscribe({
-      next: (user) => {
-        const userName = document.getElementById('userName');
-        if (userName) {
-          userName.textContent = user;
-        }
+    const userName = document.getElementById('userName');
+    if (userName) {
+      userName.textContent = name;
+    }
+
+    // Request asset allocation
+    this.transactionService.getAssetAllocation(id).subscribe({
+      next: (data: AssetQty[]) => {
+        const total = data.reduce((acc, item) => acc + item.amount, 0);
+        this.assets = data.map((item) => {
+          return {
+            symbolId: item.symbolId,
+            percPortfolio: (item.amount / total) * 100,
+            percentage: 0,
+          };
+        });
+        this.assetDataSource.data = this.assets;
+
+        this.createDoughnutChart();
       },
       error: (error) => {
-        // console.error('Error getting user', error);
+        console.error('Error fetching asset allocation', error);
       },
     });
 
-    const portfolioGrowth = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: [
-        {
-          label: 'Valore Portfolio',
-          data: [100, 120, 130, 110, 150, 160, 140],
-        },
-        {
-          label: 'Liquidità Inserita',
-          data: [50, 50, 50, 50, 50, 50, 50],
-        },
-      ],
-    };
+    // Request past week history
+    this.historyService.getPortfolioHistoryById(id, '1S').subscribe({
+      next: (data: HistoryItem[]) => {
+        this.portfolioInfo = {
+          assetName: null,
+          currency: 'EUR',
+          amount: data[0].countervail,
+          percentage: data[0].percentageValue,
+        };
 
-    this.lineChart.data.labels = portfolioGrowth.labels;
-    this.lineChart.data.datasets[0].data = portfolioGrowth.datasets[0].data;
-    this.lineChart.data.datasets[1].data = portfolioGrowth.datasets[1].data;
-    this.lineChart.update();
+        this.createLineChart(
+          data.map((item) => item.date),
+          data.map((item) => item.countervail),
+          data.map((item) => item.investedAmount)
+        );
+      },
+      error: (error: any) => {
+        console.error('Error fetching history', error);
+      },
+    });
   }
 
-  updateLineChart(value: string) {
-    //gestire cambio di dati richiamando API
+  updateHistoryGraphView(value: string) {
     const selectorActive = document.querySelectorAll('.active');
     selectorActive.forEach(function (selected) {
       selected.classList.remove('active');
     });
 
-    console.log('Value: ' + value);
     let selector = document.getElementById(value);
     selector?.classList.add('active');
 
-    switch (value) {
-      case '1S':
-        //fare chiamata api per prendere i dati rispetto alla scadenza desiderata
-        this.lineChart.data.labels = [
-          'asdfsdf',
-          'afsfdsfds',
-          'afsdfsdf',
-          'afsfdsf',
-          'asdfdsfd',
-          'asfsdfsd',
-          'asfsdfd',
+    this.historyService.getPortfolioHistoryById(1, value).subscribe({
+      next: (data: HistoryItem[]) => {
+        const labels = data.map((item) => item.date);
+        const countervail = data.map((item) => item.countervail);
+        const investedAmount = data.map((item) => item.investedAmount);
+
+        this.lineChart.data.labels = labels;
+        this.lineChart.data.datasets = [
+          {
+            label: 'Valore Portfolio',
+            data: countervail,
+          },
+          {
+            label: 'Liquidità Inserita',
+            data: investedAmount,
+          },
         ];
-        this.lineChart.data.datasets[0].data = [10, 12, 13, 11, 15, 16, 14];
-        this.lineChart.data.datasets[1].data = [5, 5, 10, 5, 5, 5, 5];
+
         this.lineChart.update();
-        break;
-      case '1A':
-        break;
-      case '5A':
-        break;
-      case 'Max':
-        break;
-    }
+      },
+      error: (error: any) => {
+        console.error('Error fetching history', error);
+      },
+    });
   }
 
-  onUserSelection(user: User) {
-    console.log('User selected: ' + user.name);
-    this.updateUserView(user.id);
+  onElementSelection(rank: RankElement) {
+    console.log('User selected: ' + rank.name);
+    console.log('User id: ' + rank.id);
+    // this.updatePortfolioView(rank.id, rank.name);
   }
 }

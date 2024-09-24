@@ -26,4 +26,19 @@ export class TransactionService {
   uploadTransaction(portfolioId: Number, data: any): Observable<any> {
     return this.http.post(this.transactionUrl + '/upload/' + portfolioId, data);
   }
+
+  getAssetAllocation(portfolioId: Number): Observable<any> {
+    return this.http.get(
+      this.transactionUrl + '/get-by-portfolio/' + portfolioId + '/assets-qty'
+    );
+  }
+
+  getAllTransactionByPortfolioIdAndAssetId(
+    id: Number,
+    assetId: Number
+  ): Observable<any> {
+    return this.http.get(
+      this.transactionUrl + '/get-by-portfolio/' + id + '/asset/' + assetId
+    );
+  }
 }

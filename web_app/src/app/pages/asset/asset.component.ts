@@ -88,7 +88,7 @@ export class AssetComponent {
     private transactionService: TransactionService
   ) {}
 
-  async prepareData() {
+  prepareData() {
     // get portfolioId from route
     this.route.paramMap.subscribe(
       (params) => (this.portfolioId = params.get('portfolioId'))
@@ -285,15 +285,9 @@ export class AssetComponent {
     }
   }
 
-  ngOnDestroy() {
-    this.lineChart.destroy();
-  }
-
-  ngOnInit() {
+  ngAfterViewInit() {
     this.prepareData();
   }
-
-  ngAfterViewInit() {}
 
   updateHistoryGraphView(value: string) {
     //gestire cambio di dati richiamando API

@@ -1,7 +1,7 @@
 <div class="table-container">
   <table
     mat-table
-    [dataSource]="ranking"
+    [dataSource]="rankingDataSource"
     class="mat-elevation-z8"
     [class]="{ 'hover-disabled': hoverDisabled }"
   >
@@ -69,8 +69,8 @@
     <tr
       mat-row
       *matRowDef="let row; columns: displayedColumns"
-      [class]="{ disabled: row.pos == currentUser?.pos }"
-      (click)="getSelectedUser(row)"
+      [class]="{ disabled: row.pos == currentUser?.pos || row.id == -1 }"
+      (click)="onElementSelection(row)"
     ></tr>
 
     @if (currentUser && currentUser.pos > 6) {

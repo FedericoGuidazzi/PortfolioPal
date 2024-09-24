@@ -30,7 +30,9 @@ export const bearerTokenInterceptor: HttpInterceptorFn = (req, next) => {
   // Note that you can customize it to only add the bearer token to certain requests
   if (
     req.url.startsWith(environment.backendUrl + '/transaction') ||
-    req.url.startsWith(environment.backendUrl + '/user')
+    req.url.startsWith(environment.backendUrl + '/user') ||
+    req.url.startsWith(environment.backendUrl + '/portfolio/create') ||
+    req.url.startsWith(environment.backendUrl + '/portfolio/get/user')
   ) {
     return from(addBearerToken(req, next));
   } else {

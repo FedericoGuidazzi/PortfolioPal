@@ -55,6 +55,7 @@
               <div class="option">
                 @switch (item.value.type) { @case ('toggle') {
                 <mat-slide-toggle
+                  [id]="item.key"
                   [checked]="item.value.value"
                   (change)="onToggle(item.key)"
                   [disabled]="item.value.disabled"
@@ -81,7 +82,6 @@
                   [disabled]="item.value.disabled"
                   #currency
                   (change)="onSelectedCurrency()"
-                  [value]="item.value.value"
                 >
                   @for (currency of supportedCurrencies; track $index) {
                   <option
@@ -98,6 +98,15 @@
           </li>
           }
           <li><hr class="dropdown-divider mb-2" /></li>
+          <li class="px-2 d-none" id="modify_preferencies">
+            <button
+              class="dropdown-item p-3 d-flex gap-3 align-items-center"
+              (click)="onSave()"
+            >
+              Save changes
+            </button>
+          </li>
+
           <li class="px-2">
             <button
               class="dropdown-item logout p-2 d-flex gap-3 align-items-center"
