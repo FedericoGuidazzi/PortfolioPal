@@ -22,4 +22,8 @@ public interface TransactionRepository extends CrudRepository<TransactionEntity,
 	List<GetAssetQtyOutputBin> findAssetsQtyByPortfolioIdAndDate(@Param("portfolioId") long portfolioId,
 			@Param("date") LocalDate date);
 
+	@Query("SELECT t FROM TransactionEntity t WHERE t.portfolioId = :portfolioId AND t.symbolId = :symbolId")
+	List<TransactionEntity> findAllByPortfolioIdAndSymbolId(@Param("portfolioId") long portfolioId,
+			@Param("symbolId") String symbolId);
+
 }

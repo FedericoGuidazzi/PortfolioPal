@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.portfolio_history.PublicEndpoint;
 import com.example.portfolio_history.models.Portfolio;
 import com.example.portfolio_history.models.PortfolioInfo;
 import com.example.portfolio_history.models.bin.PostPortfolioBin;
@@ -27,8 +29,9 @@ public class PortfolioController {
     private PortfolioService portfolioService;
 
     @SneakyThrows
-    @PostMapping("/create/{userId}")
-    public ResponseEntity<Portfolio> createPortfolio(@PathVariable String userId, @RequestBody String name) {
+    @PostMapping("/create")
+    public ResponseEntity<Portfolio> createPortfolio(@RequestHeader("X-Authenticated-UserId") String userId,
+            @RequestBody String name) {
         return ResponseEntity.ok(portfolioService.createPortfolio(
                 PostPortfolioBin.builder()
                         .name(name)
@@ -42,15 +45,17 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioService.getPortfolio(id, true));
     }
 
+    @PublicEndpoint
     @SneakyThrows
     @GetMapping("/get/{id}")
     public ResponseEntity<Portfolio> getPortfolioById(@PathVariable long id) {
         return ResponseEntity.ok(portfolioService.getPortfolio(id, false));
     }
 
+    @PublicEndpoint
     @SneakyThrows
-    @GetMapping("/get/user/{userId}")
-    public ResponseEntity<Portfolio> getPortfolioByUserId(@PathVariable String userId) {
+    @GetMapping("/get/user")
+    public ResponseEntity<Portfolio> getPortfolioByUserId(@RequestHeader("X-Authenticated-UserId") String userId) {
         return portfolioService.getPortfolioByUserId(userId)
                 .stream()
                 .findFirst()
@@ -68,6 +73,7 @@ public class PortfolioController {
                                 .build()));
     }
 
+    @PublicEndpoint
     @GetMapping("/ranking")
     public List<PortfolioInfo> getRanking() {
         return portfolioService.getRanking();

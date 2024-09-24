@@ -54,7 +54,7 @@ public interface TransactionService {
     /**
      * Deletes a transaction.
      *
-     * @param id  the ID of the transaction to delete
+     * @param id the ID of the transaction to delete
      * @return the deleted transaction
      */
     Transaction deleteTransaction(long id);
@@ -70,7 +70,8 @@ public interface TransactionService {
     List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException;
 
     /**
-     * Retrieves transactions associated with a portfolio and after a specified date.
+     * Retrieves transactions associated with a portfolio and after a specified
+     * date.
      *
      * @param bin the input data containing the portfolio ID and date
      * @return a list of transactions matching the criteria
@@ -86,11 +87,21 @@ public interface TransactionService {
     List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioId(long portfolioId);
 
     /**
-     * Retrieves asset quantities associated with a portfolio and in a specified date.
+     * Retrieves asset quantities associated with a portfolio and in a specified
+     * date.
      *
      * @param bin the input data containing the portfolio ID and date
      * @return a list of asset quantities associated with the portfolio
      */
     List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin bin);
 
+    
+    /**
+     * Retrieves a list of transactions associated with a specific portfolio and symbol.
+     *
+     * @param portfolioId the unique identifier of the portfolio
+     * @param symbolId the unique identifier of the symbol
+     * @return a list of transactions that match the given portfolio ID and symbol ID
+     */
+    List<Transaction> getTransactionsByPortfolioIdAndSymbolId(long portfolioId, String symbolId);
 }

@@ -76,6 +76,24 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Override
+	public List<Transaction> getTransactionsByPortfolioIdAndSymbolId(long portfolioId, String symbolId) {
+		List<TransactionEntity> entities = transactionRepository.findAllByPortfolioIdAndSymbolId(portfolioId, symbolId);
+
+		return entities.stream()
+				.map(entity -> Transaction.builder()
+						.id(entity.getId())
+						.type(entity.getType().getPersistedValue())
+						.date(entity.getDate())
+						.amount(entity.getAmount())
+						.price(entity.getPrice())
+						.symbolId(entity.getSymbolId())
+						.currency(entity.getCurrency())
+						.portfolioId(entity.getPortfolioId())
+						.build())
+				.toList();
+	}
+
+	@Override
 	public Transaction getTransactionById(long id) throws CustomException {
 		TransactionEntity entity = transactionRepository.findById(id)
 				.orElseThrow(() -> new CustomException("Transaction not found"));

@@ -107,7 +107,7 @@ public class FirebaseUserServiceImpl implements UserService {
                     : User.builder()
                             .name(userAuthEmail.get().replaceAll("@.*$", ""))
                             .sharePortfolio(true)
-                            .favouriteCurrency("USD")
+                            .favouriteCurrency("EUR")
                             .build();
 
             // set user data in firestore

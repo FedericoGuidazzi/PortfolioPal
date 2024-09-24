@@ -38,11 +38,13 @@ public class ApiGatewayApplication {
 						.uri("lb://transaction"))
 				.route(r -> r.path("/portfolio/**")
 						.filters(f -> f
+								.filter(auTokenFilter)
 								.rewritePath("/portfolio/(?<segment>.*)", "/api/v1/portfolio/${segment}"))
 						.uri("lb://portfolio-history"))
 				.route(r -> r.path("/portfolio-history/**")
 						.filters(f -> f
-								.rewritePath("/portfolio-history/(?<segment>.*)", "/api/v1/portfolio-history/${segment}"))
+								.rewritePath("/portfolio-history/(?<segment>.*)",
+										"/api/v1/portfolio-history/${segment}"))
 						.uri("lb://portfolio-history"))
 				.route(r -> r.path("/asset/**")
 						.filters(f -> f

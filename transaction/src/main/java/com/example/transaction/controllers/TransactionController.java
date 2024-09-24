@@ -175,4 +175,10 @@ public class TransactionController {
 								.date(date)
 								.build()));
 	}
+
+	@GetMapping("/get-by-portfolio/{portfolioId}/asset/{symbolId}")
+	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndSymbolId(@PathVariable long portfolioId,
+			@PathVariable String symbolId) {
+		return ResponseEntity.ok(transactionService.getTransactionsByPortfolioIdAndSymbolId(portfolioId, symbolId));
+	}
 }

@@ -20,14 +20,14 @@ public class RabbitMqFirestoreReciver {
 
     @RabbitListener(queues = "privacyUpdates")
     public void updatePrivacy(String msg) {
-        System.out.println("\n\n[R] Received < " + msg + " >");
+        System.out.println("\n\n[R] Received < " + msg + " >" + " on user service");
 
         try {
             PutUserPrivacyBin privacyBin = objectMapper.readValue(msg, PutUserPrivacyBin.class);
 
             Optional<User> user = Optional.ofNullable(this.userService.getUser(privacyBin.getUserID()));
             if (user.isPresent()) {
-                user.get().setSharePortfolio(privacyBin.isSharePortfolio());
+                user.get().setSharePortfolio(privacyBin.isSherable());
                 this.userService.setUser(privacyBin.getUserID(), user.get());
             } else {
                 throw new UserNotFoundException("User not found with id: " + privacyBin.getUserID());

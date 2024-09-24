@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.portfolio_history.PublicEndpoint;
 import com.example.portfolio_history.models.PortfolioHistory;
 import com.example.portfolio_history.models.bin.GetPortfolioHistoryBin;
 import com.example.portfolio_history.models.enums.DurationIntervalEnum;
@@ -20,6 +21,7 @@ public class PortfolioHistoryController {
     @Autowired
     private PortfolioHistoryService portfolioHistoryService;
 
+    @PublicEndpoint
     @GetMapping("/{portfolioId}")
     public List<PortfolioHistory> getPortfolioHistory(
             @PathVariable long portfolioId,
