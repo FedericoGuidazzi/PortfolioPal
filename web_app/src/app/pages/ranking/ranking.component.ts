@@ -265,30 +265,32 @@ export class RankingComponent {
     let selector = document.getElementById(value);
     selector?.classList.add('active');
 
-    this.historyService.getPortfolioHistoryById(1, value).subscribe({
-      next: (data: HistoryItem[]) => {
-        const labels = data.map((item) => item.date);
-        const countervail = data.map((item) => item.countervail);
-        const investedAmount = data.map((item) => item.investedAmount);
+    this.historyService
+      .getPortfolioHistoryById(this.portfolioId, '')
+      .subscribe({
+        next: (data: HistoryItem[]) => {
+          const labels = data.map((item) => item.date);
+          const countervail = data.map((item) => item.countervail);
+          const investedAmount = data.map((item) => item.investedAmount);
 
-        this.lineChart.data.labels = labels;
-        this.lineChart.data.datasets = [
-          {
-            label: 'Valore Portfolio',
-            data: countervail,
-          },
-          {
-            label: 'Liquidità Inserita',
-            data: investedAmount,
-          },
-        ];
+          this.lineChart.data.labels = labels;
+          this.lineChart.data.datasets = [
+            {
+              label: 'Valore Portfolio',
+              data: countervail,
+            },
+            {
+              label: 'Liquidità Inserita',
+              data: investedAmount,
+            },
+          ];
 
-        this.lineChart.update();
-      },
-      error: (error: any) => {
-        console.error('Error fetching history', error);
-      },
-    });
+          this.lineChart.update();
+        },
+        error: (error: any) => {
+          console.error('Error fetching history', error);
+        },
+      });
   }
 
   onElementSelection(rank: RankElement) {

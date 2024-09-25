@@ -201,6 +201,20 @@ export class DashboardComponent {
         // Request past week history
         this.historyService.getPortfolioHistoryById(data.id, '1S').subscribe({
           next: (data: HistoryItem[]) => {
+            if (data.length == 0) {
+              // create empty chart
+              this.portfolioInfo = {
+                assetName: null,
+                currency: 'EUR',
+                amount: 0,
+                percentage: 0,
+              };
+
+              this.createLineChart([], [], []);
+
+              return;
+            }
+
             let amount = data[data.length - 1].countervail;
             let percentage = data[data.length - 1].percentageValue;
 
