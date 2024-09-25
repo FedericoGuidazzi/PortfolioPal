@@ -229,12 +229,19 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioId(long portfolioId) {
-		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(portfolioId, LocalDate.now());
+		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(portfolioId, LocalDate.now()).stream()
+				.filter(
+						asset -> asset.getAmount() != 0)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin bin) {
-		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(bin.getPortfolioId(), bin.getDate());
+		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(bin.getPortfolioId(), bin.getDate())
+				.stream()
+				.filter(
+						asset -> asset.getAmount() != 0)
+				.collect(Collectors.toList());
 	}
 
 	/**

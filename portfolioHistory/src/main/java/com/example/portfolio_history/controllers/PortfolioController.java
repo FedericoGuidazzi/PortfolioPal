@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.portfolio_history.PublicEndpoint;
 import com.example.portfolio_history.models.Portfolio;
 import com.example.portfolio_history.models.PortfolioInfo;
+import com.example.portfolio_history.models.PostPortfolioDto;
 import com.example.portfolio_history.models.bin.PostPortfolioBin;
 import com.example.portfolio_history.models.bin.PutPortfolioNameBin;
 import com.example.portfolio_history.services.PortfolioService;
@@ -31,11 +32,12 @@ public class PortfolioController {
     @SneakyThrows
     @PostMapping("/create")
     public ResponseEntity<Portfolio> createPortfolio(@RequestHeader("X-Authenticated-UserId") String userId,
-            @RequestBody String name) {
+            @RequestBody PostPortfolioDto postPortfolioDto) {
         return ResponseEntity.ok(portfolioService.createPortfolio(
                 PostPortfolioBin.builder()
-                        .name(name)
+                        .name(postPortfolioDto.getName())
                         .userId(userId)
+                        .isSharable(postPortfolioDto.isShare())
                         .build()));
     }
 

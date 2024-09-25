@@ -13,6 +13,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { PortfolioService } from '../../utils/api/portfolio/portfolio.service';
 import { TransactionService } from '../../utils/api/transaction/transaction.service';
+import { UserService } from '../../utils/api/user/user.service';
+
+interface Portfolio {
+  name: string;
+  share: boolean;
+}
 
 @Component({
   selector: 'app-generate-portfolio-dialog',
@@ -35,7 +41,8 @@ export class GeneratePortfolioDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<GeneratePortfolioDialogComponent>,
     private transactService: TransactionService,
-    private portfolioService: PortfolioService
+    private portfolioService: PortfolioService,
+    private userService: UserService
   ) {}
 
   onNoClick(): void {
@@ -54,16 +61,28 @@ export class GeneratePortfolioDialogComponent {
     formData.append('file', file, file.name);
 
     //call the API to send the file and then refresh the page
-    this.portfolioService.createPortfolio('anonymus').subscribe({
+    this.userService.getUser().subscribe({
       next: (data) => {
-        this.transactService.uploadTransaction(data.id, formData).subscribe({
+        console.log(data.sharePortfolio);
+        const portfolioForm: Portfolio = {
+          name: data.name,
+          share: data.sharePortfolio,
+        };
+
+        this.portfolioService.createPortfolio(portfolioForm).subscribe({
           next: (data) => {
             console.log(data);
-            window.location.reload();
-          },
-          error: (error) => {
-            console.error('There was an error!', error);
-            window.location.reload();
+            this.transactService
+              .uploadTransaction(data.id, formData)
+              .subscribe({
+                next: (data) => {
+                  window.location.reload();
+                },
+                error: (error) => {
+                  console.error('There was an error!', error);
+                  window.location.reload();
+                },
+              });
           },
         });
       },

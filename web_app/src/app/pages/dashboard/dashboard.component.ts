@@ -22,6 +22,8 @@ import { UploadFileDialog } from '../../components/upload-file-dialog/upload-fil
 import { HistoryService } from '../../utils/api/portfolio/history.service';
 import { PortfolioService } from '../../utils/api/portfolio/portfolio.service';
 import { TransactionService } from '../../utils/api/transaction/transaction.service';
+import { Location } from '@angular/common';
+import { UploadTransactionComponent } from '../../components/upload-transaction/upload-transaction.component';
 
 export interface PortfolioAssets {
   symbolId: string;
@@ -52,6 +54,7 @@ interface AssetQty {
     HistoryComponent,
     CardPortfolioValutationComponent,
     PortfolioGenerationComponent,
+    UploadTransactionComponent,
     MatFormFieldModule,
     MatTableModule,
     MatSortModule,
@@ -98,7 +101,14 @@ export class DashboardComponent {
   @Input() colView: boolean = false;
   @Input() assetRowDisabled: boolean = false;
 
-  existPortfolio: boolean = true;
+  existPortfolio: boolean = false;
+  transactionDataEmpty: boolean = true;
+
+  @ViewChild('portfolioContainer') portfolioContainer!: ElementRef;
+  @ViewChild('portfolioGenerationContainer')
+  portfolioGenerationContainer!: ElementRef;
+  @ViewChild('uploadTransactionContainer')
+  uploadTransactionContainer!: ElementRef;
 
   portfolioId: any;
 
@@ -106,48 +116,36 @@ export class DashboardComponent {
     private historyService: HistoryService,
     private portfolioService: PortfolioService,
     private transactionService: TransactionService,
-    private router: Router,
     private dialogUpdate: MatDialog,
     private dialogUpload: MatDialog,
-    private route: ActivatedRoute
+    private location: Location
   ) {}
 
   ngAfterViewInit(): void {
     this.portfolioService.getPortfolioByUserId().subscribe({
       next: (data) => {
+        this.existPortfolio = true;
+        this.portfolioGenerationContainer.nativeElement.classList.add('d-none');
+
         this.assetDataSource.paginator = this.assetPaginator;
         this.transactionDataSource.paginator = this.transactionPaginator;
 
-        this.router.navigate(['/dashboard/' + data.id]);
+        this.location.go('/dashboard/' + data.id);
         this.portfolioId = data.id;
-
-        // Request asset allocation
-        this.transactionService.getAssetAllocation(data.id).subscribe({
-          next: (data: AssetQty[]) => {
-            const total = data.reduce((acc, item) => acc + item.amount, 0);
-            this.assets = data.map((item) => {
-              let perc = (item.amount / total) * 100;
-              perc = parseFloat(perc.toFixed(2));
-              return {
-                symbolId: item.symbolId,
-                percPortfolio: perc,
-                percentage: 0,
-              };
-            });
-            this.assetDataSource.data = this.assets;
-
-            this.createDoughnutChart();
-          },
-          error: (error) => {
-            console.error('Error fetching asset allocation', error);
-          },
-        });
 
         // Request all transactions
         this.transactionService
           .getAllTransactionByPortfolioId(data.id)
           .subscribe({
             next: (data) => {
+              if (data.length == 0) {
+                this.uploadTransactionContainer.nativeElement.classList.remove(
+                  'd-none'
+                );
+                return;
+              }
+              this.portfolioContainer.nativeElement.classList.remove('d-none');
+
               this.transactions = this.hideHistory
                 ? []
                 : data.map(
@@ -178,14 +176,42 @@ export class DashboardComponent {
             },
           });
 
+        // Request asset allocation
+        this.transactionService.getAssetAllocation(data.id).subscribe({
+          next: (data: AssetQty[]) => {
+            const total = data.reduce((acc, item) => acc + item.amount, 0);
+            this.assets = data.map((item) => {
+              let perc = (item.amount / total) * 100;
+              perc = parseFloat(perc.toFixed(2));
+              return {
+                symbolId: item.symbolId,
+                percPortfolio: perc,
+                percentage: 0,
+              };
+            });
+            this.assetDataSource.data = this.assets;
+
+            this.createDoughnutChart();
+          },
+          error: (error) => {
+            console.error('Error fetching asset allocation', error);
+          },
+        });
+
         // Request past week history
         this.historyService.getPortfolioHistoryById(data.id, '1S').subscribe({
           next: (data: HistoryItem[]) => {
+            let amount = data[data.length - 1].countervail;
+            let percentage = data[data.length - 1].percentageValue;
+
             this.portfolioInfo = {
               assetName: null,
               currency: 'EUR',
-              amount: data[data.length - 1].countervail,
-              percentage: data[data.length - 1].percentageValue,
+              amount:
+                amount <= 0
+                  ? parseFloat(amount.toFixed(5))
+                  : parseFloat(amount.toFixed(2)),
+              percentage: parseFloat(percentage.toFixed(2)),
             };
 
             this.createLineChart(
@@ -200,8 +226,9 @@ export class DashboardComponent {
         });
       },
       error: (error) => {
-        this.existPortfolio = false;
-        // console.error('Error fetching portfolio', error);
+        this.portfolioGenerationContainer.nativeElement.classList.remove(
+          'd-none'
+        );
       },
     });
   }
@@ -314,30 +341,32 @@ export class DashboardComponent {
     let selector = document.getElementById(value);
     selector?.classList.add('active');
 
-    this.historyService.getPortfolioHistoryById(1, value).subscribe({
-      next: (data: HistoryItem[]) => {
-        const labels = data.map((item) => item.date);
-        const countervail = data.map((item) => item.countervail);
-        const investedAmount = data.map((item) => item.investedAmount);
+    this.historyService
+      .getPortfolioHistoryById(this.portfolioId, '')
+      .subscribe({
+        next: (data: HistoryItem[]) => {
+          const labels = data.map((item) => item.date);
+          const countervail = data.map((item) => item.countervail);
+          const investedAmount = data.map((item) => item.investedAmount);
 
-        this.lineChart.data.labels = labels;
-        this.lineChart.data.datasets = [
-          {
-            label: 'Valore Portfolio',
-            data: countervail,
-          },
-          {
-            label: 'Liquidità Inserita',
-            data: investedAmount,
-          },
-        ];
+          this.lineChart.data.labels = labels;
+          this.lineChart.data.datasets = [
+            {
+              label: 'Valore Portfolio',
+              data: countervail,
+            },
+            {
+              label: 'Liquidità Inserita',
+              data: investedAmount,
+            },
+          ];
 
-        this.lineChart.update();
-      },
-      error: (error: any) => {
-        console.error('Error fetching history', error);
-      },
-    });
+          this.lineChart.update();
+        },
+        error: (error: any) => {
+          console.error('Error fetching history', error);
+        },
+      });
   }
 
   // TRANSACTION METHODS
@@ -359,7 +388,6 @@ export class DashboardComponent {
     this.transactionService
       .deleteTransaction(id, this.portfolioId)
       .subscribe((data) => {
-        console.log('Transaction deleted');
         this.refreshPage();
       });
   }
@@ -389,7 +417,6 @@ export class DashboardComponent {
           this.transactionService
             .deleteTransaction(result[0], portfolioId)
             .subscribe((data) => {
-              console.log('Transaction deleted');
               this.refreshPage();
             });
         }
@@ -402,7 +429,6 @@ export class DashboardComponent {
         const quantity = result[4];
         const price = result[5];
         const currency = result[6];
-        console.log('result', result);
 
         if (
           date !== foundTransaction?.date ||
@@ -474,7 +500,6 @@ export class DashboardComponent {
         const quantity = result[4];
         const price = result[5];
         const currency = result[6];
-        console.log('result', result);
 
         if (
           date !== foundTransaction?.date ||

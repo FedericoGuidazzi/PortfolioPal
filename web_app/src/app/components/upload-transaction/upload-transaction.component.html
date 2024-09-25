@@ -1,0 +1,22 @@
+<div
+  class="d-flex flex-column-reverse gap-3 flex-md-row align-items-center justify-content-center"
+>
+  <div class="col-10 col-sm-7 col-md-6 col-xl-5">
+    <img class="w-100" src="/assets/img/No data.png" alt="" />
+  </div>
+  <div class="col-12 col-md-5 text-center text-md-start">
+    <p class="fw-5 mb-4">Sembra che tu non abbia ancora caricato nulla</p>
+    <div>
+      <p>
+        Pronto per cominciare? Aggiungi ora il tuo storico delle transazioni
+      </p>
+      <button
+        class="btn d-flex gap-2 align-items-center mx-auto mx-md-0"
+        (click)="uploadData()"
+      >
+        <span class="fw-bold">Carica file</span>
+        <span><img src="/assets/icons/mdi_import.svg" alt="" /></span>
+      </button>
+    </div>
+  </div>
+</div>

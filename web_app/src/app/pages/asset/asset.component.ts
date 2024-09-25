@@ -88,12 +88,12 @@ export class AssetComponent {
     private transactionService: TransactionService
   ) {}
 
-  prepareData() {
+  async prepareData() {
     // get portfolioId from route
-    this.route.paramMap.subscribe(
+    await this.route.paramMap.subscribe(
       (params) => (this.portfolioId = params.get('portfolioId'))
     );
-    this.route.paramMap.subscribe(
+    await this.route.paramMap.subscribe(
       (params) => (this.assetName = params.get('assetName'))
     );
 
@@ -132,7 +132,7 @@ export class AssetComponent {
               name: data['symbol'],
               currentValue: data['prices'][data['prices'].length - 1],
               valueInPortfolio: valueInPortfolio,
-              sharesNumber: allocation['shares'],
+              sharesNumber: 0,
               description: data['description'],
               percetageInPortfolio: percetageInPortfolio,
               percentageWinLose: allocation['percentage'],

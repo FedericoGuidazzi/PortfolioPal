@@ -68,7 +68,6 @@ export class UploadFileDialog {
         },
         error: (error) => {
           window.location.reload();
-          console.log(error);
         },
       });
   }

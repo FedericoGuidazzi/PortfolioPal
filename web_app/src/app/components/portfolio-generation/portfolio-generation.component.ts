@@ -10,7 +10,7 @@ import { GeneratePortfolioDialogComponent } from '../generate-portfolio-dialog/g
   styleUrl: './portfolio-generation.component.css',
 })
 export class PortfolioGenerationComponent {
-  constructor(public dialogUpdate: MatDialog, public dialogUpload: MatDialog) {}
+  constructor(private dialogUpdate: MatDialog) {}
 
   uploadData() {
     this.dialogUpdate.open(GeneratePortfolioDialogComponent);

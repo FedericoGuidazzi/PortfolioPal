@@ -11,8 +11,8 @@ export class PortfolioService {
 
   constructor(private http: HttpClient) {}
 
-  createPortfolio(name: String): Observable<any> {
-    return this.http.post(this.portfolioUrl + '/create', name);
+  createPortfolio(data: any): Observable<any> {
+    return this.http.post(this.portfolioUrl + '/create', data);
   }
 
   getPortfolioById(id: number): Observable<any> {
