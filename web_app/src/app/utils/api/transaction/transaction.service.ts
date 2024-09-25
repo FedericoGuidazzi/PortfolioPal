@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -12,18 +12,19 @@ export class TransactionService {
   constructor(private http: HttpClient) {}
 
   modifyTransaction(id: Number, data: any): Observable<any> {
-    return this.http.post(this.transactionUrl + '/update/' + id, data);
+    return this.http.put(this.transactionUrl + '/update/' + id, data);
   }
 
-  deleteTransaction(id: Number, data: any): Observable<any> {
-    return this.http.delete(this.transactionUrl + '/delete/' + id, data);
+  deleteTransaction(id: Number, portfolioId: any): Observable<any> {
+    const params = new HttpParams().set('portfolioId', portfolioId.toString());
+    return this.http.delete(this.transactionUrl + '/delete/' + id, { params });
   }
 
   getAllTransactionByPortfolioId(id: Number): Observable<any> {
     return this.http.get(this.transactionUrl + '/get-by-portfolio/' + id);
   }
 
-  uploadTransaction(portfolioId: Number, data: any): Observable<any> {
+  uploadTransaction(portfolioId: number, data: any): Observable<any> {
     return this.http.post(this.transactionUrl + '/upload/' + portfolioId, data);
   }
 

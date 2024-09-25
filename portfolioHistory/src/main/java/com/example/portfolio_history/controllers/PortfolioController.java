@@ -52,7 +52,6 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioService.getPortfolio(id, false));
     }
 
-    @PublicEndpoint
     @SneakyThrows
     @GetMapping("/get/user")
     public ResponseEntity<Portfolio> getPortfolioByUserId(@RequestHeader("X-Authenticated-UserId") String userId) {

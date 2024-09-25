@@ -80,7 +80,7 @@ export class AssetComponent {
     this.transactions
   );
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild('transactionPaginator') paginator!: MatPaginator;
 
   constructor(
     private route: ActivatedRoute,
@@ -118,23 +118,29 @@ export class AssetComponent {
                 ? parseFloat(valueInPortfolio.toFixed(5))
                 : parseFloat(valueInPortfolio.toFixed(2));
 
+            let percetageInPortfolio = (asset['amount'] / total) * 100;
+            percetageInPortfolio = parseFloat(percetageInPortfolio.toFixed(2));
+
+            let averageCostPerShare =
+              data['prices'].reduce(
+                (tot: number, item: number) => tot + item,
+                0
+              ) / data['prices'].length;
+            averageCostPerShare = parseFloat(averageCostPerShare.toFixed(2));
+
             this.assetData = {
               name: data['symbol'],
               currentValue: data['prices'][data['prices'].length - 1],
               valueInPortfolio: valueInPortfolio,
               sharesNumber: allocation['shares'],
               description: data['description'],
-              percetageInPortfolio: (asset['amount'] / total) * 100,
+              percetageInPortfolio: percetageInPortfolio,
               percentageWinLose: allocation['percentage'],
               currency: data['currency'],
               totalCost: 0,
               currentValuation: 0,
               balance: 0,
-              averageCostPerShare:
-                data['prices'].reduce(
-                  (tot: number, item: number) => tot + item,
-                  0
-                ) / data['prices'].length,
+              averageCostPerShare: averageCostPerShare,
             };
 
             this.data = {
@@ -207,7 +213,7 @@ export class AssetComponent {
             assetData.percetageInPortfolio,
             100 - assetData.percetageInPortfolio,
           ],
-          backgroundColor: ['rgb(255, 99, 132)'],
+          backgroundColor: ['rgb(54, 162, 235)', 'rgb(201, 203, 207)'],
           hoverOffset: 4,
         },
       ],

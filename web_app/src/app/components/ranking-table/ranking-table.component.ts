@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { HistoryService } from '../../utils/api/portfolio/history.service';
 import { PortfolioService } from '../../utils/api/portfolio/portfolio.service';
-import { UserService } from '../../utils/api/user/user.service';
 
 export interface RankElement {
   name: string;
@@ -61,14 +59,16 @@ export class RankingTableComponent {
 
       this.rankingDataSource.data = elements;
 
-      this.portfolioService.getPortfolioByUserId().subscribe({
-        next: (portfolio) => {
-          this.currentUser = elements.find((el) => el.id === portfolio.id);
-        },
-        error: (err) => {
-          // console.error(err);
-        },
-      });
+      if (!this.hoverDisabled) {
+        this.portfolioService.getPortfolioByUserId().subscribe({
+          next: (portfolio) => {
+            this.currentUser = elements.find((el) => el.id === portfolio.id);
+          },
+          error: (err) => {
+            // console.error(err);
+          },
+        });
+      }
     });
   }
 }

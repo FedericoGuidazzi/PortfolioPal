@@ -51,10 +51,10 @@ export class GeneratePortfolioDialogComponent {
 
     let file: File = fileList[0];
     let formData: FormData = new FormData();
-    formData.append('uploadFile', file, file.name);
+    formData.append('file', file, file.name);
 
     //call the API to send the file and then refresh the page
-    this.portfolioService.createPortfolio('test').subscribe({
+    this.portfolioService.createPortfolio('anonymus').subscribe({
       next: (data) => {
         this.transactService.uploadTransaction(data.id, formData).subscribe({
           next: (data) => {
@@ -63,6 +63,7 @@ export class GeneratePortfolioDialogComponent {
           },
           error: (error) => {
             console.error('There was an error!', error);
+            window.location.reload();
           },
         });
       },

@@ -1,6 +1,7 @@
 package com.example.transaction.services;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +163,21 @@ public class TransactionServiceImpl implements TransactionService {
 	@Override
 	public List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException {
 
-		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream());
+		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream())
+				.stream()
+				.map(e -> {
+					return Transaction.builder()
+							.date(LocalDate.parse(e.getDate()))
+							.type(Optional.ofNullable(TransactionType.fromValue(e.getType()).getPersistedValue())
+									.orElseThrow(() -> new CustomException("Invalid transaction type")))
+							.amount(e.getAmount())
+							.symbolId(e.getSymbolId())
+							.price(BigDecimal.valueOf(e.getPrice()))
+							.currency(e.getCurrency())
+							.portfolioId(bin.getPortfolioId())
+							.build();
+				}).toList();
+		;
 
 		this.checkAssetQty(transactions.stream()
 				.map(entity -> TransactionEntity.builder()

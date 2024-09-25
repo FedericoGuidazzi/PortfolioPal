@@ -1,15 +1,11 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Location } from '@angular/common';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import {
-  ActivatedRoute,
-  NavigationEnd,
-  Router,
-  RouterLink,
-} from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Chart } from 'chart.js';
 import {
   CardPortfolioValutationComponent,
@@ -19,12 +15,9 @@ import {
   RankElement,
   RankingTableComponent,
 } from '../../components/ranking-table/ranking-table.component';
-import { UserService } from '../../utils/api/user/user.service';
-import { HistoryItem, PortfolioAssets } from '../dashboard/dashboard.component';
-import { PortfolioService } from '../../utils/api/portfolio/portfolio.service';
-import { TransactionService } from '../../utils/api/transaction/transaction.service';
 import { HistoryService } from '../../utils/api/portfolio/history.service';
-import { Location } from '@angular/common';
+import { TransactionService } from '../../utils/api/transaction/transaction.service';
+import { HistoryItem, PortfolioAssets } from '../dashboard/dashboard.component';
 
 interface AssetQty {
   symbolId: string;
@@ -64,7 +57,7 @@ export class RankingComponent {
     'percentage',
   ];
   assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
-  @ViewChild(MatPaginator) assetPaginator!: MatPaginator;
+  @ViewChild('assetPaginator') assetPaginator!: MatPaginator;
 
   @ViewChild('portfolioContainer') portfolioContainer!: ElementRef;
   @ViewChild('noPortfolioContainer') noPortfolioContainer!: ElementRef;
@@ -75,11 +68,9 @@ export class RankingComponent {
   portfolioId!: any;
 
   constructor(
-    private router: Router,
     private route: ActivatedRoute,
     private transactionService: TransactionService,
     private historyService: HistoryService,
-    private portfolioService: PortfolioService,
     private location: Location
   ) {}
 
@@ -226,9 +217,11 @@ export class RankingComponent {
       next: (data: AssetQty[]) => {
         const total = data.reduce((acc, item) => acc + item.amount, 0);
         this.assets = data.map((item) => {
+          let perc = (item.amount / total) * 100;
+          perc = parseFloat(perc.toFixed(2));
           return {
             symbolId: item.symbolId,
-            percPortfolio: (item.amount / total) * 100,
+            percPortfolio: perc,
             percentage: 0,
           };
         });
@@ -247,8 +240,8 @@ export class RankingComponent {
         this.portfolioInfo = {
           assetName: null,
           currency: 'EUR',
-          amount: data[0].countervail,
-          percentage: data[0].percentageValue,
+          amount: data[data.length - 1].countervail,
+          percentage: data[data.length - 1].percentageValue,
         };
 
         this.createLineChart(

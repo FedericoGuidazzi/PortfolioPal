@@ -1,5 +1,7 @@
 package com.example.portfolio_history.services.impl;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -152,12 +154,14 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public List<PortfolioInfo> getRanking() {
         // Get all portfolios order by percentageValue
-        List<PortfolioHistoryEntity> allPortfolios = historyRepository.findAllOrderByPercentageValueDesc();
+        List<PortfolioHistoryEntity> allPortfolios = historyRepository
+                .findAllByDateOrderByPercentageValueDesc(LocalDate.now().minusDays(1));
 
         // Remove all the portfolios that are not sharable and select the top 10
         return allPortfolios.stream()
                 .filter(this::isPortfolioSharable)
                 .limit(10)
+
                 .map(e -> PortfolioInfo.builder()
                         .idPortfolio(e.getPortfolioId())
                         .portfolioName(portfolioRepository.findById(e.getPortfolioId())
@@ -167,9 +171,8 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     private boolean isPortfolioSharable(PortfolioHistoryEntity item) {
-        return portfolioRepository.findById(item.getId())
-                .map(PortfolioEntity::isSherable)
-                .orElse(false);
+        return portfolioRepository.findById(item.getPortfolioId())
+                .map(PortfolioEntity::isSherable).orElse(false);
     }
 
     private Portfolio fromEntityToObject(PortfolioEntity entity) {

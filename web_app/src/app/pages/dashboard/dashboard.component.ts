@@ -73,7 +73,7 @@ export class DashboardComponent {
     'percentage',
   ];
   assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
-  @ViewChild(MatPaginator) assetPaginator!: MatPaginator;
+  @ViewChild('assetPaginator') assetPaginator!: MatPaginator;
 
   transactions: TransactionData[] = [];
   transactionDisplayedColumns: string[] = [
@@ -88,7 +88,7 @@ export class DashboardComponent {
   transactionDataSource = new MatTableDataSource<TransactionData>(
     this.transactions
   );
-  @ViewChild(MatPaginator) transactionPaginator!: MatPaginator;
+  @ViewChild('transactionPaginator') transactionPaginator!: MatPaginator;
 
   duration: string[] = ['1A', '5A', 'Max'];
   lineChart: any;
@@ -100,7 +100,7 @@ export class DashboardComponent {
 
   existPortfolio: boolean = true;
 
-  portfolioId?: number;
+  portfolioId: any;
 
   constructor(
     private historyService: HistoryService,
@@ -126,9 +126,11 @@ export class DashboardComponent {
           next: (data: AssetQty[]) => {
             const total = data.reduce((acc, item) => acc + item.amount, 0);
             this.assets = data.map((item) => {
+              let perc = (item.amount / total) * 100;
+              perc = parseFloat(perc.toFixed(2));
               return {
                 symbolId: item.symbolId,
-                percPortfolio: (item.amount / total) * 100,
+                percPortfolio: perc,
                 percentage: 0,
               };
             });
@@ -182,8 +184,8 @@ export class DashboardComponent {
             this.portfolioInfo = {
               assetName: null,
               currency: 'EUR',
-              amount: data[0].countervail,
-              percentage: data[0].percentageValue,
+              amount: data[data.length - 1].countervail,
+              percentage: data[data.length - 1].percentageValue,
             };
 
             this.createLineChart(
@@ -344,29 +346,27 @@ export class DashboardComponent {
   }
 
   uploadData() {
-    this.openDialogUpload();
-  }
-
-  updateDataDialog(id: number) {
-    this.openDialogUpdate(id);
-  }
-
-  deleteDataDialog(id: number) {
-    //call API to delete record
-    this.deleteData(id);
+    this.openDialogUpload(this.portfolioId);
   }
 
   updateData(id: number) {
     //Method to update data
-    this.openDialogUpdate(id);
+    this.openDialogUpdate(id, this.portfolioId);
   }
 
   deleteData(id: number) {
     //call API to delete record
-    this.refreshPage();
+    this.transactionService
+      .deleteTransaction(id, this.portfolioId)
+      .subscribe((data) => {
+        console.log('Transaction deleted');
+        this.refreshPage();
+      });
   }
 
   updateDeleteDataMobile(id: number) {
+    const portfolioId = this.portfolioId;
+
     const foundTransaction = this.transactions.find(
       (transaction) => transaction.id === id
     );
@@ -385,18 +385,69 @@ export class DashboardComponent {
 
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
+        if (result.length == 1) {
+          this.transactionService
+            .deleteTransaction(result[0], portfolioId)
+            .subscribe((data) => {
+              console.log('Transaction deleted');
+              this.refreshPage();
+            });
+        }
+
         //if something has changed update the row calling the API and refresh the page
-        this.updateData(id);
-        this.refreshPage();
+        const id = result[0];
+        const date = result[1];
+        const type = result[2];
+        const symbol = result[3];
+        const quantity = result[4];
+        const price = result[5];
+        const currency = result[6];
+        console.log('result', result);
+
+        if (
+          date !== foundTransaction?.date ||
+          type !== foundTransaction?.type ||
+          symbol !== foundTransaction?.symbol ||
+          quantity !== foundTransaction?.quantity ||
+          price !== foundTransaction?.price ||
+          currency !== foundTransaction?.currency
+        ) {
+          this.transactionService
+            .modifyTransaction(id, {
+              date: date == '' || date == null ? foundTransaction?.date : date,
+              type: type == '' || type == null ? foundTransaction?.type : type,
+              symbolId:
+                symbol == '' || symbol == null
+                  ? foundTransaction?.symbol
+                  : symbol,
+              amount:
+                quantity == '' || quantity == null
+                  ? foundTransaction?.quantity
+                  : quantity,
+              price:
+                price == '' || price == null ? foundTransaction?.price : price,
+              currency:
+                currency == '' || currency == null
+                  ? foundTransaction?.currency
+                  : currency,
+              portfolioId: portfolioId,
+            })
+            .subscribe((data) => {
+              console.log('Transaction updated');
+              this.refreshPage();
+            });
+        }
       }
     });
   }
 
-  openDialogUpload() {
-    this.dialogUpdate.open(UploadFileDialog);
+  openDialogUpload(portfolioId: any): void {
+    this.dialogUpdate.open(UploadFileDialog, {
+      data: { portfolioId },
+    });
   }
 
-  openDialogUpdate(id: number): void {
+  openDialogUpdate(id: number, portfolioId: number): void {
     const foundTransaction = this.transactions.find(
       (transaction) => transaction.id === id
     );
@@ -416,8 +467,48 @@ export class DashboardComponent {
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         //if something has changed update the row calling the API and refresh the page
-        this.updateData(id);
-        this.refreshPage();
+        const id = result[0];
+        const date = result[1];
+        const type = result[2];
+        const symbol = result[3];
+        const quantity = result[4];
+        const price = result[5];
+        const currency = result[6];
+        console.log('result', result);
+
+        if (
+          date !== foundTransaction?.date ||
+          type !== foundTransaction?.type ||
+          symbol !== foundTransaction?.symbol ||
+          quantity !== foundTransaction?.quantity ||
+          price !== foundTransaction?.price ||
+          currency !== foundTransaction?.currency
+        ) {
+          this.transactionService
+            .modifyTransaction(id, {
+              date: date == '' || date == null ? foundTransaction?.date : date,
+              type: type == '' || type == null ? foundTransaction?.type : type,
+              symbolId:
+                symbol == '' || symbol == null
+                  ? foundTransaction?.symbol
+                  : symbol,
+              amount:
+                quantity == '' || quantity == null
+                  ? foundTransaction?.quantity
+                  : quantity,
+              price:
+                price == '' || price == null ? foundTransaction?.price : price,
+              currency:
+                currency == '' || currency == null
+                  ? foundTransaction?.currency
+                  : currency,
+              portfolioId: portfolioId,
+            })
+            .subscribe((data) => {
+              console.log('Transaction updated');
+              this.refreshPage();
+            });
+        }
       }
     });
   }

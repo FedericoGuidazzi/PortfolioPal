@@ -12,6 +12,7 @@ import com.example.transaction.models.entities.TransactionEntity;
 
 public interface TransactionRepository extends CrudRepository<TransactionEntity, Long> {
 
+	@Query("select t from TransactionEntity t where t.portfolioId = :portfolioId ORDER BY t.date DESC")
 	List<TransactionEntity> findAllByPortfolioId(long portfolioId);
 
 	@Query("select t from TransactionEntity t where t.date >= :date and t.date < CURRENT_DATE and t.portfolioId = :portfolioId")

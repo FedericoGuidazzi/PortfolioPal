@@ -1,5 +1,5 @@
 import { HttpClientModule } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -8,10 +8,12 @@ import {
   MatDialogActions,
   MatDialogClose,
   MatDialogRef,
+  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TransactionService } from '../../utils/api/transaction/transaction.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-upload-file-dialog',
@@ -32,9 +34,16 @@ import { TransactionService } from '../../utils/api/transaction/transaction.serv
 })
 export class UploadFileDialog {
   constructor(
-    public dialogRef: MatDialogRef<UploadFileDialog>,
-    private transactService: TransactionService
-  ) {}
+    private dialogRef: MatDialogRef<UploadFileDialog>,
+    private transactService: TransactionService,
+    @Inject(MAT_DIALOG_DATA) private data: { portfolioId: any }
+  ) {
+    this.portfolioId = data.portfolioId;
+  }
+
+  portfolioId: any;
+
+  ngOnInit() {}
 
   onNoClick(): void {
     this.dialogRef.close();
@@ -49,20 +58,18 @@ export class UploadFileDialog {
 
     let file: File = fileList[0];
     let formData: FormData = new FormData();
-    formData.append('uploadFile', file, file.name);
-
+    formData.append('file', file, file.name);
     //call the API to send the file and then refresh the page
     this.transactService
-      .uploadTransaction(1, formData.get('uploadFile'))
+      .uploadTransaction(this.portfolioId, formData)
       .subscribe({
         next: (data) => {
-          console.log(data);
+          window.location.reload();
         },
         error: (error) => {
+          window.location.reload();
           console.log(error);
         },
       });
-
-    window.location.reload();
   }
 }
