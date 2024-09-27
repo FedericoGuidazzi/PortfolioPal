@@ -1,0 +1,72 @@
+.rounded-20 {
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.rounded-27 {
+  border-radius: 27%;
+}
+
+.ratio-2x1 {
+  aspect-ratio: 2/1 !important;
+}
+
+.mh-50 {
+  max-height: 50vh;
+}
+
+.p-cursor {
+  cursor: pointer;
+}
+
+.container-duration > div:hover {
+  cursor: pointer;
+}
+
+.selectors {
+  background-color: lightgray;
+  color: black;
+}
+
+.selectors > .active {
+  background-color: black;
+  color: white;
+  pointer-events: none;
+}
+
+/* HISTORY CSS */
+.history-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.portfolio-chart {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.transaction-history {
+  flex: 1;
+}
+
+.clickable {
+  cursor: pointer;
+}
+.rounded-20 {
+  border-radius: 20px;
+  border: 1px solid #d9d9d9;
+  overflow: hidden;
+}
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .nonMobile {
+    display: none;
+  } /* hide it on small screens */
+}
+
+@media screen and (min-width: 768px) {
+  .mobile {
+    display: none;
+  } /* hide it on small screens */
+}

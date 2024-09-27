@@ -1,0 +1,187 @@
+version: "3.7"
+services:
+  service-discovery:
+    build:
+      context: service-discovery/
+      dockerfile: Dockerfile
+    container_name: service-discovery
+    ports:
+      - 8761:8761
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - PORT=8761
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+    networks:
+      - pal-network
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - pal-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  user-service:
+    build:
+      context: user/
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - 8081:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+    networks:
+      - pal-network
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+
+  asset-service:
+    build:
+      context: asset/
+      dockerfile: Dockerfile
+    container_name: asset-service
+    ports:
+      - 8082:8080
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+    networks:
+      - pal-network
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+
+  transaction-service:
+    build:
+      context: transaction/
+      dockerfile: Dockerfile
+    container_name: transaction-service
+    ports:
+      - 8083:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      transactiondb:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://transactiondb:3306/transaction?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+    networks:
+      - transaction-network
+      - pal-network
+
+  transactiondb:
+    image: mysql:8.0.33
+    container_name: transactiondb
+    environment:
+      - MYSQL_DATABASE=transaction
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - transaction-data:/var/lib/mysql
+    networks:
+      - transaction-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 10
+      interval: 3s
+      timeout: 30s
+
+  history-service:
+    build:
+      context: portfolioHistory/
+      dockerfile: Dockerfile
+    container_name: history-service
+    ports:
+      - 8084:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://historydb:3306/history?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+    networks:
+      - history-network
+      - pal-network
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      historydb:
+        condition: service_healthy
+      transaction-service:
+        condition: service_started
+      asset-service:
+        condition: service_started
+
+  historydb:
+    image: mysql:8.0.33
+    container_name: historydb
+    environment:
+      - MYSQL_DATABASE=history
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - history-data:/var/lib/mysql
+    networks:
+      - history-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 10
+      interval: 3s
+      timeout: 30s
+
+  api-gateway:
+    build:
+      context: api-gateway/
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - 8080:8080
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+    depends_on:
+      service-discovery:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      asset-service:
+        condition: service_started
+      history-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
+    networks:
+      - pal-network
+    labels:
+      kompose.service.type: LoadBalancer
+
+volumes:
+  history-data:
+  transaction-data:
+
+networks:
+  transaction-network:
+    name: transaction-network
+  history-network:
+    name: history-network
+  pal-network:
+    name: pal-network
+    driver: bridge

@@ -1,0 +1,60 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      transactiondb:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://transactiondb:3306/transaction?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    networks:
+      - springboot-mysql-network
+      - springboot-rabbitmq-network
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - springboot-rabbitmq-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  transactiondb:
+    image: mysql:8.0.33
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=transaction
+      - MYSQL_ROOT_PASSWORD=rootpassword
+    volumes:
+      - transaction-data:/var/lib/transaction/mysql
+    networks:
+      - springboot-mysql-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 10
+      interval: 3s
+      timeout: 30s
+
+volumes:
+  transaction-data:
+networks:
+  springboot-mysql-network:
+    name: springboot-mysql-network
+  springboot-rabbitmq-network:
+    name: springboot-rabbitmq-network
+    driver: bridge

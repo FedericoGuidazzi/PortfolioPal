@@ -1,0 +1,15 @@
+<mat-dialog-content class="d-grid">
+  <h2>Inserire il file con le transazioni</h2>
+  <form class="d-grid">
+    <mat-label>Inserisci il file</mat-label>
+    <input
+      type="file"
+      (change)="fileChange($event)"
+      placeholder="Upload file"
+      accept=".txt,.csv"
+    />
+  </form>
+  <mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Annulla</button>
+  </mat-dialog-actions>
+</mat-dialog-content>
