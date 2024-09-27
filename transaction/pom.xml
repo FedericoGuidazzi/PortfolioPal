@@ -60,10 +60,11 @@
 
 
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-csv</artifactId>
-			<version>1.8</version>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.5.2</version> <!-- Usa l'ultima versione disponibile -->
 		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>

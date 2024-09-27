@@ -14,4 +14,6 @@ public interface PortfolioHistoryService {
 
     List<PortfolioHistory> getPortfolioHistory(GetPortfolioHistoryBin getPortfolioHistoryBin);
 
+    void hardRefreshPortfolioHistory(long portfolioId);
+
 }

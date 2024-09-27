@@ -30,5 +30,5 @@ public class PortfolioEntity {
     private String userId;
 
     @Column(nullable = false)
-    private boolean isSherable;
+    private boolean isShareable;
 }

@@ -12,6 +12,7 @@ import com.example.transaction.models.entities.TransactionEntity;
 
 public interface TransactionRepository extends CrudRepository<TransactionEntity, Long> {
 
+	@Query("select t from TransactionEntity t where t.portfolioId = :portfolioId ORDER BY t.date DESC")
 	List<TransactionEntity> findAllByPortfolioId(long portfolioId);
 
 	@Query("select t from TransactionEntity t where t.date >= :date and t.date < CURRENT_DATE and t.portfolioId = :portfolioId")
@@ -21,5 +22,9 @@ public interface TransactionRepository extends CrudRepository<TransactionEntity,
 	@Query("SELECT new com.example.transaction.models.bin.GetAssetQtyOutputBin(t.symbolId, SUM(CASE WHEN t.type = com.example.transaction.models.enums.TransactionType.BUY THEN t.amount ELSE - t.amount END)) FROM TransactionEntity t WHERE t.portfolioId = :portfolioId and t.date < :date GROUP BY t.symbolId")
 	List<GetAssetQtyOutputBin> findAssetsQtyByPortfolioIdAndDate(@Param("portfolioId") long portfolioId,
 			@Param("date") LocalDate date);
+
+	@Query("SELECT t FROM TransactionEntity t WHERE t.portfolioId = :portfolioId AND t.symbolId = :symbolId")
+	List<TransactionEntity> findAllByPortfolioIdAndSymbolId(@Param("portfolioId") long portfolioId,
+			@Param("symbolId") String symbolId);
 
 }

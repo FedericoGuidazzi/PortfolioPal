@@ -1,6 +1,7 @@
 package com.example.transaction.services;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,24 @@ public class TransactionServiceImpl implements TransactionService {
 	@Override
 	public List<Transaction> getAllTransactionsByPortfolioId(long portfolioId) {
 		List<TransactionEntity> entities = transactionRepository.findAllByPortfolioId(portfolioId);
+
+		return entities.stream()
+				.map(entity -> Transaction.builder()
+						.id(entity.getId())
+						.type(entity.getType().getPersistedValue())
+						.date(entity.getDate())
+						.amount(entity.getAmount())
+						.price(entity.getPrice())
+						.symbolId(entity.getSymbolId())
+						.currency(entity.getCurrency())
+						.portfolioId(entity.getPortfolioId())
+						.build())
+				.toList();
+	}
+
+	@Override
+	public List<Transaction> getTransactionsByPortfolioIdAndSymbolId(long portfolioId, String symbolId) {
+		List<TransactionEntity> entities = transactionRepository.findAllByPortfolioIdAndSymbolId(portfolioId, symbolId);
 
 		return entities.stream()
 				.map(entity -> Transaction.builder()
@@ -144,7 +163,21 @@ public class TransactionServiceImpl implements TransactionService {
 	@Override
 	public List<Transaction> saveTransactionsFromCsv(UploadBin bin) throws CustomException, IOException {
 
-		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream());
+		List<Transaction> transactions = CsvPortfolioReader.readCsvFile(bin.getInputStream())
+				.stream()
+				.map(e -> {
+					return Transaction.builder()
+							.date(LocalDate.parse(e.getDate()))
+							.type(Optional.ofNullable(TransactionType.fromValue(e.getType()).getPersistedValue())
+									.orElseThrow(() -> new CustomException("Invalid transaction type")))
+							.amount(e.getAmount())
+							.symbolId(e.getSymbolId())
+							.price(BigDecimal.valueOf(e.getPrice()))
+							.currency(e.getCurrency())
+							.portfolioId(bin.getPortfolioId())
+							.build();
+				}).toList();
+		;
 
 		this.checkAssetQty(transactions.stream()
 				.map(entity -> TransactionEntity.builder()
@@ -196,12 +229,19 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioId(long portfolioId) {
-		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(portfolioId, LocalDate.now());
+		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(portfolioId, LocalDate.now()).stream()
+				.filter(
+						asset -> asset.getAmount() != 0)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<GetAssetQtyOutputBin> getAssetsQtyByPortfolioIdAndDate(GetTransactionByDateBin bin) {
-		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(bin.getPortfolioId(), bin.getDate());
+		return this.transactionRepository.findAssetsQtyByPortfolioIdAndDate(bin.getPortfolioId(), bin.getDate())
+				.stream()
+				.filter(
+						asset -> asset.getAmount() != 0)
+				.collect(Collectors.toList());
 	}
 
 	/**

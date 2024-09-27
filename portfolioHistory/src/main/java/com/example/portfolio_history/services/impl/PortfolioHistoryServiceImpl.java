@@ -59,7 +59,7 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 
 		try {
 			this.update(Map.of(
-					movementBin.getPortfolioId(), Pair.of(movementBin.getDate(), true)));
+					movementBin.getPortfolioId(), Pair.of(Optional.of(movementBin.getDate()), true)));
 
 		} catch (Exception e) {
 			throw new RuntimeException("There was an error while updating old movements: " + e);
@@ -67,6 +67,23 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 
 	}
 
+	/**
+	 * Performs a hard refresh of the portfolio history for the given portfolio ID.
+	 * This method updates the portfolio history by setting the start date to the
+	 * minimum possible date.
+	 *
+	 * @param portfolioId the ID of the portfolio to refresh
+	 * @throws RuntimeException if there is an error during the refresh process
+	 */
+	public void hardRefreshPortfolioHistory(long portfolioId) {
+		try {
+			this.update(Map.of(
+					portfolioId,
+					Pair.of(Optional.empty(), true)));
+		} catch (Exception e) {
+			throw new RuntimeException("There was an error while hard refreshing the portfolio history: " + e);
+		}
+	}
 
 	/**
 	 * Method to insert a new record for each portfolio, this method should be
@@ -80,7 +97,7 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 			portfolioIDs.forEach(portfolioID -> {
 				this.update(Map.of(
 						portfolioID,
-						Pair.of(LocalDate.now().minusDays(1), false)));
+						Pair.of(Optional.of(LocalDate.now().minusDays(1)), false)));
 			});
 		} catch (Exception e) {
 			throw new RuntimeException("There was an error while inserting new day, " + e.getMessage());
@@ -146,27 +163,32 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 	 *                      the initial date and a boolean indicating whether the
 	 *                      operation is an update operation as values
 	 */
-	private void update(Map<Long, Pair<LocalDate, Boolean>> portfoliosMap) {
+	private void update(Map<Long, Pair<Optional<LocalDate>, Boolean>> portfoliosMap) {
 		portfoliosMap.forEach((id, pair) -> {
-			LocalDate startDate = pair.getFirst();
+			Optional<LocalDate> initialDate = pair.getFirst();
 			boolean isUpdateOperation = Optional.ofNullable(pair.getSecond())
 					.orElse(false);
-
-			List<LocalDate> dates = startDate.datesUntil(LocalDate.now()).toList();
 
 			RestTemplate restTemplate = new RestTemplate();
 			// STEP1 get all the transactions of a portfolio starting from the initial date
 			String transactionUrl = this.getRandomInstanceUrl("transaction");
 			// Request all the transactions of a portfolio starting from the initial date
-			ResponseEntity<List<MovementBin>> responseEntity = restTemplate.exchange(
-					transactionUrl + "/api/v1/transaction/get-by-portfolio/"
+
+			String request = initialDate.isPresent()
+					? transactionUrl + "/api/v1/transaction/get-by-portfolio/"
 							+ id
-							+ "?date=" + startDate.toString(),
+							+ "?date=" + initialDate.get().toString()
+					: transactionUrl + "/api/v1/transaction/get-by-portfolio/" + id;
+
+			ResponseEntity<List<MovementBin>> responseEntity = restTemplate.exchange(
+					request,
 					HttpMethod.GET,
 					null,
 					new ParameterizedTypeReference<List<MovementBin>>() {
 					});
 			List<MovementBin> movements = Optional.ofNullable(responseEntity.getBody()).orElse(List.of());
+
+			LocalDate startDate = initialDate.orElseGet(() -> movements.get(movements.size() - 1).getDate());
 
 			// Request all the assets of a portfolio starting from the initial date
 			ResponseEntity<List<GetAssetQuantityBin>> assetResponseEntityList = restTemplate.exchange(
@@ -227,6 +249,8 @@ public class PortfolioHistoryServiceImpl implements PortfolioHistoryService {
 
 						currenciesMap.put(currencyName, currencyResponseEntity.getBody());
 					});
+
+			List<LocalDate> dates = startDate.datesUntil(LocalDate.now()).toList();
 
 			// create a map to store all the infos required to calculate the portfolio value
 			// (date, [(assetId, price)])

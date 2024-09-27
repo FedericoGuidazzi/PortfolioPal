@@ -56,7 +56,7 @@ public class OwnershipPortfolioFilter implements GatewayFilter {
     }
 
     private boolean isOwner(long portfolioId, String uid) {
-        String uri = discoveryClient.getInstances("portfolio-service").stream().findAny()
+        String uri = discoveryClient.getInstances("portfolio-history").stream().findAny()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "Portfolio service not found"))
                 .getUri().toString();

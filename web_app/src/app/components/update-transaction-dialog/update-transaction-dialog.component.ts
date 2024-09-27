@@ -1,4 +1,4 @@
-import {Component, Inject, Input} from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import {
   MatDialog,
   MAT_DIALOG_DATA,
@@ -8,17 +8,20 @@ import {
   MatDialogActions,
   MatDialogClose,
 } from '@angular/material/dialog';
-import {MatButtonModule} from '@angular/material/button';
-import {FormsModule} from '@angular/forms';
-import {MatInputModule} from '@angular/material/input';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import { TransactionData, TransactionTypes } from '../history/history.component';
+import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import {
+  TransactionData,
+  TransactionTypes,
+} from '../history/history.component';
 import { MatOption } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 
-export interface DialogData{
-  transactionData: TransactionData,
-  mobile: boolean
+export interface DialogData {
+  transactionData: TransactionData;
+  mobile: boolean;
 }
 
 @Component({
@@ -36,7 +39,7 @@ export interface DialogData{
     MatDialogActions,
     MatDialogClose,
     MatOption,
-    MatSelectModule
+    MatSelectModule,
   ],
 })
 export class UpdateTransactionDialog {

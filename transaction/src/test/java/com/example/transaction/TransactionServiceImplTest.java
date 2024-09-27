@@ -243,9 +243,9 @@ class TransactionServiceImplTest {
 	@Test
 	public void testReadCsvFile() throws Exception {
 		String csvData = "date,type,amount,symbolId,price,portfolioId,currency\n" +
-				"2021-Jan-01,Acquisto,10,AAPL,100.0,1,USD\n" +
-				"2021-Jan-01,Acquisto,10,GOOGL,100.0,1,USD\n" +
-				"2021-Feb-01,Vendita,5,GOOGL,200.0,1,USD";
+				"2021-01-01,Acquisto,10,AAPL,100.0,1,USD\n" +
+				"2021-01-01,Acquisto,10,GOOGL,100.0,1,USD\n" +
+				"2021-02-01,Vendita,5,GOOGL,200.0,1,USD";
 
 		InputStream inputStream = new ByteArrayInputStream(csvData.getBytes(StandardCharsets.UTF_8));
 

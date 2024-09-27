@@ -7,6 +7,7 @@
 table {
   width: 100%;
   overflow: hidden;
+  min-height: 30vh;
 }
 
 .mat-mdc-row.disabled {

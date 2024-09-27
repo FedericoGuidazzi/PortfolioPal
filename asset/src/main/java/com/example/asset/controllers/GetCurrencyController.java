@@ -24,8 +24,7 @@ public class GetCurrencyController {
             @PathVariable String currencyTo,
             @RequestParam(required = false, defaultValue = "false") boolean mock,
             @RequestParam(required = false, defaultValue = "1S") String duration,
-            @RequestParam(required = false) LocalDate startDate
-    ) {
+            @RequestParam(required = false) LocalDate startDate) {
         if (mock) {
             return mockCurrency(currencyFrom, currencyTo);
         }

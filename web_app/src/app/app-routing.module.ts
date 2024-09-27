@@ -34,6 +34,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'ranking/:portfolioId',
+    loadComponent: () =>
+      import('./pages/ranking/ranking.component').then(
+        (c) => c.RankingComponent
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard.component').then(
@@ -42,7 +50,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'asset/:assetName',
+    path: 'dashboard/:portfolioId',
+    loadComponent: () =>
+      import('./pages/dashboard/dashboard.component').then(
+        (c) => c.DashboardComponent
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'asset/:assetName/:portfolioId',
     loadComponent: () =>
       import('./pages/asset/asset.component').then((c) => c.AssetComponent),
     canActivate: [authGuard],

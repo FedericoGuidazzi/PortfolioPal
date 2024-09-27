@@ -11,6 +11,8 @@ interface BaseSetting {
   icon_loc: string;
   disabled: boolean;
   type: 'toggle' | 'select';
+  updated: boolean;
+  user_setting: boolean | string;
 }
 
 interface ToggleSetting extends BaseSetting {
@@ -41,42 +43,14 @@ export class UserNavbarComponent {
   supportedCurrencies: string[] = ['EUR', 'USD', 'GBP', 'JPY', 'CNY'];
 
   settings: Settings = {
-    language: {
-      name: 'lingua',
-      value: 'Italiano',
-      icon_loc: '/assets/icons/ic-language.svg',
-      disabled: true,
-      supportedField: this.supportedLanguages,
-      type: 'select',
-    },
-    currency: {
-      name: 'valuta',
-      value: 'EUR',
-      icon_loc: '/assets/icons/ic-currency-exchange.svg',
-      disabled: false,
-      supportedField: this.supportedCurrencies,
-      type: 'select',
-    },
-    dark_theme: {
-      name: 'tema scuro',
-      value: false,
-      icon_loc: '/assets/icons/moon.svg',
-      disabled: true,
-      type: 'toggle',
-    },
-    notifications: {
-      name: 'notifiche',
-      value: false,
-      icon_loc: '/assets/icons/notification.svg',
-      disabled: true,
-      type: 'toggle',
-    },
     sharePortfolio: {
       name: 'share',
-      value: true,
+      value: false,
       icon_loc: '/assets/icons/ic-share.svg',
       disabled: false,
       type: 'toggle',
+      updated: false,
+      user_setting: false,
     },
   };
 
@@ -87,11 +61,11 @@ export class UserNavbarComponent {
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.userService.getUser().subscribe({
+  async ngOnInit() {
+    await this.userService.getUser().subscribe({
       next: (user) => {
-        this.settings['currency'].value = user.currency;
-        this.settings['share'].value = user.sharePortfolio;
+        this.settings['sharePortfolio'].value = user.sharePortfolio;
+        this.settings['sharePortfolio'].user_setting = user.sharePortfolio;
       },
       error: (error) => {
         // console.error('Error getting user', error);
@@ -99,37 +73,60 @@ export class UserNavbarComponent {
     });
   }
 
-  @ViewChild('language') language!: ElementRef;
-  onSelectedLanguage(): void {
-    this.settings['language'].value = this.language.nativeElement.value;
-  }
-
-  @ViewChild('currency') currency!: ElementRef;
-  onSelectedCurrency(): void {
-    this.userService
-      .updateCurrency({ currency: this.language.nativeElement.value })
-      .subscribe({
-        next: () => {
-          console.log('Currency updated');
-          this.settings['currency'].value = this.language.nativeElement.value;
-        },
-        error: (error) => {
-          this.currency.nativeElement.value =
-            this.settings['currency']?.value || '';
-          console.error('Error updating currency', error);
-        },
-      });
+  ngAfterViewInit() {
+    const share = document.getElementById('sharePortfolio');
+    share?.setAttribute(
+      'checked',
+      this.settings['sharePortfolio'].value.toString()
+    );
   }
 
   onToggle(key: string): void {
-    if (this.settings.hasOwnProperty(key)) {
-      this.settings[key].value = !this.settings[key].value;
-      if (key === 'sharePortfolio') {
-        this.userService.updatePrivacy({
-          key: this.settings[key].value,
-        });
+    this.settings[key].value = !this.settings[key].value;
+    this.settings[key].updated =
+      this.settings[key].value !== this.settings[key].user_setting;
+
+    this.showSaveButton();
+  }
+
+  showSaveButton(): void {
+    let isChanged: boolean = false;
+    for (const key in this.settings) {
+      if (this.settings[key].updated) {
+        isChanged = true;
       }
     }
+    if (isChanged) {
+      document
+        .getElementById('modify_preferencies')
+        ?.classList.remove('d-none');
+    } else {
+      document.getElementById('modify_preferencies')?.classList.add('d-none');
+    }
+  }
+
+  onSave() {
+    if (this.settings['sharePortfolio'].updated) {
+      this.userService
+        .updatePrivacy(this.settings['sharePortfolio'].value as boolean)
+        .subscribe({
+          next: () => {
+            this.settings['sharePortfolio'].user_setting =
+              this.settings['sharePortfolio'].value;
+            this.settings['sharePortfolio'].updated = false;
+          },
+          error: (error) => {
+            console.error('Error updating privacy', error);
+          },
+        });
+    }
+
+    for (const key in this.settings) {
+      if (this.settings[key].updated) {
+        this.settings[key].updated = false;
+      }
+    }
+    document.getElementById('modify_preferencies')?.classList.add('d-none');
   }
 
   onLogout() {

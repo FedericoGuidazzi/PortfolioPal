@@ -21,8 +21,8 @@ public interface PortfolioHistoryRepository extends JpaRepository<PortfolioHisto
 
     Optional<PortfolioHistoryEntity> findByPortfolioIdAndDate(long portfolioId, LocalDate date);
 
-    @Query("SELECT p FROM PortfolioHistoryEntity p ORDER BY p.percentageValue DESC")
-    List<PortfolioHistoryEntity> findAllOrderByPercentageValueDesc();
+    @Query("SELECT p FROM PortfolioHistoryEntity p WHERE p.date = :date ORDER BY p.percentageValue DESC")
+    List<PortfolioHistoryEntity> findAllByDateOrderByPercentageValueDesc(@Param("date") LocalDate date);
 
     @Query("DELETE FROM PortfolioHistoryEntity p WHERE p.portfolioId = :portfolioId")
     void deleteByPortfolioId(@Param("portfolioId") long portfolioId);

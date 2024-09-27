@@ -5,15 +5,15 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
-import {MatButtonModule} from '@angular/material/button';
-import {FormsModule} from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
 import { UpdateTransactionDialog } from '../../components/update-transaction-dialog/update-transaction-dialog.component';
 import { UploadFileDialog } from '../upload-file-dialog/upload-file-dialog.component';
 import { RouterLink } from '@angular/router';
 
 export enum TransactionTypes {
   ACQUISTO = 'Acquisto',
-  VENDITA = 'Vendita'
+  VENDITA = 'Vendita',
 }
 
 export interface TransactionData {
@@ -27,16 +27,32 @@ export interface TransactionData {
 }
 
 @Component({
-    selector: 'app-history',
-    standalone: true,
-    templateUrl: './history.component.html',
-    styleUrl: './history.component.css',
-    imports: [MatFormFieldModule, MatTableModule, MatSortModule, MatPaginatorModule, MatInputModule, FormsModule, MatButtonModule, RouterLink]
+  selector: 'app-history',
+  standalone: true,
+  templateUrl: './history.component.html',
+  styleUrl: './history.component.css',
+  imports: [
+    MatFormFieldModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    RouterLink,
+  ],
 })
-export class HistoryComponent{
-
+export class HistoryComponent {
   @Input() transactions: TransactionData[] = []; // Assuming transaction data structure
-  displayedColumns: string[] = ['date', 'type', 'symbol', 'quantity', 'price', 'currency', 'actions'];
+  displayedColumns: string[] = [
+    'date',
+    'type',
+    'symbol',
+    'quantity',
+    'price',
+    'currency',
+    'actions',
+  ];
   dataSource = new MatTableDataSource<TransactionData>(this.transactions);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -45,8 +61,7 @@ export class HistoryComponent{
     this.dataSource.paginator = this.paginator;
   }
 
-  constructor(public dialogUpdate: MatDialog, public dialogUpload: MatDialog) {
-  }
+  constructor(public dialogUpdate: MatDialog, public dialogUpload: MatDialog) {}
 
   ngOnInit(): void {
     this.dataSource.data = this.transactions;
@@ -56,40 +71,44 @@ export class HistoryComponent{
     this.openDialogUpload();
   }
 
-  updateDataDialog(id:number){
-    this.openDialogUpdate(id)
+  updateDataDialog(id: number) {
+    this.openDialogUpdate(id);
   }
 
-  deleteDataDialog(id:number){
+  deleteDataDialog(id: number) {
     //call API to delete record
     this.deleteData(id);
   }
 
-  updateData(id:number){
+  updateData(id: number) {
     //Method to update data
-    this.openDialogUpdate(id)
+    this.openDialogUpdate(id);
   }
 
-  deleteData(id:number){
+  deleteData(id: number) {
     //call API to delete record
     this.refreshPage();
   }
 
-  updateDeleteDataMobile(id:number){
-  const foundTransaction = this.transactions.find(transaction => transaction.id === id);
-  const transaction = {id: foundTransaction?.id,
-    date: foundTransaction?.date,
-    type: foundTransaction?.type,
-    symbol: foundTransaction?.symbol,
-    quantity: foundTransaction?.quantity,
-    price: foundTransaction?.price,
-    currency: foundTransaction?.currency}
-  const dialogRef = this.dialogUpdate.open(UpdateTransactionDialog, {
-    data: {transactionData: transaction, mobile:true},
-  });
+  updateDeleteDataMobile(id: number) {
+    const foundTransaction = this.transactions.find(
+      (transaction) => transaction.id === id
+    );
+    const transaction = {
+      id: foundTransaction?.id,
+      date: foundTransaction?.date,
+      type: foundTransaction?.type,
+      symbol: foundTransaction?.symbol,
+      quantity: foundTransaction?.quantity,
+      price: foundTransaction?.price,
+      currency: foundTransaction?.currency,
+    };
+    const dialogRef = this.dialogUpdate.open(UpdateTransactionDialog, {
+      data: { transactionData: transaction, mobile: true },
+    });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result){
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
         //if something has changed update the row calling the API and refresh the page
         this.updateData(id);
         this.refreshPage();
@@ -101,31 +120,33 @@ export class HistoryComponent{
     this.dialogUpdate.open(UploadFileDialog);
   }
 
-  openDialogUpdate(id:number): void {
-    const foundTransaction = this.transactions.find(transaction => transaction.id === id);
-    const transaction = {id: foundTransaction?.id,
+  openDialogUpdate(id: number): void {
+    const foundTransaction = this.transactions.find(
+      (transaction) => transaction.id === id
+    );
+    const transaction = {
+      id: foundTransaction?.id,
       date: foundTransaction?.date,
       type: foundTransaction?.type,
       symbol: foundTransaction?.symbol,
       quantity: foundTransaction?.quantity,
       price: foundTransaction?.price,
-      currency: foundTransaction?.currency}
+      currency: foundTransaction?.currency,
+    };
     const dialogRef = this.dialogUpdate.open(UpdateTransactionDialog, {
-      data: {transactionData: transaction, mobile:false}
+      data: { transactionData: transaction, mobile: false },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result){
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
         //if something has changed update the row calling the API and refresh the page
         this.updateData(id);
         this.refreshPage();
       }
-      
     });
   }
 
-  refreshPage(){
+  refreshPage() {
     window.location.reload();
   }
 }
-

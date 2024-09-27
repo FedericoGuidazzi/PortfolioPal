@@ -1,5 +1,6 @@
 package com.example.portfolio_history.services.impl;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,10 +42,10 @@ public class PortfolioServiceImpl implements PortfolioService {
         PortfolioEntity portfolioEntity = PortfolioEntity.builder()
                 .name(postPortfolioBin.getName())
                 .userId(postPortfolioBin.getUserId())
+                .isShareable(postPortfolioBin.isShareable())
                 .build();
-        portfolioRepository.save(portfolioEntity);
 
-        return this.fromEntityToObject(portfolioEntity);
+        return this.fromEntityToObject(portfolioRepository.save(portfolioEntity));
     }
 
     @Override
@@ -86,7 +87,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     public Portfolio getPortfolio(long id, boolean isRequesterOwner) throws CustomException {
         PortfolioEntity portfolioEntity = portfolioRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Portfolio not found"));
-        if (isRequesterOwner || portfolioEntity.isSherable()) {
+        if (isRequesterOwner || portfolioEntity.isShareable()) {
             return this.fromEntityToObject(portfolioEntity);
         } else {
             throw new CustomException("Portfolio is not sharable");
@@ -109,7 +110,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         List<PortfolioEntity> portfolioList = portfolioRepository.findAllByUserId(putUserPrivacyBin.getUserID());
 
         for (PortfolioEntity portfolioEntity : portfolioList) {
-            portfolioEntity.setSherable(putUserPrivacyBin.isSherable());
+            portfolioEntity.setShareable(putUserPrivacyBin.isShareable());
             portfolioRepository.save(portfolioEntity);
         }
     }
@@ -117,31 +118,32 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public List<PortfolioInfo> getRanking() {
         // Get all portfolios order by percentageValue
-        List<PortfolioHistoryEntity> allPortfolios = historyRepository.findAllOrderByPercentageValueDesc();
+        List<PortfolioHistoryEntity> allPortfolios = historyRepository
+                .findAllByDateOrderByPercentageValueDesc(LocalDate.now().minusDays(1));
 
         // Remove all the portfolios that are not sharable and select the top 10
         return allPortfolios.stream()
-         .filter(this::isPortfolioSharable)
-         .limit(10)
-         .map(e-> PortfolioInfo.builder()
-                 .idPortfolio(e.getPortfolioId())
-                 .portfolioName(portfolioRepository.findById(e.getPortfolioId())
-                 .map(PortfolioEntity::getName).orElse(Strings.EMPTY))
-                 .percentageValue(e.getPercentageValue()).build())
-         .collect(Collectors.toList());
+                .filter(this::isPortfolioSharable)
+                .limit(10)
+
+                .map(e -> PortfolioInfo.builder()
+                        .idPortfolio(e.getPortfolioId())
+                        .portfolioName(portfolioRepository.findById(e.getPortfolioId())
+                                .map(PortfolioEntity::getName).orElse(Strings.EMPTY))
+                        .percentageValue(e.getPercentageValue()).build())
+                .collect(Collectors.toList());
     }
 
     private boolean isPortfolioSharable(PortfolioHistoryEntity item) {
-        return portfolioRepository.findById(item.getId())
-                .map(PortfolioEntity::isSherable)
-                .orElse(false);
+        return portfolioRepository.findById(item.getPortfolioId())
+                .map(PortfolioEntity::isShareable).orElse(false);
     }
 
     private Portfolio fromEntityToObject(PortfolioEntity entity) {
         return Portfolio.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .isSherable(entity.isSherable())
+                .isShareable(entity.isShareable())
                 .userId(entity.getUserId())
                 .build();
     }

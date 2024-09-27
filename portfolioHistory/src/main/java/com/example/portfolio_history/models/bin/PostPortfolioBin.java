@@ -8,4 +8,5 @@ import lombok.Data;
 public class PostPortfolioBin {
     private String name;
     private String userId;
+    private boolean isShareable;
 }

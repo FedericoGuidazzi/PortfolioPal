@@ -34,3 +34,39 @@
   color: white;
   pointer-events: none;
 }
+
+/* HISTORY CSS */
+.history-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.portfolio-chart {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.transaction-history {
+  flex: 1;
+}
+
+.clickable {
+  cursor: pointer;
+}
+.rounded-20 {
+  border-radius: 20px;
+  border: 1px solid #d9d9d9;
+  overflow: hidden;
+}
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .nonMobile {
+    display: none;
+  } /* hide it on small screens */
+}
+
+@media screen and (min-width: 768px) {
+  .mobile {
+    display: none;
+  } /* hide it on small screens */
+}

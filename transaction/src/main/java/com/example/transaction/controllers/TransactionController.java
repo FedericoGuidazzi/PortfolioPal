@@ -65,7 +65,7 @@ public class TransactionController {
 
 	@SneakyThrows
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Void> deleteTransaction(@RequestParam long portfolioId, @PathVariable long id) {
+	public ResponseEntity<Void> deleteTransaction(@PathVariable long id, @RequestParam long portfolioId) {
 		Transaction deletedTransaction = Optional.ofNullable(transactionService.deleteTransaction(id))
 				.orElseThrow(() -> new CustomException("Transaction not found"));
 
@@ -101,16 +101,23 @@ public class TransactionController {
 	public ResponseEntity<List<Transaction>> uploadFile(
 			@PathVariable long portfolioId,
 			@RequestParam(value = "file", required = true) MultipartFile file) {
-		if (file.isEmpty() || Optional.ofNullable(file.getOriginalFilename()).orElse("").endsWith(".csv") == false) {
+
+		if (file.isEmpty() ||
+				Optional.ofNullable(file.getOriginalFilename()).orElse("").endsWith(".csv") == false) {
 			throw new CustomException("Please upload a valid CSV file.");
 		}
+
 		List<Transaction> list = transactionService.saveTransactionsFromCsv(UploadBin.builder()
 				.portfolioId(portfolioId)
 				.inputStream(file.getInputStream())
 				.build());
 
 		List<Transaction> oldTransactions = list.stream().filter(e -> !e.getDate().isEqual(LocalDate.now())).toList();
-		oldTransactions.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
+
+		oldTransactions = oldTransactions.stream()
+				.sorted((t1, t2) -> t1.getDate().compareTo(t2.getDate()))
+				.toList();
+
 		this.sender.sendTransactionUpdate(GetTransactionByDateBin.builder()
 				.date(oldTransactions.get(oldTransactions.size() - 1).getDate())
 				.portfolioId(portfolioId)
@@ -174,5 +181,11 @@ public class TransactionController {
 								.portfolioId(portfolioId)
 								.date(date)
 								.build()));
+	}
+
+	@GetMapping("/get-by-portfolio/{portfolioId}/asset/{symbolId}")
+	public ResponseEntity<List<Transaction>> getTransactionsByPortfolioIdAndSymbolId(@PathVariable long portfolioId,
+			@PathVariable String symbolId) {
+		return ResponseEntity.ok(transactionService.getTransactionsByPortfolioIdAndSymbolId(portfolioId, symbolId));
 	}
 }

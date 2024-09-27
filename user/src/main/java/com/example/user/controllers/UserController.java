@@ -50,17 +50,19 @@ public class UserController {
     }
 
     @PutMapping("/update-privacy")
-    public void updateUserPrivacy(@RequestHeader("X-Authenticated-UserId") String id, @RequestBody boolean sharePortfolio) {
+    public void updateUserPrivacy(@RequestHeader("X-Authenticated-UserId") String id,
+            @RequestBody boolean sharePortfolio) {
         PutUserPrivacyBin privacyBin = PutUserPrivacyBin.builder()
                 .userID(id)
-                .sharePortfolio(sharePortfolio)
+                .isSherable(sharePortfolio)
                 .build();
         this.sender.send(privacyBin);
     }
 
     @SneakyThrows
     @PutMapping("/update-currency")
-    public ResponseEntity<User> updateCurrency(@RequestHeader("X-Authenticated-UserId") String id, @RequestBody String currency) {
+    public ResponseEntity<User> updateCurrency(@RequestHeader("X-Authenticated-UserId") String id,
+            @RequestBody String currency) {
         PutUserCurrencyBin currencyBin = PutUserCurrencyBin.builder()
                 .userID(id)
                 .currency(currency)

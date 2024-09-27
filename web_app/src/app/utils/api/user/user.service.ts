@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { PortfolioService } from '../portfolio/portfolio.service';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +10,10 @@ import { Observable } from 'rxjs';
 export class UserService {
   private userUrl = `${environment.backendUrl}/user`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private portfolioService: PortfolioService
+  ) {}
 
   getUser(): Observable<any> {
     return this.http.get(this.userUrl + '/get');
@@ -23,11 +27,11 @@ export class UserService {
     return this.http.post(this.userUrl + '/create', {});
   }
 
-  updatePrivacy(data: any): void {
-    this.http.put(this.userUrl + '/update-privacy', data);
+  updatePrivacy(data: boolean): Observable<any> {
+    return this.http.put(this.userUrl + '/update-privacy', data);
   }
 
-  updateCurrency(data: any): Observable<any> {
+  updateCurrency(data: string): Observable<any> {
     return this.http.put(this.userUrl + '/update-currency', data);
   }
 }

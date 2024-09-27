@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PutUserPrivacyBin {
     private String userID;
-    private boolean sharePortfolio;
+    private boolean isSherable;
 }

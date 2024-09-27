@@ -1,4 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import Chart from 'chart.js/auto';
 import {
   CardPortfolioValutationComponent,
   PortfolioAmount,
@@ -7,9 +9,15 @@ import {
   HistoryComponent,
   TransactionData,
 } from '../../components/history/history.component';
-import Chart from 'chart.js/auto';
-import { ActivatedRoute } from '@angular/router';
-import { LineChartComponent } from '../../components/line-chart/line-chart.component';
+import { AssetService } from '../../utils/api/asset/asset.service';
+import { TransactionService } from '../../utils/api/transaction/transaction.service';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatSortModule } from '@angular/material/sort';
 
 export interface AssetData {
   name: string;
@@ -26,140 +34,186 @@ export interface AssetData {
   averageCostPerShare: number;
 }
 
+interface AssetHistory {
+  date: string;
+  price: number;
+}
+
 @Component({
   selector: 'app-asset',
   standalone: true,
   imports: [
-    /*LineChartComponent,*/ HistoryComponent,
+    HistoryComponent,
     CardPortfolioValutationComponent,
+    MatFormFieldModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    RouterLink,
   ],
   templateUrl: './asset.component.html',
   styleUrl: './asset.component.css',
 })
 export class AssetComponent {
-  @Input() assetName?: any;
+  assetName: any;
+  portfolioId: any;
   data?: PortfolioAmount;
   transactions: TransactionData[] = [];
   assetData?: AssetData;
   dataAsset: any = {};
   duration: string[] = ['1A', '5A', 'Max'];
   lineChart: any;
+  assetHistory: AssetHistory[] = [];
 
-  constructor(private route: ActivatedRoute) {}
+  transactionDisplayedColumns: string[] = [
+    'date',
+    'type',
+    'symbol',
+    'quantity',
+    'price',
+    'currency',
+  ];
+  transactionDataSource = new MatTableDataSource<TransactionData>(
+    this.transactions
+  );
 
-  prepareData() {
-    this.assetData = {
-      name: 'name',
-      currentValue: 3,
-      valueInPortfolio: 3,
-      sharesNumber: 3,
-      description:
-        'orem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione. È sopravvissuto non solo a più di cinque secoli, ma anche al passaggio alla videoimpaginazione, pervenendoci sostanzialmente inalterato. Fu reso popolare, negli anni ’60, con la diffusione dei fogli di caratteri trasferibili “Letraset”, che contenevano passaggi del Lorem Ipsum, e più recentemente da software di impaginazione come Aldus PageMaker, che includeva versioni del Lorem Ipsum.',
-      percetageInPortfolio: 3,
-      percentageWinLose: 3,
-      currency: '$',
-      totalCost: 3,
-      currentValuation: 3,
-      balance: 3,
-      averageCostPerShare: 3,
-    };
+  @ViewChild('transactionPaginator') paginator!: MatPaginator;
 
-    this.transactions = [
-      {
-        id: 1,
-        date: 'wjebf',
-        type: 'Acquisto',
-        symbol: 'AAPL',
-        quantity: 10,
-        price: 150,
-        currency: '$',
-      },
-      {
-        id: 2,
-        date: 'jbnwefkjn',
-        type: 'Vendita',
-        symbol: 'GOOGL',
-        quantity: 5,
-        price: 250,
-        currency: '$',
-      },
-      {
-        id: 3,
-        date: 'wjebf',
-        type: 'Acquisto',
-        symbol: 'AAPL',
-        quantity: 10,
-        price: 150,
-        currency: '$',
-      },
-      {
-        id: 4,
-        date: 'jbnwefkjn',
-        type: 'Vendita',
-        symbol: 'GOOGL',
-        quantity: 5,
-        price: 250,
-        currency: '$',
-      },
-      {
-        id: 5,
-        date: 'wjebf',
-        type: 'Acquisto',
-        symbol: 'AAPL',
-        quantity: 10,
-        price: 150,
-        currency: '$',
-      },
-      {
-        id: 6,
-        date: 'jbnwefkjn',
-        type: 'Vendita',
-        symbol: 'GOOGL',
-        quantity: 5,
-        price: 250,
-        currency: '$',
-      },
-      {
-        id: 7,
-        date: 'wjebf',
-        type: 'Acquisto',
-        symbol: 'AAPL',
-        quantity: 10,
-        price: 150,
-        currency: '$',
-      },
-      {
-        id: 8,
-        date: 'jbnwefkjn',
-        type: 'Vendita',
-        symbol: 'GOOGL',
-        quantity: 5,
-        price: 250,
-        currency: '$',
-      },
-    ];
+  constructor(
+    private route: ActivatedRoute,
+    private assetService: AssetService,
+    private transactionService: TransactionService
+  ) {}
 
-    this.data = {
-      assetName: this.assetName,
-      currency: this.assetData?.currency,
-      amount: this.assetData?.currentValue,
-      percentage: this.assetData?.percentageWinLose,
-    };
+  async prepareData() {
+    // get portfolioId from route
+    await this.route.paramMap.subscribe(
+      (params) => (this.portfolioId = params.get('portfolioId'))
+    );
+    await this.route.paramMap.subscribe(
+      (params) => (this.assetName = params.get('assetName'))
+    );
+
+    // get asset data from API
+    this.assetService.getAssetData(this.assetName, '1S').subscribe({
+      next: (data: any) => {
+        this.transactionService.getAssetAllocation(this.portfolioId).subscribe({
+          next: (allocation: any) => {
+            const asset = allocation.find(
+              (asset: any) => asset['symbolId'] === this.assetName
+            );
+
+            const total = allocation.reduce(
+              (acc: any, item: any) => acc + item.amount,
+              0
+            );
+
+            let valueInPortfolio =
+              asset['amount'] * data['prices'][data['prices'].length - 1];
+            valueInPortfolio =
+              valueInPortfolio <= 0
+                ? parseFloat(valueInPortfolio.toFixed(5))
+                : parseFloat(valueInPortfolio.toFixed(2));
+
+            let percetageInPortfolio = (asset['amount'] / total) * 100;
+            percetageInPortfolio = parseFloat(percetageInPortfolio.toFixed(2));
+
+            let averageCostPerShare =
+              data['prices'].reduce(
+                (tot: number, item: number) => tot + item,
+                0
+              ) / data['prices'].length;
+            averageCostPerShare = parseFloat(averageCostPerShare.toFixed(2));
+
+            this.assetData = {
+              name: data['symbol'],
+              currentValue: data['prices'][data['prices'].length - 1],
+              valueInPortfolio: valueInPortfolio,
+              sharesNumber: 0,
+              description: data['description'],
+              percetageInPortfolio: percetageInPortfolio,
+              percentageWinLose: allocation['percentage'],
+              currency: data['currency'],
+              totalCost: 0,
+              currentValuation: 0,
+              balance: 0,
+              averageCostPerShare: averageCostPerShare,
+            };
+
+            this.data = {
+              assetName: this.assetName,
+              currency: this.assetData.currency,
+              amount:
+                this.assetData.currentValue <= 0
+                  ? parseFloat(this.assetData.currentValue.toFixed(5))
+                  : parseFloat(this.assetData.currentValue.toFixed(2)),
+              percentage: this.assetData.percentageWinLose,
+            };
+
+            this.createDoughnutChart(this.assetData);
+          },
+          error: (error) => {
+            console.error('There was an error!', error);
+          },
+        });
+
+        this.transactionService
+          .getAllTransactionByPortfolioIdAndAssetId(
+            this.portfolioId,
+            this.assetName
+          )
+          .subscribe({
+            next: (transactions: any) => {
+              this.transactions = transactions.map((transaction: any) => {
+                return {
+                  id: transaction['id'],
+                  date: transaction['date'],
+                  type: transaction['type'],
+                  symbol: transaction['symbolId'],
+                  quantity: transaction['amount'],
+                  price: transaction['price'],
+                  currency: transaction['currency'],
+                };
+              });
+              this.transactionDataSource.data = this.transactions;
+            },
+            error: (error) => {
+              console.error('There was an error!', error);
+            },
+          });
+
+        this.assetHistory = data['prices'].map(
+          (price: number, index: number) => {
+            return {
+              date: data['dates'][index],
+              price: price,
+            };
+          }
+        );
+
+        this.createLineChart(this.assetHistory);
+      },
+      error: (error) => {
+        console.error('There was an error!', error);
+      },
+    });
   }
 
-  createDoughnutChart(): void {
+  createDoughnutChart(assetData: AssetData): void {
     //call API to get data
     const data = {
-      labels: ['Red', 'Blue', 'Yellow'],
+      labels: [],
       datasets: [
         {
-          label: 'My First Dataset',
-          data: [300, 50, 100],
-          backgroundColor: [
-            'rgb(255, 99, 132)',
-            'rgb(54, 162, 235)',
-            'rgb(255, 205, 86)',
+          label: '',
+          data: [
+            assetData.percetageInPortfolio,
+            100 - assetData.percetageInPortfolio,
           ],
+          backgroundColor: ['rgb(54, 162, 235)', 'rgb(201, 203, 207)'],
           hoverOffset: 4,
         },
       ],
@@ -183,35 +237,18 @@ export class AssetComponent {
     const canvas = document.getElementById(
       'doughnutChartAsset'
     ) as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      new Chart(ctx, config);
+    if (canvas) {
+      new Chart(canvas, config);
     }
   }
 
-  ngOnDestroy() {
-    this.lineChart.destroy();
-  }
-
-  ngOnInit() {
-    this.route.paramMap.subscribe(
-      (params) => (this.assetName = params.get('assetName'))
-    );
-    this.prepareData();
-  }
-
-  ngAfterViewInit() {
-    this.createLineChart();
-    this.createDoughnutChart();
-  }
-
-  createLineChart(): void {
+  createLineChart(assetHistory: AssetHistory[]): void {
     this.dataAsset = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      labels: assetHistory.map((item) => item.date),
       datasets: [
         {
-          label: 'Valore Portfolio',
-          data: [100, 120, 130, 110, 150, 160, 140],
+          label: 'Valore Asset',
+          data: assetHistory.map((item) => item.price),
         },
       ],
     };
@@ -254,7 +291,11 @@ export class AssetComponent {
     }
   }
 
-  updateData(value: string) {
+  ngAfterViewInit() {
+    this.prepareData();
+  }
+
+  updateHistoryGraphView(value: string) {
     //gestire cambio di dati richiamando API
     const selectorActive = document.querySelectorAll('.active');
     selectorActive.forEach(function (selected) {
@@ -264,27 +305,26 @@ export class AssetComponent {
     let selector = document.getElementById(value);
     selector?.classList.add('active');
 
-    switch (value) {
-      case '1S':
-        //fare chiamata api per prendere i dati rispetto alla scadenza desiderata
-        this.lineChart.data.labels = [
-          'asdfsdf',
-          'afsfdsfds',
-          'afsdfsdf',
-          'afsfdsf',
-          'asdfdsfd',
-          'asfsdfsd',
-          'asfsdfd',
-        ];
-        this.lineChart.data.datasets[0].data = [10, 12, 13, 11, 15, 16, 14];
+    this.assetService.getAssetData(this.assetName, value).subscribe({
+      next: (data: any) => {
+        this.assetHistory = data['prices'].map(
+          (price: number, index: number) => {
+            return {
+              date: data['dates'][index],
+              price: price,
+            };
+          }
+        );
+
+        this.lineChart.data.labels = this.assetHistory.map((item) => item.date);
+        this.lineChart.data.datasets[0].data = this.assetHistory.map(
+          (item) => item.price
+        );
         this.lineChart.update();
-        break;
-      case '1A':
-        break;
-      case '5A':
-        break;
-      case 'Max':
-        break;
-    }
+      },
+      error: (error) => {
+        console.error('There was an error!', error);
+      },
+    });
   }
 }
