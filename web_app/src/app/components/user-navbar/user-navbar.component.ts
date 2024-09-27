@@ -43,44 +43,6 @@ export class UserNavbarComponent {
   supportedCurrencies: string[] = ['EUR', 'USD', 'GBP', 'JPY', 'CNY'];
 
   settings: Settings = {
-    language: {
-      name: 'lingua',
-      value: 'Italiano',
-      icon_loc: '/assets/icons/ic-language.svg',
-      disabled: true,
-      supportedField: this.supportedLanguages,
-      type: 'select',
-      updated: false,
-      user_setting: 'Italiano',
-    },
-    currency: {
-      name: 'valuta',
-      value: 'USD',
-      icon_loc: '/assets/icons/ic-currency-exchange.svg',
-      disabled: true,
-      supportedField: this.supportedCurrencies,
-      type: 'select',
-      updated: false,
-      user_setting: 'USD',
-    },
-    dark_theme: {
-      name: 'tema scuro',
-      value: false,
-      icon_loc: '/assets/icons/moon.svg',
-      disabled: true,
-      type: 'toggle',
-      updated: false,
-      user_setting: false,
-    },
-    notifications: {
-      name: 'notifiche',
-      value: false,
-      icon_loc: '/assets/icons/notification.svg',
-      disabled: true,
-      type: 'toggle',
-      updated: false,
-      user_setting: false,
-    },
     sharePortfolio: {
       name: 'share',
       value: false,
@@ -102,10 +64,7 @@ export class UserNavbarComponent {
   async ngOnInit() {
     await this.userService.getUser().subscribe({
       next: (user) => {
-        this.settings['currency'].value = user.favouriteCurrency;
         this.settings['sharePortfolio'].value = user.sharePortfolio;
-
-        this.settings['currency'].user_setting = user.favouriteCurrency;
         this.settings['sharePortfolio'].user_setting = user.sharePortfolio;
       },
       error: (error) => {
@@ -115,33 +74,11 @@ export class UserNavbarComponent {
   }
 
   ngAfterViewInit() {
-    this.currency.nativeElement.value = this.settings['currency'].value;
     const share = document.getElementById('sharePortfolio');
     share?.setAttribute(
       'checked',
       this.settings['sharePortfolio'].value.toString()
     );
-  }
-
-  @ViewChild('language') language!: ElementRef;
-  @ViewChild('currency') currency!: ElementRef;
-
-  onSelectedLanguage(): void {
-    this.settings['language'].value = this.language.nativeElement.value;
-    this.settings['language'].updated =
-      this.settings['language'].value !==
-      this.settings['language'].user_setting;
-
-    this.showSaveButton();
-  }
-
-  onSelectedCurrency(): void {
-    this.settings['currency'].value = this.currency.nativeElement.value;
-    this.settings['currency'].updated =
-      this.settings['currency'].value !==
-      this.settings['currency'].user_setting;
-
-    this.showSaveButton();
   }
 
   onToggle(key: string): void {

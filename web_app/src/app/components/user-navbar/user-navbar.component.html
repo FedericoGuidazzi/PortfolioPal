@@ -60,39 +60,7 @@
                   (change)="onToggle(item.key)"
                   [disabled]="item.value.disabled"
                 ></mat-slide-toggle>
-                } @case ('select') { @switch (item.key) { @case ('language') {
-                <select
-                  class="form-select form-select-sm"
-                  [disabled]="item.value.disabled"
-                  #language
-                  (change)="onSelectedLanguage()"
-                >
-                  @for (language of supportedLanguages; track $index) {
-                  <option
-                    value="{{ language }}"
-                    [selected]="language == item.value.value"
-                  >
-                    {{ language }}
-                  </option>
-                  }
-                </select>
-                } @case ('currency') {
-                <select
-                  class="form-select form-select-sm"
-                  [disabled]="item.value.disabled"
-                  #currency
-                  (change)="onSelectedCurrency()"
-                >
-                  @for (currency of supportedCurrencies; track $index) {
-                  <option
-                    value="{{ currency }}"
-                    [selected]="currency == item.value.value"
-                  >
-                    {{ currency }}
-                  </option>
-                  }
-                </select>
-                } } } }
+                } }
               </div>
             </div>
           </li>

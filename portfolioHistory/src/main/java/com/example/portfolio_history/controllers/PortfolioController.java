@@ -37,7 +37,7 @@ public class PortfolioController {
                 PostPortfolioBin.builder()
                         .name(postPortfolioDto.getName())
                         .userId(userId)
-                        .isSharable(postPortfolioDto.isShare())
+                        .isShareable(postPortfolioDto.isShare())
                         .build()));
     }
 

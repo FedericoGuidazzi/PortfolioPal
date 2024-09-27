@@ -42,7 +42,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         PortfolioEntity portfolioEntity = PortfolioEntity.builder()
                 .name(postPortfolioBin.getName())
                 .userId(postPortfolioBin.getUserId())
-                .isSherable(postPortfolioBin.isSharable())
+                .isShareable(postPortfolioBin.isShareable())
                 .build();
 
         return this.fromEntityToObject(portfolioRepository.save(portfolioEntity));
@@ -87,7 +87,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     public Portfolio getPortfolio(long id, boolean isRequesterOwner) throws CustomException {
         PortfolioEntity portfolioEntity = portfolioRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Portfolio not found"));
-        if (isRequesterOwner || portfolioEntity.isSherable()) {
+        if (isRequesterOwner || portfolioEntity.isShareable()) {
             return this.fromEntityToObject(portfolioEntity);
         } else {
             throw new CustomException("Portfolio is not sharable");
@@ -110,7 +110,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         List<PortfolioEntity> portfolioList = portfolioRepository.findAllByUserId(putUserPrivacyBin.getUserID());
 
         for (PortfolioEntity portfolioEntity : portfolioList) {
-            portfolioEntity.setSherable(putUserPrivacyBin.isSherable());
+            portfolioEntity.setShareable(putUserPrivacyBin.isShareable());
             portfolioRepository.save(portfolioEntity);
         }
     }
@@ -136,14 +136,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     private boolean isPortfolioSharable(PortfolioHistoryEntity item) {
         return portfolioRepository.findById(item.getPortfolioId())
-                .map(PortfolioEntity::isSherable).orElse(false);
+                .map(PortfolioEntity::isShareable).orElse(false);
     }
 
     private Portfolio fromEntityToObject(PortfolioEntity entity) {
         return Portfolio.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .isSherable(entity.isSherable())
+                .isShareable(entity.isShareable())
                 .userId(entity.getUserId())
                 .build();
     }

@@ -10,5 +10,5 @@ public class Portfolio {
     private long id;
     private String name;
     private String userId;
-    private boolean isSherable;
+    private boolean isShareable;
 }

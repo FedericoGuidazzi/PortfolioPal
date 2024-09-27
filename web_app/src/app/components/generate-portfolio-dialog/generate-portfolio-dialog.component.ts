@@ -63,7 +63,6 @@ export class GeneratePortfolioDialogComponent {
     //call the API to send the file and then refresh the page
     this.userService.getUser().subscribe({
       next: (data) => {
-        console.log(data.sharePortfolio);
         const portfolioForm: Portfolio = {
           name: data.name,
           share: data.sharePortfolio,
