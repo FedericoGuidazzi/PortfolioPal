@@ -31,7 +31,23 @@ jobs:
       run: |
         cd asset
         mvn clean install
-    # - name: Run Clean Install in 'transaction' directory
-    #   run: |
-    #     cd transaction
-    #     mvn clean install
+    - name: Run Clean Install in 'transaction' directory
+      run: |
+        cd transaction
+        mvn clean install
+    - name: Run Clean Install in 'user' directory
+      run: |
+        cd user
+        mvn clean install
+    - name: Run Clean Install in 'portfolioHistory' directory
+      run: |
+        cd portfolioHistory
+        mvn clean install
+    - name: Run Clean Install in 'service-discovery' directory
+      run: |
+        cd service-discovery
+        mvn clean install
+    - name: Run Clean Install in 'api-gateway' directory
+      run: |
+        cd api-gateway
+        mvn clean install
