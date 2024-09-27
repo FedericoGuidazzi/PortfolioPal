@@ -31,6 +31,17 @@ jobs:
       run: |
         cd asset
         mvn clean install
+    - name: Check code coverage for 'asset'
+      run: |
+        cd asset
+        COVERAGE=$(mvn jacoco:report | grep -Po '(?<=<counter type="INSTRUCTION" missed=".*" covered=").*?(?=")')
+        THRESHOLD=60
+        if (( $(echo "$COVERAGE < $THRESHOLD" |bc -l) )); then
+          echo "Code coverage for 'asset' ($COVERAGE%) is below the acceptable threshold ($THRESHOLD%)"
+          exit 1
+        else
+          echo "Code coverage for 'asset' is sufficient: $COVERAGE%"
+        fi
     # - name: Run Clean Install in 'transaction' directory
     #   run: |
     #     cd transaction
