@@ -1,29 +1,36 @@
 package com.example.asset.services.impl;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
+
 import com.example.asset.models.Asset;
 import com.example.asset.models.YahooAPIAssetResponse;
 import com.example.asset.models.YahooAPISearch;
 import com.example.asset.models.bin.GetAssetBin;
 import com.example.asset.services.GetAssetService;
 import com.example.asset.utils.RangeUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
-
-import java.math.BigDecimal;
-import java.time.*;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class GetAssetServiceImpl implements GetAssetService {
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     String description;
 

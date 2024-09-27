@@ -43,6 +43,25 @@ class GetCurrencyControllerTest {
         assertEquals(expectedCurrency, response);
     }
 
+    @Test
+    void testGetAssetMocked() {
+        // Mocking the service response
+        Currency expectedCurrency = Currency.builder()
+                .currencyFrom("USD")
+                .currencyTo("EUR")
+                .priceList(List.of(BigDecimal.ONE))
+                .dateList(List.of(LocalDate.now()))
+                .build();
+
+        // Invoking the controller method
+        String currencyFrom = "USD";
+        String currencyTo = "EUR";
+        boolean mock = true;
+        Currency response = currencyController.getCurrency(currencyFrom, currencyTo, mock, null, null);
+
+        // Assertions
+        assertEquals(expectedCurrency, response);
+    }
 
     private Currency mockCurrency(String currencyFrom, String currencyTo) {
         return Currency.builder()
