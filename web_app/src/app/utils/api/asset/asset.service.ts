@@ -15,4 +15,8 @@ export class AssetService {
       this.assetUrl + '/' + assetId + '?duration=' + duration
     );
   }
+
+  searchAssets(asset: string) {
+    return this.http.get(this.assetUrl + '/search/' + asset);
+  }
 }

@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  web-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-app
+    ports:
+      - 4201:4200

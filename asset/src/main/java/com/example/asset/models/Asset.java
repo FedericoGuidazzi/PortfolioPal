@@ -16,4 +16,5 @@ public class Asset {
     private List<LocalDate> dates;
     private String description;
     private String assetClass;
+    private double percentage;
 }

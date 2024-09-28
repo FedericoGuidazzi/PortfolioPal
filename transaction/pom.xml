@@ -65,6 +65,13 @@
 			<version>5.5.2</version> <!-- Usa l'ultima versione disponibile -->
 		</dependency>
 
+		<dependency>
+			<groupId>org.instancio</groupId>
+			<artifactId>instancio-junit</artifactId>
+			<version>5.0.1</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>

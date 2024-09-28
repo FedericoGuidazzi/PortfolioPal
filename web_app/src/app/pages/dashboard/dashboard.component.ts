@@ -356,7 +356,7 @@ export class DashboardComponent {
     selector?.classList.add('active');
 
     this.historyService
-      .getPortfolioHistoryById(this.portfolioId, '')
+      .getPortfolioHistoryById(this.portfolioId, value)
       .subscribe({
         next: (data: HistoryItem[]) => {
           const labels = data.map((item) => item.date);

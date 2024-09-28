@@ -86,25 +86,33 @@ public class GetAssetServiceImpl implements GetAssetService {
                     description = getDescription(responseDescriptionBody, index);
                 }
             }
+
+            List<BigDecimal> prices = Optional.ofNullable(quotes).filter(el -> !CollectionUtils.isEmpty(el))
+                    .map(el -> el.get(0))
+                    .map(e -> Optional.ofNullable(e.getCloses()).orElse(Collections.emptyList()).stream()
+                            .map(x -> {
+                                if (Objects.isNull(x)) {
+                                    return Double.valueOf(1);
+                                }
+                                return x;
+                            }).map(BigDecimal::valueOf).toList())
+                    .orElse(List.of());
+            double percentage = prices.isEmpty() ? 0
+                    : (prices.get(prices.size() - 1).doubleValue() - prices.get(0).doubleValue())
+                            / prices.get(0).doubleValue() * 100;
+
             return Asset.builder()
                     .dates(Optional.ofNullable(result)
                             .map(el -> el.getTimestamps().stream().map(this::localDateFromTimestamp).toList())
                             .orElse(null))
-                    .prices(Optional.ofNullable(quotes).filter(el -> !CollectionUtils.isEmpty(el)).map(el -> el.get(0))
-                            .map(e -> Optional.ofNullable(e.getCloses()).orElse(Collections.emptyList()).stream()
-                                    .map(x -> {
-                                        if (Objects.isNull(x)) {
-                                            return Double.valueOf(1);
-                                        }
-                                        return x;
-                                    }).map(BigDecimal::valueOf).toList())
-                            .orElse(null))
+                    .prices(prices)
                     .currency(Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getMeta)
                             .map(YahooAPIAssetResponse.Meta::getCurrency).orElse(null))
                     .symbol(Optional.ofNullable(result).map(YahooAPIAssetResponse.Result::getMeta)
                             .map(YahooAPIAssetResponse.Meta::getSymbol).orElse(null))
                     .description(description)
                     .assetClass(getAssetClass(assetBin.getSymbol()))
+                    .percentage(percentage)
                     .build();
 
         } catch (Exception e) {

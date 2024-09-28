@@ -135,7 +135,7 @@ export class AssetComponent {
               sharesNumber: 0,
               description: data['description'],
               percetageInPortfolio: percetageInPortfolio,
-              percentageWinLose: allocation['percentage'],
+              percentageWinLose: parseFloat(data['percentage'].toFixed(2)),
               currency: data['currency'],
               totalCost: 0,
               currentValuation: 0,
