@@ -54,10 +54,9 @@ Assicurati che tutti i pods stiano funzionando senza errori del tipo CrashLoopBa
 kubectl get pods
 ```
 Se non tutti i pods stanno funzionando correttamente lancia questo comando e riparti dal punto 1.
-```bash
+``` bash
 kubectl delete -f
-``` .
-
+```
 Espone le porte dei microservizi richiesti:
 ```bash
 kubectl port-forward svc/gateway 8080:8080
