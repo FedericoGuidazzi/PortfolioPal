@@ -62,7 +62,20 @@ export class AssetComponent {
   portfolioId: any;
   data?: PortfolioAmount;
   transactions: TransactionData[] = [];
-  assetData?: AssetData;
+  assetData: AssetData = {
+    name: '',
+    currentValue: 0,
+    valueInPortfolio: 0,
+    sharesNumber: 0,
+    description: '',
+    percetageInPortfolio: 0,
+    percentageWinLose: 0,
+    currency: '',
+    totalCost: 0,
+    currentValuation: 0,
+    balance: 0,
+    averageCostPerShare: 0,
+  };
   dataAsset: any = {};
   duration: string[] = ['1A', '5A', 'Max'];
   lineChart: any;
