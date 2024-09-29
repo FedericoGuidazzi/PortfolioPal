@@ -41,13 +41,18 @@ Gestione degli indirizzi dei microservizi.
 Per poter far partire Kubernetes in locale, è necessario avere installati [Minikube](https://minikube.sigs.k8s.io/docs/start/?arch=%2Flinux%2Fx86-64%2Fstable%2Fbinary+download) e [Kompose](https://kompose.io/installation/).
 Kubernetes scaricherà automaticamente le immagini dei microservizi da docker hub.
 
+Spostarsi nella cartella ```kubernetes/kube-services``` Successivamente eseguire il comando per convertire il file docker
+```bash
+kompose convert -f ../docker-compose.yml
+```
+
 Fai partire un kubernetes cluster
 ```bash
 minikube start
 ```
 Crea deployments, services, volumes e networks
 ```bash
-kubectl apply -f .
+kubectl apply -f kube-services/
 ```
 Assicurati che tutti i pods stiano funzionando senza errori del tipo CrashLoopBackOff
 ```bash
@@ -59,7 +64,7 @@ kubectl delete -f
 ```
 Espone le porte dei microservizi richiesti:
 ```bash
-kubectl port-forward svc/gateway 8080:8080
+kubectl port-forward svc/api-gateway 8080:8080
 kubectl port-forward svc/webapp 4201:4201
 ```
 
