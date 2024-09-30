@@ -17,9 +17,6 @@ public class ApiGatewayApplication {
 	@Autowired
 	private FireBaseTokenFilter auTokenFilter;
 
-	// @Autowired
-	// private OwnershipPortfolioFilter ownershipPortfolioFilter;
-
 	public static void main(String[] args) {
 		SpringApplication.run(ApiGatewayApplication.class, args);
 	}

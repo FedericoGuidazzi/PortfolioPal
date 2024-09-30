@@ -18,9 +18,9 @@ services:
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
     networks:
       - pal-network
-     
+
   rabbitmq:
-    image: rabbitmq:3.9-management
+    image: rabbitmq:management
     ports:
       - 15672:15672
       - 5672:5672
@@ -61,9 +61,9 @@ services:
       service-discovery:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://transactiondb:3306/transaction?createDatabaseIfNotExist=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://transactiondb:3306/transaction?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=transaction
+      - SPRING_DATASOURCE_PASSWORD=transaction
       - SPRING_RABBITMQ_HOST=rabbitmq
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
     networks:
@@ -71,19 +71,30 @@ services:
       - pal-network
 
   transactiondb:
-    image: mysql:8.0.33
-    environment:
-      - MYSQL_DATABASE=transaction
-      - MYSQL_ROOT_PASSWORD=rootpassword
-    volumes:
-      - transaction-data:/var/lib/mysql
+    container_name: transactiondb
+    image: "mariadb"
     networks:
       - transaction-network
+      - pal-network
+    environment:
+      MARIADB_ROOT_PASSWORD: "root"
+      MARIADB_USER: transaction
+      MARIADB_PASSWORD: transaction
+      MARIADB_DATABASE: transaction
+      TZ: Europe/Rome
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: transaction-data
+        target: /data
+        volume:
+          nocopy: true
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      retries: 10
-      interval: 3s
-      timeout: 30s
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   history-service:
     build:
@@ -92,9 +103,9 @@ services:
     ports:
       - 8080:8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://historydb:3306/history?createDatabaseIfNotExist=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://historydb:3306/history?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=history
+      - SPRING_DATASOURCE_PASSWORD=history
       - SPRING_RABBITMQ_HOST=rabbitmq
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
     networks:
@@ -111,19 +122,30 @@ services:
         condition: service_started
 
   historydb:
-    image: mysql:8.0.33
-    environment:
-      - MYSQL_DATABASE=history
-      - MYSQL_ROOT_PASSWORD=rootpassword
-    volumes:
-      - history-data:/var/lib/mysql
+    container_name: historydb
+    image: "mariadb"
     networks:
       - history-network
+      - pal-network
+    environment:
+      MARIADB_ROOT_PASSWORD: "root"
+      MARIADB_USER: history
+      MARIADB_PASSWORD: history
+      MARIADB_DATABASE: history
+      TZ: Europe/Rome
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: history-data
+        target: /data
+        volume:
+          nocopy: true
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      retries: 10
-      interval: 3s
-      timeout: 30s
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   history-data:

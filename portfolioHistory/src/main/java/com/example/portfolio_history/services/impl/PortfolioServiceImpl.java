@@ -124,8 +124,6 @@ public class PortfolioServiceImpl implements PortfolioService {
         // Remove all the portfolios that are not sharable and select the top 10
         return allPortfolios.stream()
                 .filter(this::isPortfolioSharable)
-                .limit(10)
-
                 .map(e -> PortfolioInfo.builder()
                         .idPortfolio(e.getPortfolioId())
                         .portfolioName(portfolioRepository.findById(e.getPortfolioId())

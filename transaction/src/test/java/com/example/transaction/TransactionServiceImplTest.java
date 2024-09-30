@@ -2,15 +2,21 @@ package com.example.transaction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -30,12 +37,14 @@ import com.example.transaction.custom_exceptions.CustomException;
 import com.example.transaction.models.Transaction;
 import com.example.transaction.models.bin.GetAssetQtyOutputBin;
 import com.example.transaction.models.bin.GetTransactionByDateBin;
+import com.example.transaction.models.bin.PostTransactionBin;
 import com.example.transaction.models.bin.PutTransactionBin;
 import com.example.transaction.models.bin.UploadBin;
 import com.example.transaction.models.dtos.PutTransactionDto;
 import com.example.transaction.models.entities.TransactionEntity;
 import com.example.transaction.models.enums.TransactionType;
 import com.example.transaction.repositories.TransactionRepository;
+import com.example.transaction.services.CsvPortfolioReader;
 import com.example.transaction.services.TransactionServiceImpl;
 
 class TransactionServiceImplTest {
@@ -387,6 +396,67 @@ class TransactionServiceImplTest {
 		assertEquals(100, result.get(0).getAmount());
 		assertEquals("GOOGL", result.get(1).getSymbolId());
 		assertEquals(50, result.get(1).getAmount());
+	}
+
+	@Test
+	void testGetTransactionsByPortfolioIdAndSymbolId() {
+		// Configurazione del mock
+		TransactionEntity transaction1 = Instancio.create(TransactionEntity.class);
+		transaction1.setPortfolioId(1L);
+		transaction1.setSymbolId("AAPL");
+
+		TransactionEntity transaction2 = Instancio.create(TransactionEntity.class);
+		transaction2.setPortfolioId(1L);
+		transaction2.setSymbolId("AAPL");
+
+		List<TransactionEntity> entities = List.of(transaction1, transaction2);
+		when(transactionRepository.findAllByPortfolioIdAndSymbolId(anyLong(), anyString())).thenReturn(entities);
+
+		// Chiamata al metodo da testare
+		List<Transaction> transactions = transactionService.getTransactionsByPortfolioIdAndSymbolId(1L, "AAPL");
+
+		// Verifica del risultato
+		assertNotNull(transactions);
+		assertEquals(2, transactions.size());
+
+		// Verifica che il mock sia stato chiamato correttamente
+		verify(transactionRepository).findAllByPortfolioIdAndSymbolId(1L, "AAPL");
+	}
+
+	@Test
+	void testInsertTransaction() throws CustomException {
+		// Configurazione del mock
+		PostTransactionBin transactionBin = Instancio.create(PostTransactionBin.class);
+		transactionBin.setType(TransactionType.BUY.getPersistedValue());
+		transactionBin.setDate(LocalDate.parse("2021-01-01"));
+
+		TransactionEntity savedEntity = Instancio.create(TransactionEntity.class);
+
+		when(transactionRepository.save(any(TransactionEntity.class))).thenReturn(savedEntity);
+
+		// Chiamata al metodo da testare
+		Transaction transaction = transactionService.insertTransaction(transactionBin);
+
+		// Verifica del risultato
+		assertNotNull(transaction);
+
+		// Verifica che il mock sia stato chiamato correttamente
+		verify(transactionRepository).save(any(TransactionEntity.class));
+	}
+
+	@Test
+	void testInsertTransactionInvalidType() {
+		// Configurazione del mock
+		PostTransactionBin transactionBin = Instancio.create(PostTransactionBin.class);
+		transactionBin.setType("InvalidType");
+
+		// Verifica che venga lanciata l'eccezione
+		CustomException exception = assertThrows(CustomException.class, () -> {
+			transactionService.insertTransaction(transactionBin);
+		});
+
+		// Verifica del messaggio dell'eccezione
+		assertEquals("Invalid transaction type", exception.getMessage());
 	}
 
 }

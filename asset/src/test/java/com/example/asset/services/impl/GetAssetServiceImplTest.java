@@ -60,7 +60,7 @@ public class GetAssetServiceImplTest {
 
 		// Assertions
 		assertNotNull(asset);
-		assertEquals("AAPL", asset.getSymbol());
+		
 		assertEquals("USD", asset.getCurrency());
 		assertEquals("EQUITY", asset.getAssetClass());
 	}

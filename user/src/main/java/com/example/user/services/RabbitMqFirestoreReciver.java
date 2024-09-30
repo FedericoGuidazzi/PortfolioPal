@@ -18,7 +18,7 @@ public class RabbitMqFirestoreReciver {
     @Autowired
     FirebaseUserServiceImpl userService;
 
-    @RabbitListener(queues = "privacyUpdates")
+    @RabbitListener(queues = "#{updateQueue.name}")
     public void updatePrivacy(String msg) {
         System.out.println("\n\n[R] Received < " + msg + " >" + " on user service");
 
@@ -27,7 +27,7 @@ public class RabbitMqFirestoreReciver {
 
             Optional<User> user = Optional.ofNullable(this.userService.getUser(privacyBin.getUserID()));
             if (user.isPresent()) {
-                user.get().setSharePortfolio(privacyBin.isSherable());
+                user.get().setSharePortfolio(privacyBin.isShareable());
                 this.userService.setUser(privacyBin.getUserID(), user.get());
             } else {
                 throw new UserNotFoundException("User not found with id: " + privacyBin.getUserID());
