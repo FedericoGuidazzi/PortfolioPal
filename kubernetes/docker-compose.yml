@@ -49,6 +49,7 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
       - eureka.instance.prefer-ip-address=true
+    restart: always
 
   asset:
     image: lucagrandi/portfolio-pal:asset
@@ -63,6 +64,7 @@ services:
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
       - eureka.instance.prefer-ip-address=true
+    restart: always
 
   transactiondb:
     container_name: transactiondb
@@ -114,6 +116,7 @@ services:
     networks:
       - transaction-network
       - pal-network
+    restart: always
 
   historydb:
     container_name: historydb
@@ -167,6 +170,7 @@ services:
         condition: service_started
       asset:
         condition: service_started
+    restart: always
 
   api-gateway:
     image: lucagrandi/portfolio-pal:api-gateway
@@ -195,7 +199,7 @@ services:
     image: lucagrandi/portfolio-pal:web-app
     container_name: web-app
     ports:
-      - 4201:4200
+      - 4201:4201
     depends_on:
       api-gateway:
         condition: service_started
