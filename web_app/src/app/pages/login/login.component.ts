@@ -71,4 +71,16 @@ export class LoginComponent {
       }
     }
   }
+
+  loginWithGoogle() {
+    this.authService.loginWithGoogle().subscribe({
+      next: (response) => {
+        console.log('Login successful');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Error login', error);
+      },
+    });
+  }
 }

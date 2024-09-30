@@ -1,12 +1,11 @@
 version: "3.7"
 services:
   service-discovery:
-    build:
-      context: service-discovery/
-      dockerfile: Dockerfile
+    image: lucagrandi/portfolio-pal:service-discovery
     container_name: service-discovery
     ports:
       - 8761:8761
+    restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 30s
@@ -26,6 +25,7 @@ services:
       - 5672:5672
     networks:
       - pal-network
+    restart: always
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
@@ -33,13 +33,11 @@ services:
       retries: 5
       start_period: 10s
 
-  user-service:
-    build:
-      context: user/
-      dockerfile: Dockerfile
-    container_name: user-service
+  user:
+    image: lucagrandi/portfolio-pal:user
+    container_name: user
     ports:
-      - 8081:8080
+      - 8080:8080
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -50,14 +48,14 @@ services:
     environment:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+      - eureka.instance.prefer-ip-address=true
+    restart: always
 
-  asset-service:
-    build:
-      context: asset/
-      dockerfile: Dockerfile
-    container_name: asset-service
+  asset:
+    image: lucagrandi/portfolio-pal:asset
+    container_name: asset
     ports:
-      - 8082:8080
+      - 8080:8080
     depends_on:
       service-discovery:
         condition: service_healthy
@@ -65,6 +63,8 @@ services:
       - pal-network
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+      - eureka.instance.prefer-ip-address=true
+    restart: always
 
   transactiondb:
     container_name: transactiondb
@@ -72,17 +72,21 @@ services:
     networks:
       - transaction-network
       - pal-network
+    ports:
+      - 3306:3306
     environment:
       MARIADB_ROOT_PASSWORD: "root"
       MARIADB_USER: transaction
       MARIADB_PASSWORD: transaction
       MARIADB_DATABASE: transaction
       TZ: Europe/Rome
-    restart: unless-stopped
+    restart: always
     volumes:
       - type: volume
         source: transaction-data
-        target: /var/lib/mysql
+        target: /data
+        volume:
+          nocopy: true
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
@@ -90,13 +94,11 @@ services:
       timeout: 5s
       retries: 3
 
-  transaction-service:
-    build:
-      context: transaction/
-      dockerfile: Dockerfile
-    container_name: transaction-service
+  transaction:
+    image: lucagrandi/portfolio-pal:transaction
+    container_name: transaction
     ports:
-      - 8083:8080
+      - 8080:8080
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -110,9 +112,11 @@ services:
       - SPRING_DATASOURCE_PASSWORD=transaction
       - SPRING_RABBITMQ_HOST=rabbitmq
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+      - eureka.instance.prefer-ip-address=true
     networks:
       - transaction-network
       - pal-network
+    restart: always
 
   historydb:
     container_name: historydb
@@ -120,17 +124,21 @@ services:
     networks:
       - history-network
       - pal-network
+    ports:
+      - 3306:3306
     environment:
       MARIADB_ROOT_PASSWORD: "root"
       MARIADB_USER: history
       MARIADB_PASSWORD: history
       MARIADB_DATABASE: history
       TZ: Europe/Rome
-    restart: unless-stopped
+    restart: always
     volumes:
       - type: volume
         source: history-data
-        target: /var/lib/mysql
+        target: /data
+        volume:
+          nocopy: true
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
@@ -138,19 +146,18 @@ services:
       timeout: 5s
       retries: 3
 
-  history-service:
-    build:
-      context: portfolioHistory/
-      dockerfile: Dockerfile
-    container_name: history-service
+  portfolio-history:
+    image: lucagrandi/portfolio-pal:history
+    container_name: portfolio-history
     ports:
-      - 8084:8080
+      - 8080:8080
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mariadb://historydb:3306/history?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=history
       - SPRING_DATASOURCE_PASSWORD=history
       - SPRING_RABBITMQ_HOST=rabbitmq
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+      - eureka.instance.prefer-ip-address=true
     networks:
       - history-network
       - pal-network
@@ -159,44 +166,45 @@ services:
         condition: service_healthy
       historydb:
         condition: service_healthy
-      transaction-service:
+      transaction:
         condition: service_started
-      asset-service:
+      asset:
         condition: service_started
+    restart: always
 
   api-gateway:
-    build:
-      context: api-gateway/
-      dockerfile: Dockerfile
+    image: lucagrandi/portfolio-pal:api-gateway
     container_name: api-gateway
     ports:
       - 8080:8080
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-discovery:8761/eureka/
+      - eureka.instance.prefer-ip-address=true
     depends_on:
       service-discovery:
         condition: service_healthy
-      user-service:
+      user:
         condition: service_started
-      asset-service:
+      asset:
         condition: service_started
-      history-service:
+      portfolio-history:
         condition: service_started
-      transaction-service:
+      transaction:
         condition: service_started
     networks:
       - pal-network
+    restart: always
 
   web-app:
-    build:
-      context: web_app
-      dockerfile: Dockerfile
+    image: lucagrandi/portfolio-pal:web-app
     container_name: web-app
+    ports:
+      - 4201:4201
     depends_on:
       api-gateway:
         condition: service_started
-    ports:
-      - 4201:4200
+    networks:
+      - pal-network
 
 volumes:
   history-data:
@@ -204,9 +212,5 @@ volumes:
 
 networks:
   transaction-network:
-    name: transaction-network
   history-network:
-    name: history-network
   pal-network:
-    name: pal-network
-    driver: bridge

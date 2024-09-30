@@ -68,7 +68,7 @@ export class UserNavbarComponent {
         this.settings['sharePortfolio'].user_setting = user.sharePortfolio;
       },
       error: (error) => {
-        // console.error('Error getting user', error);
+        console.error('Error getting user', error);
       },
     });
   }

@@ -39,27 +39,27 @@
       <h2 class="fw-bold">Valore nel tuo Portfolio</h2>
       <p class="h-auto mb-0 d-grid">
         <span class="fw-bold fs-1 me-2 mb-3"
-          >{{ assetData?.currency }} {{ assetData?.valueInPortfolio }}</span
+          >{{ assetData.currency }} {{ assetData.valueInPortfolio }}</span
         >
-        @if (assetData?.sharesNumber!=0) {
+        @if (assetData.sharesNumber!=0) {
         <span class="text-secondary"
-          >Numero di shares: {{ assetData?.sharesNumber }}</span
+          >Numero di shares: {{ assetData.sharesNumber }}</span
         >
-        } @if (assetData?.totalCost!=0) {
+        } @if (assetData.totalCost!=0) {
         <span class="text-secondary"
-          >Spesa totale: {{ assetData?.totalCost }}</span
+          >Spesa totale: {{ assetData.totalCost }}</span
         >
-        } @if (assetData?.currentValuation!=0) {
+        } @if (assetData.currentValuation!=0) {
         <span class="text-secondary"
-          >Valore attuale: {{ assetData?.currentValuation }}</span
+          >Valore attuale: {{ assetData.currentValuation }}</span
         >
-        } @if (assetData?.balance!=0) {
+        } @if (assetData.balance!=0) {
         <span class="text-secondary"
-          >Bilancio attuale: {{ assetData?.balance }}</span
+          >Bilancio attuale: {{ assetData.balance }}</span
         >
-        } @if (assetData?.averageCostPerShare!=0) {
+        } @if (assetData.averageCostPerShare!=0) {
         <span class="text-secondary"
-          >Costo medio di ingresso: {{ assetData?.averageCostPerShare }}</span
+          >Costo medio di ingresso: {{ assetData.averageCostPerShare }}</span
         >
         }
       </p>
@@ -154,10 +154,10 @@
       }
     </div>
   </div>
-  @if (assetData?.description) {
+  @if (assetData.description) {
   <div class="card p-3 gap-3 mt-5 rounded-20 col-10 mx-auto">
     <h2 class="fw-bold">Descrizione asset</h2>
-    <p>{{ assetData?.description }}</p>
+    <p>{{ assetData.description }}</p>
   </div>
   }
 </div>

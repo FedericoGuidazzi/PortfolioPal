@@ -80,7 +80,6 @@ public class TransactionController {
 		return ResponseEntity.ok().build();
 	}
 
-	// insert new transaction
 	@SneakyThrows
 	@PostMapping("/insert")
 	public ResponseEntity<Transaction> insertTransaction(@RequestBody PostTransactionBin entity) {

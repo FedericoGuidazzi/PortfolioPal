@@ -51,11 +51,7 @@ export class RankingComponent {
   currentUser!: RankElement;
 
   assets: PortfolioAssets[] = [];
-  assetDisplayedColumns: string[] = [
-    'symbol',
-    'portfolioPercentage',
-    'percentage',
-  ];
+  assetDisplayedColumns: string[] = ['symbol', 'portfolioPercentage'];
   assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
   @ViewChild('assetPaginator') assetPaginator!: MatPaginator;
 
@@ -237,11 +233,16 @@ export class RankingComponent {
     // Request past week history
     this.historyService.getPortfolioHistoryById(id, '1S').subscribe({
       next: (data: HistoryItem[]) => {
+        const amount = data[data.length - 1].countervail;
+        const percentage = data[data.length - 1].percentageValue;
         this.portfolioInfo = {
           assetName: null,
           currency: 'EUR',
-          amount: data[data.length - 1].countervail,
-          percentage: data[data.length - 1].percentageValue,
+          amount:
+            amount <= 0
+              ? parseFloat(amount.toFixed(5))
+              : parseFloat(amount.toFixed(2)),
+          percentage: parseFloat(percentage.toFixed(2)),
         };
 
         this.createLineChart(
@@ -257,7 +258,7 @@ export class RankingComponent {
   }
 
   updateHistoryGraphView(value: string) {
-    const selectorActive = document.querySelectorAll('.active');
+    const selectorActive = document.querySelectorAll('.rounded-pill.active');
     selectorActive.forEach(function (selected) {
       selected.classList.remove('active');
     });
@@ -266,7 +267,7 @@ export class RankingComponent {
     selector?.classList.add('active');
 
     this.historyService
-      .getPortfolioHistoryById(this.portfolioId, '')
+      .getPortfolioHistoryById(this.portfolioId, value)
       .subscribe({
         next: (data: HistoryItem[]) => {
           const labels = data.map((item) => item.date);
@@ -295,6 +296,9 @@ export class RankingComponent {
 
   onElementSelection(rank: RankElement) {
     this.location.go(`/ranking/${rank.id}`);
+
+    this.portfolioId = rank.id;
+
     this.updatePortfolioView(rank.id, rank.name);
   }
 }

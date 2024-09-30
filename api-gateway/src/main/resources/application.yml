@@ -4,5 +4,7 @@ spring:
       discovery:
         locator:
           enabled: true
-    kubernetes:
-      enabled: false
+
+eureka:
+  instance:
+    preferIpAddress: true
