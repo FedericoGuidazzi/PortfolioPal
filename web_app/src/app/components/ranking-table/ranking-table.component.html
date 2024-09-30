@@ -72,11 +72,5 @@
       [class]="{ disabled: row.pos == currentUser?.pos || row.id == -1 }"
       (click)="onElementSelection(row)"
     ></tr>
-
-    @if (currentUser && currentUser.pos > 6) {
-    <tr mat-footer-row *matFooterRowDef="['spacer']"></tr>
-    } @if (currentUser && currentUser.pos >= 6) {
-    <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
-    }
   </table>
 </div>
