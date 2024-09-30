@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,9 +54,12 @@ public class TransactionController {
 						.transaction(entity)
 						.build());
 
-		if (entity.getDate().isBefore(LocalDate.now())) {
+		LocalDate olderDate = entity.getOldDate().isBefore(entity.getDate())
+				? entity.getOldDate()
+				: entity.getDate();
+		if (olderDate.isBefore(LocalDate.now())) {
 			this.sender.sendTransactionUpdate(GetTransactionByDateBin.builder()
-					.date(entity.getDate())
+					.date(olderDate)
 					.portfolioId(entity.getPortfolioId())
 					.build());
 		}
