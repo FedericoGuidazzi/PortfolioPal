@@ -82,9 +82,7 @@ services:
     volumes:
       - type: volume
         source: transaction-data
-        target: /data
-        volume:
-          nocopy: true
+        target: /var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
@@ -132,9 +130,7 @@ services:
     volumes:
       - type: volume
         source: history-data
-        target: /data
-        volume:
-          nocopy: true
+        target: /var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
@@ -190,7 +186,7 @@ services:
         condition: service_started
     networks:
       - pal-network
-  
+
   web-app:
     build:
       context: web_app
