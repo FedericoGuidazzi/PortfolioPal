@@ -54,7 +54,6 @@ export class RankingComponent {
   assetDisplayedColumns: string[] = [
     'symbol',
     'portfolioPercentage',
-    'percentage',
   ];
   assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
   @ViewChild('assetPaginator') assetPaginator!: MatPaginator;

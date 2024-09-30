@@ -18,7 +18,7 @@ public class RabbitMQReceiver {
     @Autowired
     private PortfolioHistoryService portfolioHistoryService;
 
-    @RabbitListener(queues = "privacyUpdates")
+    @RabbitListener(queues = "#{updateQueue.name}")
     public void updatePrivacy(String msg) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
@@ -32,7 +32,7 @@ public class RabbitMQReceiver {
         }
     }
 
-    @RabbitListener(queues = "transactionUpdates")
+    @RabbitListener(queues = "#{transactionQueue.name}")
     public void updateOldMovements(String msg) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();

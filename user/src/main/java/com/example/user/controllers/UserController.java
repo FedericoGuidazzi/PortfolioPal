@@ -54,7 +54,7 @@ public class UserController {
             @RequestBody boolean sharePortfolio) {
         PutUserPrivacyBin privacyBin = PutUserPrivacyBin.builder()
                 .userID(id)
-                .isSherable(sharePortfolio)
+                .isShareable(sharePortfolio)
                 .build();
         this.sender.send(privacyBin);
     }

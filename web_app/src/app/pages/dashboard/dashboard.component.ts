@@ -28,7 +28,6 @@ import { UploadTransactionComponent } from '../../components/upload-transaction/
 export interface PortfolioAssets {
   symbolId: string;
   percPortfolio: number;
-  percentage: number;
 }
 
 export interface HistoryItem {
@@ -70,11 +69,7 @@ interface AssetQty {
 export class DashboardComponent {
   portfolioInfo!: PortfolioAmount;
   assets: PortfolioAssets[] = [];
-  assetDisplayedColumns: string[] = [
-    'symbol',
-    'portfolioPercentage',
-    'percentage',
-  ];
+  assetDisplayedColumns: string[] = ['symbol', 'portfolioPercentage'];
   assetDataSource = new MatTableDataSource<PortfolioAssets>(this.assets);
   @ViewChild('assetPaginator') assetPaginator!: MatPaginator;
 
@@ -124,6 +119,13 @@ export class DashboardComponent {
   ngAfterViewInit(): void {
     this.portfolioService.getPortfolioByUserId().subscribe({
       next: (data) => {
+        if (data == null) {
+          this.portfolioGenerationContainer.nativeElement.classList.remove(
+            'd-none'
+          );
+          return;
+        }
+
         this.existPortfolio = true;
         this.portfolioGenerationContainer.nativeElement.classList.add('d-none');
 
@@ -186,7 +188,6 @@ export class DashboardComponent {
               return {
                 symbolId: item.symbolId,
                 percPortfolio: perc,
-                percentage: 0,
               };
             });
             this.assetDataSource.data = this.assets;
@@ -243,6 +244,7 @@ export class DashboardComponent {
         this.portfolioGenerationContainer.nativeElement.classList.remove(
           'd-none'
         );
+        console.error('Error fetching portfolio', error);
       },
     });
   }
