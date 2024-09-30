@@ -531,6 +531,7 @@ export class DashboardComponent {
         ) {
           this.transactionService
             .modifyTransaction(id, {
+              oldDate: foundTransaction?.date,
               date: date == '' || date == null ? foundTransaction?.date : date,
               type: type == '' || type == null ? foundTransaction?.type : type,
               symbolId:
@@ -560,55 +561,55 @@ export class DashboardComponent {
 
   refreshPage(portfolioId: number) {
     this.transactionService
-        .getAllTransactionByPortfolioId(portfolioId)
-        .subscribe({
-          next: (data) => {
-            this.transactions = data.map(
-              (item: {
-                id: any;
-                date: any;
-                type: any;
-                symbolId: any;
-                amount: any;
-                price: any;
-                currency: any;
-              }) => {
-                return {
-                  id: item.id,
-                  date: item.date,
-                  type: item.type,
-                  symbol: item.symbolId,
-                  quantity: item.amount,
-                  price: item.price,
-                  currency: item.currency,
-                };
-              }
-            );
-            this.updateTransactionList(this.transactions);
-          },
-          error: (error) => {
-            console.error('Error fetching transactions', error);
-          },
-        });
-
-      this.transactionService.getAssetAllocation(portfolioId).subscribe({
-        next: (data: AssetQty[]) => {
-          const total = data.reduce((acc, item) => acc + item.amount, 0);
-          this.assets = data.map((item) => {
-            let perc = (item.amount / total) * 100;
-            perc = parseFloat(perc.toFixed(2));
-            return {
-              symbolId: item.symbolId,
-              percPortfolio: perc,
-            };
-          });
-          this.assetDataSource.data = this.assets;
-
-          this.createDoughnutChart();
+      .getAllTransactionByPortfolioId(portfolioId)
+      .subscribe({
+        next: (data) => {
+          this.transactions = data.map(
+            (item: {
+              id: any;
+              date: any;
+              type: any;
+              symbolId: any;
+              amount: any;
+              price: any;
+              currency: any;
+            }) => {
+              return {
+                id: item.id,
+                date: item.date,
+                type: item.type,
+                symbol: item.symbolId,
+                quantity: item.amount,
+                price: item.price,
+                currency: item.currency,
+              };
+            }
+          );
+          this.updateTransactionList(this.transactions);
         },
         error: (error) => {
-          console.error('Error fetching asset allocation', error);
+          console.error('Error fetching transactions', error);
         },
       });
+
+    this.transactionService.getAssetAllocation(portfolioId).subscribe({
+      next: (data: AssetQty[]) => {
+        const total = data.reduce((acc, item) => acc + item.amount, 0);
+        this.assets = data.map((item) => {
+          let perc = (item.amount / total) * 100;
+          perc = parseFloat(perc.toFixed(2));
+          return {
+            symbolId: item.symbolId,
+            percPortfolio: perc,
+          };
+        });
+        this.assetDataSource.data = this.assets;
+
+        this.createDoughnutChart();
+      },
+      error: (error) => {
+        console.error('Error fetching asset allocation', error);
+      },
+    });
   }
 }

@@ -10,6 +10,8 @@ import lombok.Data;
 @Builder
 public class PutTransactionDto {
 
+    private LocalDate oldDate;
+
     private String type;
 
     private LocalDate date;
