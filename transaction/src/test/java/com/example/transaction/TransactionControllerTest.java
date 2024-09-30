@@ -57,6 +57,7 @@ public class TransactionControllerTest {
 		// Configurazione del mock
 		PutTransactionDto putTransactionDto = Instancio.create(PutTransactionDto.class);
 		putTransactionDto.setDate(LocalDate.now().minusDays(1));
+		putTransactionDto.setOldDate(LocalDate.now());
 		PutTransactionBin putTransactionBin = PutTransactionBin.builder()
 				.id(1)
 				.transaction(putTransactionDto)
@@ -94,6 +95,7 @@ public class TransactionControllerTest {
 		// Configurazione del mock
 		PutTransactionDto putTransactionDto = Instancio.create(PutTransactionDto.class);
 		putTransactionDto.setDate(LocalDate.now());
+		putTransactionDto.setOldDate(LocalDate.now());
 		PutTransactionBin putTransactionBin = PutTransactionBin.builder()
 				.id(1)
 				.transaction(putTransactionDto)

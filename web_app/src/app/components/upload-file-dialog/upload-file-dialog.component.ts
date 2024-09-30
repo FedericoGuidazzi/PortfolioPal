@@ -13,7 +13,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TransactionService } from '../../utils/api/transaction/transaction.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-upload-file-dialog',
@@ -36,6 +36,7 @@ export class UploadFileDialog {
   constructor(
     private dialogRef: MatDialogRef<UploadFileDialog>,
     private transactService: TransactionService,
+    private route: Router,
     @Inject(MAT_DIALOG_DATA) private data: { portfolioId: any }
   ) {
     this.portfolioId = data.portfolioId;
@@ -64,10 +65,11 @@ export class UploadFileDialog {
       .uploadTransaction(this.portfolioId, formData)
       .subscribe({
         next: (data) => {
-          window.location.reload();
+          this.route.navigate(['/dashboard/' + this.portfolioId]);
+          this.dialogRef.close();
         },
         error: (error) => {
-          window.location.reload();
+          this.dialogRef.close();
         },
       });
   }
