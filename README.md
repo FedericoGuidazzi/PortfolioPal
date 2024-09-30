@@ -65,7 +65,7 @@ kubectl delete -f
 Espone le porte dei microservizi richiesti:
 ```bash
 kubectl port-forward svc/api-gateway 8080:8080
-kubectl port-forward svc/webapp 4201:4201
+kubectl port-forward svc/web-app 4201:4201
 ```
 
 ### Docker
