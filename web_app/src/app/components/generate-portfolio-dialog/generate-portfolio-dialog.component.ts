@@ -70,16 +70,19 @@ export class GeneratePortfolioDialogComponent {
 
         this.portfolioService.createPortfolio(portfolioForm).subscribe({
           next: (data) => {
-            console.log(data);
+            const portfolioId = data.id;
             this.transactService
               .uploadTransaction(data.id, formData)
               .subscribe({
                 next: (data) => {
-                  window.location.reload();
+                  console.log(
+                    'The dialog was closed with result: ' + portfolioId
+                  );
+                  this.dialogRef.close(portfolioId);
                 },
                 error: (error) => {
                   console.error('There was an error!', error);
-                  window.location.reload();
+                  this.dialogRef.close();
                 },
               });
           },
@@ -87,6 +90,7 @@ export class GeneratePortfolioDialogComponent {
       },
       error: (error) => {
         console.error('There was an error!', error);
+        this.dialogRef.close();
       },
     });
   }
