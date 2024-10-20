@@ -66,26 +66,31 @@ public class GetAssetServiceImpl implements GetAssetService {
 
             // Mt(15px) Lh(1.6) -> asset
             // prof-desc -> crypto
-            String urlDescription = "https://it.finance.yahoo.com/quote/" + assetBin.getSymbol() + "/profile";
-            ResponseEntity<String> responseDescription = restTemplate.getForEntity(urlDescription, String.class);
+            try {
+                String urlDescription = "https://it.finance.yahoo.com/quote/" + assetBin.getSymbol() + "/profile";
+                ResponseEntity<String> responseDescription = restTemplate.getForEntity(urlDescription, String.class);
 
-            String responseDescriptionBody = Optional.ofNullable(responseDescription.getBody()).orElse("");
-            // Pattern per trovare il contenuto dopo il tag specificato
-            String tag = "Mt(15px) Lh(1.6)";
+                String responseDescriptionBody = Optional.ofNullable(responseDescription.getBody()).orElse("");
+                // Pattern per trovare il contenuto dopo il tag specificato
+                String tag = "Mt(15px) Lh(1.6)";
 
-            int index = responseDescriptionBody.indexOf(tag);
-
-            // Trovare e stampare il contenuto
-            if (index != -1) {
-                description = getDescription(responseDescriptionBody, index);
-            } else {
-                tag = "prof-desc";
-                index = responseDescriptionBody.indexOf(tag);
-
+                int index = responseDescriptionBody.indexOf(tag);
                 if (index != -1) {
                     description = getDescription(responseDescriptionBody, index);
+                } else {
+                    tag = "prof-desc";
+                    index = responseDescriptionBody.indexOf(tag);
+
+                    if (index != -1) {
+                        description = getDescription(responseDescriptionBody, index);
+                    }
                 }
+
+            } catch (Exception e) {
+                description = "Descrizione non trovata";
             }
+
+            // Trovare e stampare il contenuto
 
             List<BigDecimal> prices = Optional.ofNullable(quotes).filter(el -> !CollectionUtils.isEmpty(el))
                     .map(el -> el.get(0))
@@ -116,7 +121,7 @@ public class GetAssetServiceImpl implements GetAssetService {
                     .build();
 
         } catch (Exception e) {
-            System.err.println("Exception while calling Yahoo Finance");
+            System.err.println("Exception while calling Yahoo Finance: " + e.getMessage());
             return Asset.builder().build();
         }
     }

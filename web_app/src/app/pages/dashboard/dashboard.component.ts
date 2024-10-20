@@ -489,7 +489,7 @@ export class DashboardComponent {
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      console.log('The dialog was closed');
+      this.refreshPage(portfolioId);
     });
   }
 
@@ -551,7 +551,6 @@ export class DashboardComponent {
               portfolioId: portfolioId,
             })
             .subscribe((data) => {
-              console.log('Transaction updated');
               this.refreshPage(portfolioId);
             });
         }
