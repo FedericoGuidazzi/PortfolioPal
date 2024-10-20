@@ -54,9 +54,7 @@ public class TransactionController {
 						.transaction(entity)
 						.build());
 
-		LocalDate olderDate = entity.getOldDate().isBefore(entity.getDate())
-				? entity.getOldDate()
-				: entity.getDate();
+		LocalDate olderDate = entity.getDate();
 		if (olderDate.isBefore(LocalDate.now())) {
 			this.sender.sendTransactionUpdate(GetTransactionByDateBin.builder()
 					.date(olderDate)
